@@ -541,24 +541,55 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
-                        {% if intern %}
+                        {% if user.is_authenticated %}
+                        <!-- Google SSO authenticated user -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'select_availability' %}">
+                                <i class="fas fa-calendar-check me-1"></i>Ortak Çalışma Saati
+                            </a>
+                        </li>
+                        {% elif intern %}
+                        <!-- Legacy token-based authenticated user -->
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'submit_preferences' token=intern.access_token %}">
                                 <i class="fas fa-star me-1"></i>Tercihlerim
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'select_availability' token=intern.access_token %}">
+                            <a class="nav-link" href="{% url 'legacy_select_availability' token=intern.access_token %}">
                                 <i class="fas fa-calendar-check me-1"></i>Ortak Çalışma Saati
                             </a>
                         </li>
                         {% endif %}
                     </ul>
-                    {% if intern %}
-                    <span class="navbar-text" style="color: white; font-weight: 500;">
-                        <i class="fas fa-user-graduate me-2"></i>{{ intern.get_full_name }}
-                    </span>
-                    {% endif %}
+                    
+                    <div class="navbar-nav">
+                        {% if user.is_authenticated %}
+                        <!-- Google SSO user info -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i>{{ user.first_name|default:user.email }}
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{% url 'account_logout' %}">
+                                    <i class="fas fa-sign-out-alt me-1"></i>Çıkış Yap
+                                </a></li>
+                            </ul>
+                        </li>
+                        {% elif intern %}
+                        <!-- Legacy token-based user info -->
+                        <span class="navbar-text" style="color: white; font-weight: 500;">
+                            <i class="fas fa-user-graduate me-2"></i>{{ intern.get_full_name }}
+                        </span>
+                        {% else %}
+                        <!-- Not authenticated -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'home_page' %}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Giriş Yap
+                            </a>
+                        </li>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </nav>

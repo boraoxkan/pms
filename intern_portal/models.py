@@ -42,11 +42,30 @@ class Project(models.Model):
         verbose_name_plural = 'Projeler'
 
 class Intern(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    access_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    is_active = models.BooleanField(default=True)
+    # Link to Django's User model (for Google SSO) - NEW
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Kullanıcı')
+    
+    # Basic information
+    first_name = models.CharField(max_length=100, verbose_name='Ad')
+    last_name = models.CharField(max_length=100, verbose_name='Soyad')
+    email = models.EmailField(unique=True, verbose_name='E-posta')
+    
+    # Legacy access token (keeping for backward compatibility with existing interns)
+    access_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='Erişim Token')
+    
+    # Assigned projects (NEW - for admin assignments)
+    assigned_projects = models.ManyToManyField(
+        Project, 
+        blank=True, 
+        related_name='assigned_interns',
+        verbose_name='Atanmış Projeler',
+        help_text='Bu stajyere atanmış projeler (admin tarafından)'
+    )
+    
+    # Status
+    is_active = models.BooleanField(default=True, verbose_name='Aktif')
+    
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -55,12 +74,40 @@ class Intern(models.Model):
     
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
+    
+    def get_assigned_projects_count(self):
+        """Atanmış proje sayısını döndürür"""
+        return self.assigned_projects.count()
+    
+    def get_assigned_projects_list(self):
+        """Atanmış projelerin listesini döndürür"""
+        return list(self.assigned_projects.all())
+    
+    def has_assigned_projects(self):
+        """Atanmış proje var mı kontrol eder"""
+        return self.assigned_projects.exists()
+    
+    def has_google_auth(self):
+        """Google SSO ile giriş yapabilir mi kontrol eder"""
+        return self.user is not None
+    
+    def get_auth_method(self):
+        """Kimlik doğrulama metodunu döndürür"""
+        if self.user:
+            return "Google SSO"
+        else:
+            return "Token-based (Legacy)"
 
     class Meta:
         verbose_name = 'Stajyer'
         verbose_name_plural = 'Stajyerler'
+        ordering = ['first_name', 'last_name']
 
 class ProjectPreference(models.Model):
+    """
+    Existing project preference model - KEPT for backward compatibility
+    This handles the old preference system where interns choose their top 3 projects
+    """
     intern = models.OneToOneField(Intern, on_delete=models.CASCADE)
     first_choice = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='first_choices')
     second_choice = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='second_choices')
@@ -80,7 +127,7 @@ class InternAvailability(models.Model):
     intern = models.OneToOneField(Intern, on_delete=models.CASCADE, related_name='availability')
     availability_data = models.JSONField(
         default=dict,
-        help_text='JSON formatında haftalık ortak çalışma saati verileri. Format: {"monday": ["09:00", "10:00", ...], "tuesday": [...], ...}'
+        help_text='JSON formatında haftalık ortak çalışma saati verileri. Format: {"monday": ["09:00-10:00", "10:00-11:00", ...], "tuesday": [...], ...}'
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

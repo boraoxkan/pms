@@ -26,7 +26,7 @@
                 <nav class="hero-breadcrumb" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a href="{% url 'intern_home' token=intern.access_token %}">
+                            <a href="{% if user.is_authenticated %}{% url 'select_availability' %}{% else %}{% url 'intern_home' token=intern.access_token %}{% endif %}">
                                 <i class="fas fa-home me-1"></i>Ana Sayfa
                             </a>
                         </li>
@@ -255,7 +255,7 @@
                             </div>
                         </button>
                         
-                        <a href="{% url 'intern_home' token=intern.access_token %}" class="btn btn-outline">
+                        <a href="{% if user.is_authenticated %}{% url 'select_availability' %}{% else %}{% url 'intern_home' token=intern.access_token %}{% endif %}" class="btn btn-outline">
                             <div class="btn-content">
                                 <i class="fas fa-arrow-left"></i>
                                 <span>Ana Sayfaya Dön</span>
