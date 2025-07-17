@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.conf import settings
-from .models import Project, ProjectPreference, Intern
+from .models import Project, ProjectPreference, Intern, InternAvailability
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import GroupAdmin
 
@@ -26,7 +26,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(Intern)
 class InternAdmin(admin.ModelAdmin):
-    list_display = ('get_full_name', 'email', 'access_link', 'is_active')
+    list_display = ('get_full_name', 'email', 'access_link', 'has_availability', 'is_active')
     search_fields = ('first_name', 'last_name', 'email')
     list_filter = ('is_active',)
     readonly_fields = ('access_token', 'access_link_display')
@@ -68,6 +68,18 @@ class InternAdmin(admin.ModelAdmin):
         return format_html('<a href="{}" target="_blank">{}</a>', url, url)
     access_link_display.short_description = 'Tam Erişim URL\'si'
 
+    def has_availability(self, obj):
+        try:
+            availability = obj.availability
+            total_hours = availability.get_total_hours()
+            if total_hours > 0:
+                return format_html('<span style="color: green;">✅ {} saat</span>', total_hours)
+            else:
+                return format_html('<span style="color: orange;">⏳ Henüz yok</span>')
+        except InternAvailability.DoesNotExist:
+            return format_html('<span style="color: red;">❌ Yok</span>')
+    has_availability.short_description = 'Ortak Çalışma Saati Durumu'
+
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         # Request'i instance'a ekle ki metodlarda kullanabilelim
         self._request = request
@@ -84,6 +96,76 @@ class ProjectPreferenceAdmin(admin.ModelAdmin):
     list_filter = ('is_submitted',)
     search_fields = ('intern__first_name', 'intern__last_name', 'intern__email')
     readonly_fields = ('is_submitted',)
+
+@admin.register(InternAvailability)
+class InternAvailabilityAdmin(admin.ModelAdmin):
+    list_display = ('intern', 'get_total_hours', 'get_available_days_count', 'updated_at')
+    list_filter = ('updated_at',)
+    search_fields = ('intern__first_name', 'intern__last_name', 'intern__email')
+    readonly_fields = ('created_at', 'updated_at', 'availability_summary')
+    
+    fieldsets = (
+        ('Stajyer Bilgileri', {
+            'fields': ('intern',)
+        }),
+        ('Ortak Çalışma Saati Verileri', {
+            'fields': ('availability_data', 'availability_summary'),
+            'description': 'JSON formatında haftalık ortak çalışma saati verileri.'
+        }),
+        ('Zaman Bilgileri', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def get_total_hours(self, obj):
+        total = obj.get_total_hours()
+        if total > 0:
+            return format_html('<span style="color: green; font-weight: bold;">{} saat</span>', total)
+        return format_html('<span style="color: red;">0 saat</span>')
+    get_total_hours.short_description = 'Toplam Saat'
+
+    def get_available_days_count(self, obj):
+        days = obj.get_available_days()
+        day_names = {
+            'monday': 'Pzt',
+            'tuesday': 'Sal',
+            'wednesday': 'Çar',
+            'thursday': 'Per',
+            'friday': 'Cum',
+            'saturday': 'Cmt'
+        }
+        if days:
+            day_display = ', '.join([day_names.get(day, day) for day in days])
+            return format_html('<span style="color: blue;">{} ({} gün)</span>', day_display, len(days))
+        return format_html('<span style="color: red;">Ortak çalışma saati yok</span>')
+    get_available_days_count.short_description = 'Ortak Çalışma Saati Günleri'
+
+    def availability_summary(self, obj):
+        if not obj.availability_data:
+            return format_html('<span style="color: red;">Henüz ortak çalışma saati belirtilmemiş</span>')
+        
+        day_names = {
+            'monday': 'Pazartesi',
+            'tuesday': 'Salı',
+            'wednesday': 'Çarşamba',
+            'thursday': 'Perşembe',
+            'friday': 'Cuma',
+            'saturday': 'Cumartesi'
+        }
+        
+        summary_html = '<div style="max-width: 600px;">'
+        for day_code, day_name in day_names.items():
+            slots = obj.availability_data.get(day_code, [])
+            if slots:
+                slots_str = ', '.join(slots)
+                summary_html += f'<p><strong>{day_name}:</strong> {slots_str}</p>'
+            else:
+                summary_html += f'<p><strong>{day_name}:</strong> <span style="color: gray;">Ortak çalışma saati yok</span></p>'
+        summary_html += '</div>'
+        
+        return format_html(summary_html)
+    availability_summary.short_description = 'Ortak Çalışma Saati Özeti'
 
 # Admin site başlığını ve başlık çubuğunu özelleştir
 admin.site.site_header = 'PMS Stajyer Portalı Yönetimi'

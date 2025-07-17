@@ -75,3 +75,38 @@ class ProjectPreference(models.Model):
 
     def __str__(self):
         return f"{self.intern.get_full_name()} - Proje Tercihleri"
+
+class InternAvailability(models.Model):
+    intern = models.OneToOneField(Intern, on_delete=models.CASCADE, related_name='availability')
+    availability_data = models.JSONField(
+        default=dict,
+        help_text='JSON formatında haftalık ortak çalışma saati verileri. Format: {"monday": ["09:00", "10:00", ...], "tuesday": [...], ...}'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Stajyer Ortak Çalışma Saati'
+        verbose_name_plural = 'Stajyer Ortak Çalışma Saatleri'
+
+    def __str__(self):
+        return f"{self.intern.get_full_name()} - Ortak Çalışma Saati"
+
+    def get_availability_for_day(self, day):
+        """Belirli bir gün için ortak çalışma saatlerini döndürür"""
+        return self.availability_data.get(day, [])
+
+    def has_availability_for_day(self, day):
+        """Belirli bir gün için ortak çalışma saati var mı kontrol eder"""
+        return bool(self.availability_data.get(day, []))
+
+    def get_total_hours(self):
+        """Toplam ortak çalışma saati sayısını döndürür"""
+        total = 0
+        for day_slots in self.availability_data.values():
+            total += len(day_slots)
+        return total
+
+    def get_available_days(self):
+        """Ortak çalışma saati olan günleri döndürür"""
+        return [day for day, slots in self.availability_data.items() if slots]
