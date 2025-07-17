@@ -26,19 +26,46 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(Intern)
 class InternAdmin(admin.ModelAdmin):
-    list_display = ('get_full_name', 'email', 'access_link', 'has_availability', 'is_active')
-    search_fields = ('first_name', 'last_name', 'email')
-    list_filter = ('is_active',)
-    readonly_fields = ('access_token', 'access_link_display')
+    list_display = ('get_full_name', 'email', 'get_auth_method', 'access_link', 'has_availability', 'get_assigned_projects_count', 'is_active')
+    search_fields = ('first_name', 'last_name', 'email', 'user__email')
+    list_filter = ('is_active', 'user')  # Changed from 'user__isnull' to 'user'
+    readonly_fields = ('access_token', 'access_link_display', 'get_auth_method')
+    filter_horizontal = ('assigned_projects',)  # Better UI for ManyToMany
+    
     fieldsets = (
         ('Stajyer Bilgileri', {
-            'fields': ('first_name', 'last_name', 'email', 'is_active')
+            'fields': ('first_name', 'last_name', 'email', 'user', 'is_active')
         }),
-        ('Erişim Bilgileri', {
+        ('Proje Atamaları', {
+            'fields': ('assigned_projects',),
+            'description': 'Bu stajyere atanmış projeler'
+        }),
+        ('Kimlik Doğrulama', {
+            'fields': ('get_auth_method',),
+            'classes': ('collapse',)
+        }),
+        ('Erişim Bilgileri (Legacy)', {
             'fields': ('access_token', 'access_link_display'),
             'classes': ('collapse',)
         }),
     )
+
+    def get_auth_method(self, obj):
+        """Kimlik doğrulama metodunu gösterir"""
+        if obj.user:
+            return format_html('<span style="color: green;">✅ Google SSO</span>')
+        else:
+            return format_html('<span style="color: orange;">🔑 Token (Legacy)</span>')
+    get_auth_method.short_description = 'Kimlik Doğrulama'
+
+    def get_assigned_projects_count(self, obj):
+        """Atanmış proje sayısını gösterir"""
+        count = obj.get_assigned_projects_count()
+        if count > 0:
+            return format_html('<span style="color: blue;">📋 {} proje</span>', count)
+        else:
+            return format_html('<span style="color: gray;">➖ Proje yok</span>')
+    get_assigned_projects_count.short_description = 'Atanmış Projeler'
 
     def get_base_url(self, request=None):
         """Production'da doğru domain'i döndür"""

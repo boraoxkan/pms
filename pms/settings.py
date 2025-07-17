@@ -42,6 +42,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',  # Required for django-allauth
+    
+    # Django-allauth apps
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    
+    # Local apps
     'intern_portal',
 ]
 
@@ -53,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # Required for django-allauth
 ]
 
 ROOT_URLCONF = 'pms.urls'
@@ -153,3 +163,70 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Site URL configuration for production
 SITE_URL = os.getenv("SITE_URL", None)  # Production'da environment variable olarak set edilecek
+
+# ================================
+# DJANGO-ALLAUTH CONFIGURATION
+# ================================
+
+# Required for django-allauth
+SITE_ID = 1
+
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Login/logout URLs
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/portal/availability/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Allauth settings
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "none"  # Skip email verification for Google SSO
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_UNIQUE_EMAIL = True
+
+# Custom function to restrict login to @oneeyespace.com domain
+def custom_google_account_adapter(request, sociallogin):
+    """
+    Custom adapter to restrict Google SSO to @oneeyespace.com domain only
+    """
+    user = sociallogin.user
+    email = user.email
+    
+    if not email or not email.endswith('@oneeyespace.com'):
+        from django.contrib import messages
+        messages.error(request, 'Yalnızca @oneeyespace.com e-posta adresine sahip kullanıcılar giriş yapabilir.')
+        return False
+    
+    return True
+
+# Social account providers configuration
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+        'FETCH_USERINFO': True,
+        'ADAPTER': {
+            'pre_social_login': custom_google_account_adapter,
+        },
+    }
+}
+
+# Additional social account settings
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_LOGIN_ON_GET = False
+
+# Domain restriction for Google SSO
+SOCIALACCOUNT_ADAPTER = 'intern_portal.adapters.CustomSocialAccountAdapter'
