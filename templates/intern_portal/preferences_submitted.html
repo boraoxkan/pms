@@ -1,0 +1,1095 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="success-page">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-background">
+            <div class="celebration-particle"></div>
+            <div class="celebration-particle"></div>
+            <div class="celebration-particle"></div>
+            <div class="celebration-particle"></div>
+            <div class="celebration-particle"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content text-center" data-aos="zoom-in">
+                <div class="success-animation">
+                    <div class="success-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="success-rings">
+                        <div class="ring ring-1"></div>
+                        <div class="ring ring-2"></div>
+                        <div class="ring ring-3"></div>
+                        <div class="ring ring-4"></div>
+                    </div>
+                </div>
+                
+                <h1 class="hero-title" data-aos="fade-up" data-aos-delay="300">
+                    🎉 Harika! Tercihleriniz Kaydedildi
+                </h1>
+                <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="400">
+                    Sayın <span class="intern-name">{{ intern.get_full_name }}</span>, başvurunuz başarıyla alınmıştır
+                </p>
+                
+                <!-- Status Badge -->
+                <div class="status-badge" data-aos="fade-up" data-aos-delay="500">
+                    <i class="fas fa-shield-check"></i>
+                    <span>Tercihler Onaylandı</span>
+                    <div class="badge-pulse"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="success-container">
+            <!-- Timeline -->
+            <div class="timeline-section" data-aos="fade-up" data-aos-delay="600">
+                <h3 class="timeline-title">Süreç Durumu</h3>
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Projeleri İnceledim</h4>
+                            <p>Tüm proje detaylarını inceleyerek karar verdim</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item completed">
+                        <div class="timeline-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Tercihlerimi Belirledim</h4>
+                            <p>Üç farklı proje seçerek öncelik sırası oluşturdum</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item completed active">
+                        <div class="timeline-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Tercihler Kaydedildi</h4>
+                            <p>Başvurum sisteme başarıyla kaydedildi</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item pending">
+                        <div class="timeline-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Değerlendirme Süreci</h4>
+                            <p>Tercihleriniz değerlendiriliyor...</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item pending">
+                        <div class="timeline-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Sonuç Bildirimi</h4>
+                            <p>Size e-posta ile bildirilecek</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preferences Summary -->
+            <div class="preferences-summary" data-aos="fade-up" data-aos-delay="700">
+                <div class="summary-header">
+                    <div class="header-icon">
+                        <i class="fas fa-list-check"></i>
+                    </div>
+                    <div class="header-content">
+                        <h3>Tercih Özeti</h3>
+                        <p>Seçtiğiniz projeler ve öncelik sıralamanız</p>
+                    </div>
+                </div>
+
+                <div class="preferences-grid">
+                    <div class="preference-card gold" data-aos="fade-up" data-aos-delay="800">
+                        <div class="card-rank">
+                            <div class="rank-number">1</div>
+                            <div class="rank-icon">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h4>Birinci Tercih</h4>
+                            <h5>{{ preference.first_choice.name }}</h5>
+                            <p>{{ preference.first_choice.short_description }}</p>
+                            <div class="project-tags">
+                                <span class="tag">{{ preference.first_choice.get_team_size_display }}</span>
+                                <span class="tag">{{ preference.first_choice.get_work_type_display }}</span>
+                                <span class="tag">{{ preference.first_choice.get_duration_display }}</span>
+                            </div>
+                        </div>
+                        <div class="card-decoration">
+                            <div class="sparkle sparkle-1"></div>
+                            <div class="sparkle sparkle-2"></div>
+                            <div class="sparkle sparkle-3"></div>
+                        </div>
+                    </div>
+
+                    <div class="preference-card silver" data-aos="fade-up" data-aos-delay="900">
+                        <div class="card-rank">
+                            <div class="rank-number">2</div>
+                            <div class="rank-icon">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h4>İkinci Tercih</h4>
+                            <h5>{{ preference.second_choice.name }}</h5>
+                            <p>{{ preference.second_choice.short_description }}</p>
+                            <div class="project-tags">
+                                <span class="tag">{{ preference.second_choice.get_team_size_display }}</span>
+                                <span class="tag">{{ preference.second_choice.get_work_type_display }}</span>
+                                <span class="tag">{{ preference.second_choice.get_duration_display }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="preference-card bronze" data-aos="fade-up" data-aos-delay="1000">
+                        <div class="card-rank">
+                            <div class="rank-number">3</div>
+                            <div class="rank-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h4>Üçüncü Tercih</h4>
+                            <h5>{{ preference.third_choice.name }}</h5>
+                            <p>{{ preference.third_choice.short_description }}</p>
+                            <div class="project-tags">
+                                <span class="tag">{{ preference.third_choice.get_team_size_display }}</span>
+                                <span class="tag">{{ preference.third_choice.get_work_type_display }}</span>
+                                <span class="tag">{{ preference.third_choice.get_duration_display }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="next-steps" data-aos="fade-up" data-aos-delay="1100">
+                <div class="steps-card">
+                    <div class="steps-header">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>Sonraki Adımlar</h3>
+                    </div>
+                    <div class="steps-content">
+                        <div class="step-item">
+                            <div class="step-icon">
+                                <i class="fas fa-users-cog"></i>
+                            </div>
+                            <div class="step-text">
+                                <h4>Değerlendirme Süreci</h4>
+                                <p>Tercihleriniz ekibimiz tarafından incelenecek ve size en uygun proje belirlenecek</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-icon">
+                                <i class="fas fa-envelope-open-text"></i>
+                            </div>
+                            <div class="step-text">
+                                <h4>E-posta Bildirimini Bekleyin</h4>
+                                <p>Sonuçlar kayıt sırasında verdiğiniz e-posta adresine gönderilecek</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-icon">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <div class="step-text">
+                                <h4>Kariyerinize Başlayın</h4>
+                                <p>One Eye Systems'da yeni maceranıza başlamaya hazırlanın!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Section -->
+            <div class="action-section" data-aos="fade-up" data-aos-delay="1200">
+                <div class="action-card">
+                    <div class="action-content">
+                        <h3>Tercihlerinizi Tekrar Görüntülemek İster misiniz?</h3>
+                        <p>Ana sayfadan tercihlerinizi inceleyebilir ve sürecinizi takip edebilirsiniz</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="{% url 'intern_home' token=intern.access_token %}" class="btn btn-primary">
+                            <div class="btn-content">
+                                <i class="fas fa-home"></i>
+                                <span>Ana Sayfaya Dön</span>
+                            </div>
+                            <div class="btn-effect"></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-color: #3b82f6;
+        --secondary-color: #10b981;
+        --success-color: #059669;
+        --warning-color: #f59e0b;
+        --gold-color: #fbbf24;
+        --silver-color: #9ca3af;
+        --bronze-color: #d97706;
+        --text-color: #1f2937;
+        --text-light: #6b7280;
+        --bg-light: #f8fafc;
+        --primary-rgb: 59, 130, 246;
+        --success-rgb: 5, 150, 105;
+    }
+
+    /* Page Layout */
+    .success-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
+    }
+
+    /* Hero Section */
+    .hero-section {
+        position: relative;
+        padding: 4rem 0 3rem;
+        background: linear-gradient(135deg, var(--success-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        overflow: hidden;
+    }
+
+    .hero-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+    }
+
+    .celebration-particle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        animation: celebrate 3s ease-in-out infinite;
+    }
+
+    .celebration-particle:nth-child(1) {
+        top: 20%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .celebration-particle:nth-child(2) {
+        top: 15%;
+        right: 20%;
+        animation-delay: 0.5s;
+    }
+
+    .celebration-particle:nth-child(3) {
+        top: 60%;
+        left: 15%;
+        animation-delay: 1s;
+    }
+
+    .celebration-particle:nth-child(4) {
+        bottom: 30%;
+        right: 10%;
+        animation-delay: 1.5s;
+    }
+
+    .celebration-particle:nth-child(5) {
+        bottom: 20%;
+        left: 50%;
+        animation-delay: 2s;
+    }
+
+    @keyframes celebrate {
+        0%, 100% {
+            transform: translateY(0px) scale(1);
+            opacity: 0.8;
+        }
+        50% {
+            transform: translateY(-30px) scale(1.5);
+            opacity: 1;
+        }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .success-animation {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+    }
+
+    .success-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #ffffff, #f0f9ff);
+        color: var(--success-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+        animation: successPulse 2s ease-in-out infinite;
+    }
+
+    .success-icon i {
+        font-size: 3rem;
+    }
+
+    @keyframes successPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .success-rings {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .ring {
+        position: absolute;
+        border: 3px solid rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        animation: expandRing 3s ease-out infinite;
+    }
+
+    .ring:nth-child(1) {
+        width: 120px;
+        height: 120px;
+        animation-delay: 0s;
+    }
+
+    .ring:nth-child(2) {
+        width: 120px;
+        height: 120px;
+        animation-delay: 0.5s;
+    }
+
+    .ring:nth-child(3) {
+        width: 120px;
+        height: 120px;
+        animation-delay: 1s;
+    }
+
+    .ring:nth-child(4) {
+        width: 120px;
+        height: 120px;
+        animation-delay: 1.5s;
+    }
+
+    @keyframes expandRing {
+        0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0.8;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(2.5);
+            opacity: 0;
+        }
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(45deg, #ffffff, #f0f9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        opacity: 0.95;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .intern-name {
+        color: #fbbf24;
+        font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .status-badge {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        font-weight: 600;
+        font-size: 1.1rem;
+        overflow: hidden;
+    }
+
+    .status-badge i {
+        font-size: 1.3rem;
+    }
+
+    .badge-pulse {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50px;
+        animation: badgePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse {
+        0%, 100% { opacity: 0; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    /* Main Container */
+    .success-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 3rem 1rem;
+    }
+
+    /* Timeline Section */
+    .timeline-section {
+        margin-bottom: 4rem;
+    }
+
+    .timeline-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 3rem;
+    }
+
+    .timeline {
+        position: relative;
+        padding: 0 2rem;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(to bottom, var(--success-color), var(--secondary-color), #e5e7eb);
+        transform: translateX(-50%);
+        border-radius: 2px;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 3rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .timeline-item:nth-child(odd) {
+        flex-direction: row;
+    }
+
+    .timeline-item:nth-child(even) {
+        flex-direction: row-reverse;
+    }
+
+    .timeline-icon {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        z-index: 2;
+        border: 4px solid white;
+    }
+
+    .timeline-item.completed .timeline-icon {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .timeline-item.completed.active .timeline-icon {
+        background: var(--success-color);
+        animation: activeIcon 2s ease-in-out infinite;
+    }
+
+    .timeline-item.pending .timeline-icon {
+        background: #e5e7eb;
+        color: #9ca3af;
+    }
+
+    @keyframes activeIcon {
+        0%, 100% { transform: translateX(-50%) scale(1); }
+        50% { transform: translateX(-50%) scale(1.1); }
+    }
+
+    .timeline-content {
+        background: white;
+        padding: 1.5rem 2rem;
+        border-radius: 16px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        width: calc(50% - 40px);
+        position: relative;
+    }
+
+    .timeline-item:nth-child(odd) .timeline-content {
+        margin-right: auto;
+        margin-left: 0;
+    }
+
+    .timeline-item:nth-child(even) .timeline-content {
+        margin-left: auto;
+        margin-right: 0;
+    }
+
+    .timeline-content h4 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .timeline-content p {
+        color: var(--text-light);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    /* Preferences Summary */
+    .preferences-summary {
+        margin-bottom: 4rem;
+    }
+
+    .summary-header {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        padding: 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .header-icon i {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+    }
+
+    .header-content h3 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .header-content p {
+        color: var(--text-light);
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .preferences-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
+    }
+
+    .preference-card {
+        position: relative;
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .preference-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .preference-card.gold::before {
+        background: linear-gradient(90deg, var(--gold-color), #f59e0b);
+    }
+
+    .preference-card.silver::before {
+        background: linear-gradient(90deg, var(--silver-color), #6b7280);
+    }
+
+    .preference-card.bronze::before {
+        background: linear-gradient(90deg, var(--bronze-color), #ea580c);
+    }
+
+    .preference-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-rank {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .rank-number {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .preference-card.gold .rank-number {
+        background: linear-gradient(135deg, var(--gold-color), #f59e0b);
+    }
+
+    .preference-card.silver .rank-number {
+        background: linear-gradient(135deg, var(--silver-color), #6b7280);
+    }
+
+    .preference-card.bronze .rank-number {
+        background: linear-gradient(135deg, var(--bronze-color), #ea580c);
+    }
+
+    .rank-icon {
+        font-size: 1.2rem;
+    }
+
+    .preference-card.gold .rank-icon {
+        color: var(--gold-color);
+    }
+
+    .preference-card.silver .rank-icon {
+        color: var(--silver-color);
+    }
+
+    .preference-card.bronze .rank-icon {
+        color: var(--bronze-color);
+    }
+
+    .card-content h4 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-light);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .card-content h5 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.75rem;
+    }
+
+    .card-content p {
+        color: var(--text-light);
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+
+    .project-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .tag {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--primary-color);
+        padding: 0.4rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .card-decoration {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .sparkle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: var(--gold-color);
+        border-radius: 50%;
+        animation: sparkleAnimation 2s ease-in-out infinite;
+    }
+
+    .sparkle-1 {
+        top: 20px;
+        right: 30px;
+        animation-delay: 0s;
+    }
+
+    .sparkle-2 {
+        top: 40px;
+        right: 15px;
+        animation-delay: 0.7s;
+    }
+
+    .sparkle-3 {
+        top: 60px;
+        right: 25px;
+        animation-delay: 1.4s;
+    }
+
+    @keyframes sparkleAnimation {
+        0%, 100% { opacity: 0; transform: scale(0); }
+        50% { opacity: 1; transform: scale(1.5); }
+    }
+
+    /* Next Steps */
+    .next-steps {
+        margin-bottom: 4rem;
+    }
+
+    .steps-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .steps-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .steps-header i {
+        font-size: 2rem;
+        color: var(--warning-color);
+    }
+
+    .steps-header h3 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .steps-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .step-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        padding: 1rem 0;
+    }
+
+    .step-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(16, 185, 129, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .step-icon i {
+        font-size: 1.2rem;
+        color: var(--secondary-color);
+    }
+
+    .step-text h4 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .step-text p {
+        color: var(--text-light);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* Action Section */
+    .action-section {
+        text-align: center;
+    }
+
+    .action-card {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .action-content h3 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .action-content p {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+    }
+
+    .btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        min-width: 200px;
+    }
+
+    .btn-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(var(--primary-rgb), 0.4);
+    }
+
+    .btn-effect {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+
+    .btn-primary:hover .btn-effect {
+        transform: translateX(0);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .success-container {
+            padding: 2rem 1rem;
+        }
+
+        .timeline::before {
+            left: 30px;
+            transform: none;
+        }
+
+        .timeline-item {
+            flex-direction: row !important;
+            padding-left: 80px;
+        }
+
+        .timeline-icon {
+            left: 30px;
+            transform: translateX(-50%);
+        }
+
+        .timeline-content {
+            width: auto;
+            margin: 0 !important;
+        }
+
+        .preferences-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .steps-content {
+            gap: 1rem;
+        }
+
+        .step-item {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .action-card {
+            padding: 2rem 1rem;
+        }
+    }
+
+    /* Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 1000,
+            easing: 'ease-out-cubic',
+            once: true,
+            offset: 100
+        });
+    }
+    
+    // Add celebration confetti effect
+    setTimeout(() => {
+        createConfetti();
+    }, 1000);
+    
+    function createConfetti() {
+        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+        const confettiCount = 50;
+        
+        for (let i = 0; i < confettiCount; i++) {
+            const confetti = document.createElement('div');
+            confetti.style.position = 'fixed';
+            confetti.style.top = '-10px';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.width = '8px';
+            confetti.style.height = '8px';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.borderRadius = '50%';
+            confetti.style.pointerEvents = 'none';
+            confetti.style.zIndex = '9999';
+            confetti.style.opacity = '0.8';
+            
+            document.body.appendChild(confetti);
+            
+            const animation = confetti.animate([
+                {
+                    transform: 'translateY(-10px) rotate(0deg)',
+                    opacity: 0.8
+                },
+                {
+                    transform: `translateY(${window.innerHeight + 20}px) rotate(720deg)`,
+                    opacity: 0
+                }
+            ], {
+                duration: Math.random() * 2000 + 2000,
+                easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+            });
+            
+            animation.onfinish = () => {
+                confetti.remove();
+            };
+        }
+    }
+    
+    // Add hover effects to preference cards
+    const preferenceCards = document.querySelectorAll('.preference-card');
+    preferenceCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+});
+</script>
+{% endblock %} 

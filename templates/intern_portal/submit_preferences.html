@@ -1,0 +1,965 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="preferences-page">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-background">
+            <div class="hero-particle"></div>
+            <div class="hero-particle"></div>
+            <div class="hero-particle"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content text-center" data-aos="fade-up">
+                <div class="hero-icon">
+                    <i class="fas fa-star"></i>
+                    <div class="icon-rings">
+                        <div class="ring ring-1"></div>
+                        <div class="ring ring-2"></div>
+                        <div class="ring ring-3"></div>
+                    </div>
+                </div>
+                <h1 class="hero-title">Proje Tercihlerinizi Belirleyin</h1>
+                <p class="hero-subtitle">Kariyer yolculuğunuza en uygun projeleri seçin</p>
+                
+                <!-- Breadcrumb -->
+                <nav class="hero-breadcrumb" aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'intern_home' token=intern.access_token %}">
+                                <i class="fas fa-home me-1"></i>Ana Sayfa
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active">Proje Tercihleri</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="preferences-container">
+            {% if not preference or not preference.is_submitted %}
+            <!-- Progress Steps -->
+            <div class="progress-steps" data-aos="fade-up" data-aos-delay="100">
+                <div class="step completed">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Projeleri İncele</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step active">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Tercih Yap</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Tamamla</div>
+                </div>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="instructions-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Tercih Yapım Süreci</h3>
+                    <p>Aşağıdaki üç seçeneği sırayla doldurun. Tercihlerinizi gönderdikten sonra değişiklik yapamazsınız.</p>
+                    <div class="info-points">
+                        <div class="info-point">
+                            <i class="fas fa-check"></i>
+                            <span>Her tercih farklı bir proje olmalı</span>
+                        </div>
+                        <div class="info-point">
+                            <i class="fas fa-check"></i>
+                            <span>Öncelik sırası önemlidir</span>
+                        </div>
+                        <div class="info-point">
+                            <i class="fas fa-check"></i>
+                            <span>Tüm alanları doldurmalısınız</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preferences Form -->
+            <div class="preferences-form-card" data-aos="fade-up" data-aos-delay="300">
+                <form method="post" id="preferencesForm">
+                    {% csrf_token %}
+                    
+                    <!-- First Choice -->
+                    <div class="choice-card" data-aos="fade-up" data-aos-delay="400">
+                        <div class="choice-header">
+                            <div class="choice-number">1</div>
+                            <div class="choice-info">
+                                <h4>Birinci Tercih</h4>
+                                <p>En çok ilginizi çeken proje</p>
+                            </div>
+                            <div class="choice-icon">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                        </div>
+                        <div class="choice-body">
+                            <div class="form-group">
+                                <label for="{{ form.first_choice.id_for_label }}" class="form-label">{{ form.first_choice.label }}</label>
+                                {{ form.first_choice }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second Choice -->
+                    <div class="choice-card" data-aos="fade-up" data-aos-delay="500">
+                        <div class="choice-header">
+                            <div class="choice-number">2</div>
+                            <div class="choice-info">
+                                <h4>İkinci Tercih</h4>
+                                <p>Alternatif seçeneğiniz</p>
+                            </div>
+                            <div class="choice-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <div class="choice-body">
+                            <div class="form-group">
+                                <label for="{{ form.second_choice.id_for_label }}" class="form-label">{{ form.second_choice.label }}</label>
+                                {{ form.second_choice }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Third Choice -->
+                    <div class="choice-card" data-aos="fade-up" data-aos-delay="600">
+                        <div class="choice-header">
+                            <div class="choice-number">3</div>
+                            <div class="choice-info">
+                                <h4>Üçüncü Tercih</h4>
+                                <p>Yedek seçeneğiniz</p>
+                            </div>
+                            <div class="choice-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                        </div>
+                        <div class="choice-body">
+                            <div class="form-group">
+                                <label for="{{ form.third_choice.id_for_label }}" class="form-label">{{ form.third_choice.label }}</label>
+                                {{ form.third_choice }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error Messages -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-error" data-aos="fade-up" data-aos-delay="700">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="alert-content">
+                            <strong>Hata:</strong>
+                            <div>{{ form.non_field_errors }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons" data-aos="fade-up" data-aos-delay="800">
+                        <button type="submit" class="btn btn-primary" id="submitPreferences">
+                            <div class="btn-content">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Tercihlerimi Kaydet</span>
+                            </div>
+                            <div class="btn-effect"></div>
+                        </button>
+                        
+                        <a href="{% url 'intern_home' token=intern.access_token %}" class="btn btn-secondary">
+                            <div class="btn-content">
+                                <i class="fas fa-arrow-left"></i>
+                                <span>Geri Dön</span>
+                            </div>
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            {% else %}
+            <!-- Success State -->
+            <div class="success-state" data-aos="fade-up" data-aos-delay="200">
+                <div class="success-animation">
+                    <div class="success-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="success-rings">
+                        <div class="ring ring-1"></div>
+                        <div class="ring ring-2"></div>
+                        <div class="ring ring-3"></div>
+                    </div>
+                </div>
+                
+                <h2 class="success-title">🎉 Harika! Tercihleriniz Kaydedildi</h2>
+                <p class="success-subtitle">Seçimleriniz başarıyla alındı. Size en uygun proje için kısa sürede bilgilendirileceksiniz.</p>
+                
+                <div class="success-actions">
+                    <a href="{% url 'intern_home' token=intern.access_token %}" class="btn btn-primary">
+                        <div class="btn-content">
+                            <i class="fas fa-home"></i>
+                            <span>Ana Sayfaya Dön</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-color: #3b82f6;
+        --secondary-color: #10b981;
+        --success-color: #059669;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
+        --text-color: #1f2937;
+        --text-light: #6b7280;
+        --bg-light: #f8fafc;
+        --primary-rgb: 59, 130, 246;
+        --secondary-rgb: 16, 185, 129;
+    }
+
+    /* Page Layout */
+    .preferences-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
+    }
+
+    /* Hero Section */
+    .hero-section {
+        position: relative;
+        padding: 4rem 0 2rem;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        overflow: hidden;
+    }
+
+    .hero-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+    }
+
+    .hero-particle {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .hero-particle:nth-child(1) {
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .hero-particle:nth-child(2) {
+        top: 60%;
+        right: 15%;
+        animation-delay: 2s;
+    }
+
+    .hero-particle:nth-child(3) {
+        bottom: 20%;
+        left: 60%;
+        animation-delay: 4s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-icon {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+    }
+
+    .hero-icon i {
+        font-size: 4rem;
+        color: white;
+        position: relative;
+        z-index: 2;
+    }
+
+    .icon-rings {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .ring {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        animation: pulse-ring 2s ease-in-out infinite;
+    }
+
+    .ring:nth-child(1) {
+        animation-delay: 0s;
+    }
+
+    .ring:nth-child(2) {
+        animation-delay: 0.7s;
+    }
+
+    .ring:nth-child(3) {
+        animation-delay: 1.4s;
+    }
+
+    @keyframes pulse-ring {
+        0% {
+            transform: translate(-50%, -50%) scale(0.8);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(2);
+            opacity: 0;
+        }
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(45deg, #ffffff, #e5f3ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    .hero-breadcrumb {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .breadcrumb {
+        background: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb-item a:hover {
+        color: white;
+    }
+
+    .breadcrumb-item.active {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        color: rgba(255, 255, 255, 0.6);
+        padding: 0 0.5rem;
+    }
+
+    /* Main Container */
+    .preferences-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 3rem 1rem;
+    }
+
+    /* Progress Steps */
+    .progress-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+    }
+
+    .step-number {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .step.completed .step-number {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .step.active .step-number {
+        background: var(--primary-color);
+        color: white;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .step-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-light);
+        text-align: center;
+    }
+
+    .step.completed .step-label,
+    .step.active .step-label {
+        color: var(--text-color);
+        font-weight: 600;
+    }
+
+    .step-connector {
+        width: 80px;
+        height: 2px;
+        background: #e5e7eb;
+        margin: 0 1rem;
+    }
+
+    /* Instructions Card */
+    .instructions-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .card-icon i {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+    }
+
+    .card-content h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .card-content p {
+        color: var(--text-light);
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    .info-points {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .info-point {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .info-point i {
+        color: var(--success-color);
+        font-size: 0.9rem;
+    }
+
+    .info-point span {
+        color: var(--text-color);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Preferences Form */
+    .preferences-form-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Choice Cards */
+    .choice-card {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .choice-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, transparent, rgba(59, 130, 246, 0.02));
+        z-index: 1;
+    }
+
+    .choice-card:hover {
+        border-color: rgba(59, 130, 246, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .choice-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .choice-number {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .choice-info {
+        flex: 1;
+    }
+
+    .choice-info h4 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .choice-info p {
+        color: var(--text-light);
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .choice-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .choice-icon i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+
+    .choice-body {
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Form Elements */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+        color: var(--text-color);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+    }
+
+    /* Alerts */
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        border: none;
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .alert i {
+        font-size: 1.25rem;
+        margin-top: 0.125rem;
+    }
+
+    .alert-content {
+        flex: 1;
+    }
+
+    .alert-content strong {
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        min-width: 180px;
+    }
+
+    .btn-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(var(--primary-rgb), 0.3);
+    }
+
+    .btn-secondary {
+        background: #f8fafc;
+        color: var(--text-color);
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-effect {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+
+    .btn-primary:hover .btn-effect {
+        transform: translateX(0);
+    }
+
+    /* Success State */
+    .success-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .success-animation {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+    }
+
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, var(--success-color), var(--secondary-color));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    .success-icon i {
+        font-size: 2.5rem;
+        color: white;
+    }
+
+    .success-rings {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .success-rings .ring {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        border: 3px solid var(--success-color);
+        border-radius: 50%;
+        opacity: 0.3;
+        animation: expand-ring 2s ease-out infinite;
+    }
+
+    .success-rings .ring:nth-child(1) {
+        animation-delay: 0s;
+    }
+
+    .success-rings .ring:nth-child(2) {
+        animation-delay: 0.7s;
+    }
+
+    .success-rings .ring:nth-child(3) {
+        animation-delay: 1.4s;
+    }
+
+    @keyframes expand-ring {
+        0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0.3;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(2);
+            opacity: 0;
+        }
+    }
+
+    .success-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .success-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .success-actions {
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+
+        .preferences-container {
+            padding: 2rem 1rem;
+        }
+
+        .progress-steps {
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        .step-connector {
+            width: 2px;
+            height: 40px;
+            margin: 0.5rem 0;
+        }
+
+        .instructions-card {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .choice-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .success-state {
+            padding: 3rem 1rem;
+        }
+    }
+
+    /* Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.getElementById('preferencesForm');
+    const submitBtn = document.getElementById('submitPreferences');
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <div class="btn-content">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Kaydediliyor...</span>
+                </div>
+            `;
+        });
+    }
+    
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+    
+    // Add smooth selection changes
+    const selects = document.querySelectorAll('select');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            const card = this.closest('.choice-card');
+            if (card) {
+                card.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                card.style.background = 'rgba(59, 130, 246, 0.02)';
+                
+                setTimeout(() => {
+                    card.style.borderColor = 'transparent';
+                    card.style.background = '#f8fafc';
+                }, 1000);
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 
