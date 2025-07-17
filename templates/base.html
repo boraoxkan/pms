@@ -542,12 +542,31 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
                         {% if user.is_authenticated %}
-                        <!-- Google SSO authenticated user -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'select_availability' %}">
-                                <i class="fas fa-calendar-check me-1"></i>Ortak Çalışma Saati
-                            </a>
-                        </li>
+                            {% if user.is_staff or user.is_superuser %}
+                                <!-- Admin navigation -->
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/admin/">
+                                        <i class="fas fa-cog me-1"></i>Admin Panel
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/admin/intern_portal/intern/">
+                                        <i class="fas fa-users me-1"></i>Stajyerler
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/admin/intern_portal/project/">
+                                        <i class="fas fa-project-diagram me-1"></i>Projeler
+                                    </a>
+                                </li>
+                            {% else %}
+                                <!-- Intern navigation -->
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'select_availability' %}">
+                                        <i class="fas fa-calendar-check me-1"></i>Ortak Çalışma Saati
+                                    </a>
+                                </li>
+                            {% endif %}
                         {% elif intern %}
                         <!-- Legacy token-based authenticated user -->
                         <li class="nav-item">
@@ -568,9 +587,21 @@
                         <!-- Google SSO user info -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i>{{ user.first_name|default:user.email }}
+                                {% if user.is_staff or user.is_superuser %}
+                                    <i class="fas fa-user-shield me-1"></i>
+                                    <span class="badge bg-warning text-dark me-1">{% if user.is_superuser %}Super{% else %}Admin{% endif %}</span>
+                                {% else %}
+                                    <i class="fas fa-user-circle me-1"></i>
+                                {% endif %}
+                                {{ user.first_name|default:user.username }}
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                {% if user.is_staff or user.is_superuser %}
+                                <li><a class="dropdown-item" href="/admin/">
+                                    <i class="fas fa-cog me-1"></i>Admin Panel
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% endif %}
                                 <li><a class="dropdown-item" href="{% url 'account_logout' %}">
                                     <i class="fas fa-sign-out-alt me-1"></i>Çıkış Yap
                                 </a></li>

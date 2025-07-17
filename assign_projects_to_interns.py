@@ -35,7 +35,7 @@ assignments = [
     },
     {
         'intern_email': 'esmaaydin@oneeyespace.com',
-        'project_names': ['VoC Intelligence', '']
+        'project_names': ['VoC Intelligence', 'OneEyeTrack']
     },
     {
         'intern_email': 'mehmetdedeoglu@oneeyespace.com',
