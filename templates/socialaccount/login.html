@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+
+{% block title %}Sosyal Medya Girişi - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="social-login-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="social-login-card" data-aos="fade-up">
+                    <div class="card-header">
+                        <div class="logo-container">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h1>One Eye Systems</h1>
+                        <p>Stajyer Portalı - Sosyal Medya Girişi</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="providers-list">
+                            {% get_providers as socialaccount_providers %}
+                            {% for provider in socialaccount_providers %}
+                            <div class="provider-item">
+                                <a href="{% provider_login_url provider.id %}" class="provider-btn">
+                                    <div class="provider-icon">
+                                        {% if provider.id == 'google' %}
+                                        <i class="fab fa-google"></i>
+                                        {% else %}
+                                        <i class="fas fa-sign-in-alt"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="provider-text">
+                                        <h4>{{ provider.name }} ile Giriş Yap</h4>
+                                        <p>Şirket hesabınızla güvenli giriş</p>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="login-info">
+                            <div class="info-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Güvenli SSL bağlantısı</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-at"></i>
+                                <span>@oneeyespace.com hesabı gerekli</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <a href="{% url 'home_page' %}" class="back-link">
+                            <i class="fas fa-arrow-left"></i>
+                            Ana Sayfaya Dön
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .social-login-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        display: flex;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .social-login-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .logo-container {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+
+    .logo-container i {
+        font-size: 2rem;
+        color: white;
+    }
+
+    .card-header h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-header p {
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    .providers-list {
+        margin-bottom: 2rem;
+    }
+
+    .provider-item {
+        margin-bottom: 1rem;
+    }
+
+    .provider-btn {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 1rem 1.5rem;
+        background: #f8fafc;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #1f2937;
+        transition: all 0.3s ease;
+    }
+
+    .provider-btn:hover {
+        background: #f1f5f9;
+        border-color: #3b82f6;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
+        color: #1f2937;
+    }
+
+    .provider-icon {
+        width: 50px;
+        height: 50px;
+        background: #4285f4;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .provider-text h4 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .provider-text p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+    .login-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1.5rem;
+        background: rgba(59, 130, 246, 0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.9rem;
+        color: #374151;
+    }
+
+    .info-item i {
+        color: #10b981;
+        font-size: 1rem;
+    }
+
+    .card-footer {
+        padding: 1.5rem 2rem;
+        background: #f8fafc;
+        border-top: 1px solid #e5e7eb;
+        text-align: center;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+        color: #3b82f6;
+    }
+
+    @media (max-width: 768px) {
+        .social-login-card {
+            margin: 1rem;
+        }
+        
+        .card-header, .card-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS if available
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+});
+</script>
+{% endblock %}

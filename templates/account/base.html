@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="account-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="account-card" data-aos="fade-up">
+                    <div class="card-header">
+                        <div class="logo-container">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h1>One Eye Systems</h1>
+                        <p>Stajyer Portalı</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        {% block account_content %}{% endblock %}
+                    </div>
+                    
+                    <div class="card-footer">
+                        <a href="{% url 'home_page' %}" class="back-link">
+                            <i class="fas fa-arrow-left"></i>
+                            Ana Sayfaya Dön
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .account-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        display: flex;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .account-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .logo-container {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+
+    .logo-container i {
+        font-size: 2rem;
+        color: white;
+    }
+
+    .card-header h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-header p {
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    .card-footer {
+        padding: 1.5rem 2rem;
+        background: #f8fafc;
+        border-top: 1px solid #e5e7eb;
+        text-align: center;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+        color: #3b82f6;
+    }
+
+    @media (max-width: 768px) {
+        .account-card {
+            margin: 1rem;
+        }
+        
+        .card-header, .card-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}

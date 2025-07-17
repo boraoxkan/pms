@@ -41,20 +41,16 @@ def select_availability(request):
         return redirect('/admin/')
     
     # Get the intern object linked to the authenticated user
+    # The adapter should have already linked them, so this should always work
     try:
         intern = Intern.objects.get(user=request.user)
     except Intern.DoesNotExist:
-        # Create an intern record for this user if it doesn't exist
-        # This handles the case where a user logs in via Google SSO for the first time
-        # but wasn't created by the social adapter
-        intern = Intern.objects.create(
-            user=request.user,
-            first_name=request.user.first_name or '',
-            last_name=request.user.last_name or '',
-            email=request.user.email,
-            is_active=True
+        # This should not happen if the adapter worked correctly
+        messages.error(
+            request, 
+            'Hesabınız ile ilgili bir sorun var. Lütfen sistem yöneticisi ile iletişime geçin.'
         )
-        messages.info(request, 'Stajyer profiliniz oluşturuldu. Lütfen ortak çalışma saatlerinizi belirleyin.')
+        return redirect('home_page')
     
     # Define available days and time slots
     DAYS = [
@@ -290,3 +286,118 @@ def legacy_select_availability(request, token):
     }
     
     return render(request, 'intern_portal/select_availability.html', context)
+
+# Add this to your views.py for detailed debugging
+
+from django.http import HttpResponse
+from django.contrib.sites.models import Site
+from allauth.socialaccount.models import SocialApp
+from allauth.socialaccount.providers.google.views import oauth2_login
+from django.conf import settings
+from django.urls import reverse
+
+def debug_detailed_oauth(request):
+    """Detailed OAuth debugging"""
+    html = "<h1>Detailed OAuth Debug</h1>"
+    
+    # 1. Check basic configuration
+    html += "<h2>1. Basic Configuration</h2>"
+    html += f"<p><strong>SITE_ID:</strong> {getattr(settings, 'SITE_ID', 'NOT SET')}</p>"
+    html += f"<p><strong>SOCIALACCOUNT_LOGIN_ON_GET:</strong> {getattr(settings, 'SOCIALACCOUNT_LOGIN_ON_GET', 'NOT SET')}</p>"
+    html += f"<p><strong>Current domain:</strong> {request.get_host()}</p>"
+    
+    # 2. Check sites
+    html += "<h2>2. Sites Configuration</h2>"
+    try:
+        current_site = Site.objects.get(pk=settings.SITE_ID)
+        html += f"<p><strong>Current Site:</strong> {current_site.domain} (ID: {current_site.id})</p>"
+        if current_site.domain != request.get_host():
+            html += f"<p style='color: red;'><strong>⚠️ MISMATCH:</strong> Site domain ({current_site.domain}) != Request host ({request.get_host()})</p>"
+    except Site.DoesNotExist:
+        html += f"<p style='color: red;'><strong>❌ ERROR:</strong> Site with ID {settings.SITE_ID} does not exist</p>"
+    
+    # 3. Check Google app
+    html += "<h2>3. Google OAuth App</h2>"
+    try:
+        google_app = SocialApp.objects.get(provider='google')
+        html += f"<p><strong>Google App Found:</strong> ✅</p>"
+        html += f"<p><strong>Client ID:</strong> {google_app.client_id[:20]}...</p>"
+        html += f"<p><strong>Has Secret:</strong> {'✅' if google_app.secret else '❌'}</p>"
+        html += f"<p><strong>App Sites:</strong> {[s.domain for s in google_app.sites.all()]}</p>"
+        
+        # Check if current site is linked to Google app
+        if current_site in google_app.sites.all():
+            html += f"<p><strong>Site Linked:</strong> ✅</p>"
+        else:
+            html += f"<p style='color: red;'><strong>❌ Site NOT linked to Google app</strong></p>"
+            
+    except SocialApp.DoesNotExist:
+        html += f"<p style='color: red;'><strong>❌ Google OAuth app not found</strong></p>"
+    
+    # 4. Test URL generation
+    html += "<h2>4. URL Testing</h2>"
+    try:
+        from allauth.socialaccount.providers.google.urls import urlpatterns as google_urls
+        html += f"<p><strong>Google URLs loaded:</strong> ✅ ({len(google_urls)} patterns)</p>"
+    except Exception as e:
+        html += f"<p style='color: red;'><strong>❌ Google URLs error:</strong> {e}</p>"
+    
+    # 5. Test OAuth URL generation
+    html += "<h2>5. OAuth URL Generation</h2>"
+    try:
+        from allauth.socialaccount.providers import registry
+        google_provider = registry.by_id('google')
+        html += f"<p><strong>Google Provider:</strong> ✅ {google_provider}</p>"
+        
+        # Try to get the OAuth URL
+        oauth_url = google_provider.get_login_url(request)
+        html += f"<p><strong>OAuth URL:</strong> <a href='{oauth_url}' target='_blank'>{oauth_url}</a></p>"
+        
+        if 'accounts.google.com' in oauth_url:
+            html += f"<p style='color: green;'><strong>✅ OAuth URL looks correct</strong></p>"
+        else:
+            html += f"<p style='color: red;'><strong>❌ OAuth URL doesn't point to Google</strong></p>"
+            
+    except Exception as e:
+        html += f"<p style='color: red;'><strong>❌ OAuth URL generation error:</strong> {e}</p>"
+    
+    # 6. Test direct access
+    html += "<h2>6. Direct Access Test</h2>"
+    from django.test import Client
+    client = Client()
+    try:
+        response = client.get('/accounts/google/login/', HTTP_HOST=request.get_host())
+        html += f"<p><strong>Direct access status:</strong> {response.status_code}</p>"
+        if response.status_code == 302:
+            html += f"<p><strong>Redirects to:</strong> <a href='{response.url}' target='_blank'>{response.url}</a></p>"
+        elif response.status_code == 200:
+            html += f"<p style='color: orange;'><strong>Shows page (should redirect)</strong></p>"
+        else:
+            html += f"<p style='color: red;'><strong>Unexpected status</strong></p>"
+    except Exception as e:
+        html += f"<p style='color: red;'><strong>Direct access error:</strong> {e}</p>"
+    
+    # 7. Recommendations
+    html += "<h2>7. Recommendations</h2>"
+    html += "<ul>"
+    
+    try:
+        current_site = Site.objects.get(pk=settings.SITE_ID)
+        if current_site.domain != request.get_host():
+            html += f"<li style='color: red;'>Update site domain to match request host: <code>python manage.py setup_dev_oauth --domain='{request.get_host()}'</code></li>"
+    except:
+        pass
+    
+    try:
+        google_app = SocialApp.objects.get(provider='google')
+        if current_site not in google_app.sites.all():
+            html += f"<li style='color: red;'>Link Google app to current site</li>"
+    except:
+        html += f"<li style='color: red;'>Create Google OAuth app</li>"
+    
+    html += f"<li>Ensure Google Console has redirect URI: <code>http://{request.get_host()}/accounts/google/login/callback/</code></li>"
+    html += "</ul>"
+    
+    return HttpResponse(html)
+
+# Add this URL to your urls.py:

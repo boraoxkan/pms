@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Giriş Onayı - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="confirmation-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="confirmation-card" data-aos="fade-up">
+                    <div class="card-header">
+                        <div class="logo-container">
+                            <i class="fab fa-google"></i>
+                        </div>
+                        <h1>Google ile Giriş Onayı</h1>
+                        <p>Hesabınızı doğrulayın ve devam edin</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="account-info">
+                            <div class="account-avatar">
+                                {% if account.extra_data.picture %}
+                                <img src="{{ account.extra_data.picture }}" alt="Profile Picture" class="avatar-img">
+                                {% else %}
+                                <div class="avatar-placeholder">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="account-details">
+                                <h3>{{ account.extra_data.name|default:"Kullanıcı" }}</h3>
+                                <p class="account-email">{{ account.extra_data.email }}</p>
+                                <div class="account-badges">
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-shield-alt"></i>
+                                        @oneeyespace.com doğrulandı
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="confirmation-text">
+                            <p>Bu hesap ile One Eye Systems Stajyer Portalı'na giriş yapmak üzeresiniz.</p>
+                        </div>
+                        
+                        <form method="post" action="{% url 'socialaccount_login' %}" class="confirmation-form">
+                            {% csrf_token %}
+                            {% if redirect_field_value %}
+                            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                            {% endif %}
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i>
+                                    Giriş Yap
+                                </button>
+                                
+                                <a href="{% url 'home_page' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    Geri Dön
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <div class="security-note">
+                            <i class="fas fa-lock"></i>
+                            <span>Bu bağlantı güvenli SSL şifreleme ile korunmaktadır</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .confirmation-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        display: flex;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .confirmation-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .logo-container {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+
+    .logo-container i {
+        font-size: 2rem;
+        color: white;
+    }
+
+    .card-header h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-header p {
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    .account-info {
+        display: flex;
+        align-items: center;
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e5e7eb;
+    }
+
+    .account-avatar {
+        margin-right: 1rem;
+    }
+
+    .avatar-img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar-placeholder {
+        width: 60px;
+        height: 60px;
+        background: #e5e7eb;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        font-size: 1.5rem;
+    }
+
+    .account-details h3 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .account-email {
+        margin: 0 0 0.5rem 0;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    .account-badges {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .badge-success {
+        background: rgba(34, 197, 94, 0.1);
+        color: #16a34a;
+    }
+
+    .confirmation-text {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .confirmation-text p {
+        color: #6b7280;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .form-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .btn {
+        padding: 0.875rem 1.5rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+    }
+
+    .btn-primary {
+        background: #4285f4;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #3367d6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+    }
+
+    .btn-outline-secondary {
+        background: transparent;
+        color: #6b7280;
+        border: 1px solid #d1d5db;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #f9fafb;
+        color: #6b7280;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-lg {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+
+    .card-footer {
+        padding: 1.5rem 2rem;
+        background: #f8fafc;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .security-note {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    .security-note i {
+        color: #10b981;
+    }
+
+    @media (max-width: 768px) {
+        .confirmation-card {
+            margin: 1rem;
+        }
+        
+        .card-header, .card-body {
+            padding: 1.5rem;
+        }
+        
+        .account-info {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .account-avatar {
+            margin-right: 0;
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}

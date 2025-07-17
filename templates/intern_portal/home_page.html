@@ -102,6 +102,14 @@
                                     <div class="btn-ripple"></div>
                                 </a>
                                 
+                                <div style="margin-top: 1rem; padding: 1rem; background: #f0f0f0; font-size: 0.8rem;">
+                                    <strong>Debug Info:</strong><br>
+                                    Google Login URL: <code>{% provider_login_url 'google' %}</code><br>
+                                    Direct URL: <code>/accounts/google/login/</code><br>
+                                    <a href="{% provider_login_url 'google' %}" style="color: blue;">Test Link 1</a> | 
+                                    <a href="/accounts/google/login/" style="color: blue;">Test Link 2</a>
+                                </div>
+
                                 <div class="login-info">
                                     <div class="info-item">
                                         <i class="fas fa-shield-alt"></i>

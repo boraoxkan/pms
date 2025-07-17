@@ -30,6 +30,7 @@ ALLOWED_HOSTS = [
 	'127.0.0.1',
     'pms.oneeyesystems.com',
 	'www.pms.oneeyesystems.com',
+    'testserver',
 ]
 
 
@@ -168,6 +169,21 @@ SITE_URL = os.getenv("SITE_URL", None)  # Production'da environment variable ola
 # DJANGO-ALLAUTH CONFIGURATION
 # ================================
 
+# Custom function to restrict login to @oneeyespace.com domain
+def custom_google_account_adapter(request, sociallogin):
+    """
+    Custom adapter to restrict Google SSO to @oneeyespace.com domain only
+    """
+    user = sociallogin.user
+    email = user.email
+    
+    if not email or not email.endswith('@oneeyespace.com'):
+        from django.contrib import messages
+        messages.error(request, 'Yalnızca @oneeyespace.com e-posta adresine sahip kullanıcılar giriş yapabilir.')
+        return False
+    
+    return True
+
 # Required for django-allauth
 SITE_ID = 1
 
@@ -184,26 +200,11 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Allauth settings
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "none"  # Skip email verification for Google SSO
+ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_UNIQUE_EMAIL = True
-
-# Custom function to restrict login to @oneeyespace.com domain
-def custom_google_account_adapter(request, sociallogin):
-    """
-    Custom adapter to restrict Google SSO to @oneeyespace.com domain only
-    """
-    user = sociallogin.user
-    email = user.email
-    
-    if not email or not email.endswith('@oneeyespace.com'):
-        from django.contrib import messages
-        messages.error(request, 'Yalnızca @oneeyespace.com e-posta adresine sahip kullanıcılar giriş yapabilir.')
-        return False
-    
-    return True
 
 # Social account providers configuration
 SOCIALACCOUNT_PROVIDERS = {
@@ -217,16 +218,13 @@ SOCIALACCOUNT_PROVIDERS = {
         },
         'OAUTH_PKCE_ENABLED': True,
         'FETCH_USERINFO': True,
-        'ADAPTER': {
-            'pre_social_login': custom_google_account_adapter,
-        },
     }
 }
 
-# Additional social account settings
+# Critical settings for direct OAuth flow
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_AUTO_SIGNUP = True
-SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_LOGIN_ON_GET = True  # ← This MUST be True for direct redirect!
 
 # Domain restriction for Google SSO
 SOCIALACCOUNT_ADAPTER = 'intern_portal.adapters.CustomSocialAccountAdapter'
