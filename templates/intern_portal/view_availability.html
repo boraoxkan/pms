@@ -1,0 +1,672 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="availability-view-page">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-background">
+            <div class="hero-particle"></div>
+            <div class="hero-particle"></div>
+            <div class="hero-particle"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content text-center" data-aos="fade-up">
+                <div class="hero-icon">
+                    <i class="fas fa-calendar-check"></i>
+                    <div class="icon-rings">
+                        <div class="ring ring-1"></div>
+                        <div class="ring ring-2"></div>
+                    </div>
+                </div>
+                <h1 class="hero-title">Ortak Çalışma Saati Durumunuz</h1>
+                <p class="hero-subtitle">Kaydedilmiş müsaitlik programınız</p>
+                
+                <!-- Breadcrumb -->
+                <nav class="hero-breadcrumb" aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'home_page' %}">
+                                <i class="fas fa-home me-1"></i>Ana Sayfa
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'select_availability' %}">Ortak Çalışma Saati</a>
+                        </li>
+                        <li class="breadcrumb-item active">Görüntüle</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="availability-view-container">
+            {% if has_availability %}
+                <!-- Success Status -->
+                <div class="status-card success-status" data-aos="fade-up" data-aos-delay="100">
+                    <div class="status-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="status-content">
+                        <h3>✅ Ortak Çalışma Saati Kaydedildi</h3>
+                        <p>Müsaitlik durumunuz başarıyla sisteme kaydedildi ve ekip liderlerimiz tarafından görülebilir.</p>
+                    </div>
+                </div>
+
+                <!-- Summary Stats -->
+                <div class="summary-stats" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ total_hours }}</div>
+                                <div class="stat-label">Toplam Saat</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ available_days_count }}</div>
+                                <div class="stat-label">Ortak Çalışma Günü</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{% widthratio total_hours 144 100 %}%</div>
+                                <div class="stat-label">Haftalık Oran</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Schedule -->
+                <div class="schedule-section" data-aos="fade-up" data-aos-delay="300">
+                    <div class="section-header">
+                        <h3>Haftalık Ortak Çalışma Saati Programınız</h3>
+                        <p>Aşağıda seçtiğiniz ortak çalışma saatleri görüntülenmektedir</p>
+                    </div>
+
+                    <div class="schedule-grid">
+                        {% for day_name, time_slots in formatted_availability.items %}
+                        <div class="day-schedule-card" data-aos="fade-up" data-aos-delay="{% cycle '400' '450' '500' '550' '600' '650' %}">
+                            <div class="day-header">
+                                <div class="day-icon">
+                                    {% if day_name == 'Cumartesi' %}
+                                        <i class="fas fa-sun"></i>
+                                    {% else %}
+                                        <i class="fas fa-calendar"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="day-info">
+                                    <h4>{{ day_name }}</h4>
+                                    <span class="time-count">{{ time_slots|length }} saat</span>
+                                </div>
+                            </div>
+                            
+                            <div class="time-slots-list">
+                                {% for time_slot in time_slots %}
+                                <div class="time-slot-item">
+                                    <div class="time-display">{{ time_slot }}</div>
+                                    <div class="slot-check">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-section" data-aos="fade-up" data-aos-delay="700">
+                    <div class="action-buttons">
+                        <a href="{% url 'select_availability' %}" class="btn btn-primary">
+                            <div class="btn-content">
+                                <i class="fas fa-edit"></i>
+                                <span>Ortak Çalışma Saatini Düzenle</span>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'home_page' %}" class="btn btn-secondary">
+                            <div class="btn-content">
+                                <i class="fas fa-home"></i>
+                                <span>Ana Sayfaya Dön</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- No Availability Set -->
+                <div class="status-card warning-status" data-aos="fade-up" data-aos-delay="100">
+                    <div class="status-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="status-content">
+                        <h3>⚠️ Ortak Çalışma Saati Belirtilmemiş</h3>
+                        <p>Henüz ortak çalışma saati durumunuzu belirtmemişsiniz. Lütfen müsaitlik programınızı oluşturun.</p>
+                    </div>
+                </div>
+
+                <div class="action-section" data-aos="fade-up" data-aos-delay="200">
+                    <div class="action-buttons">
+                        <a href="{% url 'select_availability' %}" class="btn btn-primary">
+                            <div class="btn-content">
+                                <i class="fas fa-calendar-plus"></i>
+                                <span>Ortak Çalışma Saati Belirle</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-color: #3b82f6;
+        --secondary-color: #10b981;
+        --success-color: #059669;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
+        --text-color: #1f2937;
+        --text-light: #6b7280;
+        --bg-light: #f8fafc;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .availability-view-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
+    }
+
+    /* Hero Section */
+    .hero-section {
+        position: relative;
+        padding: 4rem 0 2rem;
+        background: linear-gradient(135deg, var(--success-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        overflow: hidden;
+    }
+
+    .hero-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+    }
+
+    .hero-particle {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .hero-particle:nth-child(1) {
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .hero-particle:nth-child(2) {
+        top: 60%;
+        right: 15%;
+        animation-delay: 2s;
+    }
+
+    .hero-particle:nth-child(3) {
+        bottom: 20%;
+        left: 60%;
+        animation-delay: 4s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-icon {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+    }
+
+    .hero-icon i {
+        font-size: 4rem;
+        color: white;
+        position: relative;
+        z-index: 2;
+    }
+
+    .icon-rings {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .ring {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        animation: pulse-ring 2s ease-in-out infinite;
+    }
+
+    .ring:nth-child(1) { animation-delay: 0s; }
+    .ring:nth-child(2) { animation-delay: 1s; }
+
+    @keyframes pulse-ring {
+        0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    .hero-breadcrumb {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .breadcrumb {
+        background: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .breadcrumb-item.active {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        color: rgba(255, 255, 255, 0.6);
+        padding: 0 0.5rem;
+    }
+
+    /* Main Container */
+    .availability-view-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 1rem;
+    }
+
+    /* Status Cards */
+    .status-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        border-left: 5px solid;
+    }
+
+    .success-status {
+        border-left-color: var(--success-color);
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.05), rgba(16, 185, 129, 0.05));
+    }
+
+    .warning-status {
+        border-left-color: var(--warning-color);
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(251, 191, 36, 0.05));
+    }
+
+    .status-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.5rem;
+    }
+
+    .success-status .status-icon {
+        background: rgba(5, 150, 105, 0.1);
+        color: var(--success-color);
+    }
+
+    .warning-status .status-icon {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning-color);
+    }
+
+    .status-content h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .status-content p {
+        color: var(--text-light);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* Summary Stats */
+    .summary-stats {
+        margin-bottom: 3rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text-color);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    /* Schedule Section */
+    .schedule-section {
+        margin-bottom: 3rem;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .section-header h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .section-header p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+
+    .schedule-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .day-schedule-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .day-schedule-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .day-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .day-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .day-info h4 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .time-count {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .time-slots-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .time-slot-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: rgba(59, 130, 246, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .time-display {
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.9rem;
+    }
+
+    .slot-check {
+        color: var(--success-color);
+        font-size: 0.9rem;
+    }
+
+    /* Action Buttons */
+    .action-section {
+        text-align: center;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 200px;
+    }
+
+    .btn-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #f8fafc;
+        color: var(--text-color);
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        color: var(--text-color);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+
+        .availability-view-container {
+            padding: 2rem 1rem;
+        }
+
+        .status-card {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            width: 100%;
+            max-width: 300px;
+        }
+    }
+
+    /* Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+});
+</script>
+{% endblock %}

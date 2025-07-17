@@ -1,0 +1,1493 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="team-availability-page">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-background">
+            <div class="hero-particle"></div>
+            <div class="hero-particle"></div>
+            <div class="hero-particle"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content text-center" data-aos="fade-up">
+                <div class="hero-icon">
+                    <i class="fas fa-users-clock"></i>
+                    <div class="icon-rings">
+                        <div class="ring ring-1"></div>
+                        <div class="ring ring-2"></div>
+                    </div>
+                </div>
+                <h1 class="hero-title">24 Saat Takım Ortak Çalışma Takvimi</h1>
+                <p class="hero-subtitle">Takım arkadaşlarınızın günün her saatindeki müsaitlik durumunu görüntüleyin</p>
+                
+                <!-- Breadcrumb -->
+                <nav class="hero-breadcrumb" aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'home_page' %}">
+                                <i class="fas fa-home me-1"></i>Ana Sayfa
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active">Takım Ortak Çalışma Saati</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="team-availability-container">
+            <!-- Team Info Section -->
+            <div class="team-info-section" data-aos="fade-up" data-aos-delay="100">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="team-projects-card">
+                            <div class="card-header">
+                                <i class="fas fa-project-diagram"></i>
+                                <h3>Ortak Projeleriniz</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="projects-list">
+                                    {% for project in assigned_projects %}
+                                    <div class="project-badge">
+                                        <i class="fas fa-folder"></i>
+                                        <span>{{ project.name }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="team-stats-card">
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number">{{ total_teammates }}</div>
+                                    <div class="stat-label">Takım Arkadaşı</div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number">{{ teammates_with_availability }}</div>
+                                    <div class="stat-label">Müsaitlik Belirten</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if teammates_with_availability > 0 %}
+                <!-- Time Period Statistics -->
+                <div class="period-stats-section" data-aos="fade-up" data-aos-delay="200">
+                    <div class="period-stats-header">
+                        <h3>Zaman Periyodu Analizi</h3>
+                        <p>Takım arkadaşlarınızın hangi zaman dilimlerinde daha aktif olduğunu görün</p>
+                    </div>
+                    <div class="period-stats-grid">
+                        {% for period_name, availability_count in period_stats.items %}
+                        <div class="period-stat-card {% if most_active_period.0 == period_name %}most-active{% endif %}">
+                            <div class="period-icon">
+                                {% if 'Gece' in period_name %}
+                                    <i class="fas fa-moon"></i>
+                                {% elif 'Sabah' in period_name %}
+                                    <i class="fas fa-sun"></i>
+                                {% elif 'Öğleden Sonra' in period_name %}
+                                    <i class="fas fa-sun"></i>
+                                {% else %}
+                                    <i class="fas fa-sunset"></i>
+                                {% endif %}
+                            </div>
+                            <div class="period-content">
+                                <h4>{{ period_name }}</h4>
+                                <div class="period-count">{{ availability_count }} toplam müsaitlik</div>
+                                {% if most_active_period.0 == period_name and availability_count > 0 %}
+                                    <div class="active-badge">En Aktif Zaman</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Peak Times Info -->
+                {% if peak_times %}
+                <div class="peak-times-section" data-aos="fade-up" data-aos-delay="250">
+                    <div class="peak-times-card">
+                        <div class="peak-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="peak-content">
+                            <h4>🎯 En Uygun Ortak Çalışma Saatleri</h4>
+                            <p>En fazla takım arkadaşınızın müsait olduğu saatler ({{ max_availability }} kişi):</p>
+                            <div class="peak-times-list">
+                                {% for day, time in peak_times %}
+                                <span class="peak-time-badge">{{ day }} {{ time }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Calendar Navigation -->
+                <div class="calendar-navigation" data-aos="fade-up" data-aos-delay="300">
+                    <div class="nav-header">
+                        <h3>Zaman Dilimlerine Geçiş</h3>
+                        <p>Hızlı navigasyon için istediğiniz zaman dilimine tıklayın</p>
+                    </div>
+                    <div class="time-period-nav">
+                        <button class="period-nav-btn" data-period="night">
+                            <i class="fas fa-moon"></i>
+                            <span>Gece<br><small>00:00-06:00</small></span>
+                        </button>
+                        <button class="period-nav-btn" data-period="morning">
+                            <i class="fas fa-sun"></i>
+                            <span>Sabah<br><small>06:00-12:00</small></span>
+                        </button>
+                        <button class="period-nav-btn" data-period="afternoon">
+                            <i class="fas fa-sun"></i>
+                            <span>Öğleden Sonra<br><small>12:00-18:00</small></span>
+                        </button>
+                        <button class="period-nav-btn" data-period="evening">
+                            <i class="fas fa-sunset"></i>
+                            <span>Akşam<br><small>18:00-24:00</small></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Team Calendar -->
+                <div class="calendar-section" data-aos="fade-up" data-aos-delay="350">
+                    <div class="calendar-header">
+                        <h3>24 Saat Haftalık Takım Ortak Çalışma Takvimi</h3>
+                        <p>Her hücre o saatte müsait olan takım arkadaşlarınızı gösterir. Tabloda gezinmek için kaydırın.</p>
+                    </div>
+
+                    <div class="calendar-container">
+                        <div class="table-responsive">
+                            <table class="table table-bordered team-calendar" id="teamCalendar">
+                                <thead class="sticky-header">
+                                    <tr>
+                                        <th class="time-header sticky-column">Saat</th>
+                                        {% for day_data in calendar_grid %}
+                                        <th class="day-header">{{ day_data.day_name }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for time_slot in time_slots %}
+                                    <tr class="time-row" data-time="{{ time_slot }}" 
+                                        data-period="{% if time_slot|slice:':2' < '06' %}night{% elif time_slot|slice:':2' < '12' %}morning{% elif time_slot|slice:':2' < '18' %}afternoon{% else %}evening{% endif %}">
+                                        <td class="time-cell sticky-column">
+                                            <div class="time-display">
+                                                <div class="time-main">{{ time_slot|slice:':5' }}</div>
+                                                <div class="time-range">{{ time_slot }}</div>
+                                            </div>
+                                        </td>
+                                        {% for day_data in calendar_grid %}
+                                            {% for slot_data in day_data.time_slots %}
+                                                {% if slot_data.time == time_slot %}
+                                                <td class="availability-cell {% if slot_data.available_count > 0 %}has-availability{% endif %}"
+                                                    data-day="{{ day_data.day_code }}" 
+                                                    data-time="{{ time_slot }}"
+                                                    data-count="{{ slot_data.available_count }}">
+                                                    {% if slot_data.available_teammates %}
+                                                        <div class="teammate-count">{{ slot_data.available_count }} kişi</div>
+                                                        <div class="teammate-list">
+                                                            {% for teammate in slot_data.available_teammates %}
+                                                            <div class="teammate-name">{{ teammate }}</div>
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="no-availability">-</div>
+                                                    {% endif %}
+                                                </td>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Legend -->
+                    <div class="calendar-legend">
+                        <h4>Takvim Açıklamaları</h4>
+                        <div class="legend-items">
+                            <div class="legend-item">
+                                <div class="legend-color no-avail"></div>
+                                <span>Kimse müsait değil</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color low-avail"></div>
+                                <span>1 kişi müsait</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color med-avail"></div>
+                                <span>2-3 kişi müsait</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color high-avail"></div>
+                                <span>4+ kişi müsait</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teammates List -->
+                <div class="teammates-section" data-aos="fade-up" data-aos-delay="400">
+                    <div class="teammates-header">
+                        <h3>Takım Arkadaşlarınız</h3>
+                        <p>Aynı projelerde çalıştığınız stajyer arkadaşlarınız</p>
+                    </div>
+                    <div class="teammates-grid">
+                        {% for teammate in teammates %}
+                        <div class="teammate-card">
+                            <div class="teammate-avatar">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div class="teammate-info">
+                                <h4>{{ teammate.get_full_name }}</h4>
+                                <div class="teammate-status">
+                                    {% if teammate.availability %}
+                                        <span class="status-badge available">
+                                            <i class="fas fa-check-circle"></i>
+                                            Müsaitlik Belirtti
+                                        </span>
+                                        <div class="availability-summary">
+                                            {{ teammate.availability.get_total_hours }} saat/hafta
+                                        </div>
+                                    {% else %}
+                                        <span class="status-badge unavailable">
+                                            <i class="fas fa-clock"></i>
+                                            Henüz Belirtmedi
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- No Availability Data -->
+                <div class="no-data-section" data-aos="fade-up" data-aos-delay="200">
+                    <div class="no-data-card">
+                        <div class="no-data-icon">
+                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                        <div class="no-data-content">
+                            <h3>Henüz Müsaitlik Verisi Yok</h3>
+                            <p>Takım arkadaşlarınızın henüz hiçbiri müsaitlik durumunu belirtmemiş. Takvim görüntülemek için takım üyelerinin ortak çalışma saatlerini belirtmesi gerekiyor.</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="action-section" data-aos="fade-up" data-aos-delay="500">
+                <div class="action-buttons">
+                    <a href="{% url 'select_availability' %}" class="btn btn-primary">
+                        <div class="btn-content">
+                            <i class="fas fa-calendar-plus"></i>
+                            <span>Kendi Müsaitliğimi Düzenle</span>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'view_availability' %}" class="btn btn-secondary">
+                        <div class="btn-content">
+                            <i class="fas fa-eye"></i>
+                            <span>Kendi Müsaitliğimi Görüntüle</span>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'home_page' %}" class="btn btn-outline">
+                        <div class="btn-content">
+                            <i class="fas fa-home"></i>
+                            <span>Ana Sayfaya Dön</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-color: #3b82f6;
+        --secondary-color: #10b981;
+        --success-color: #059669;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
+        --night-color: #1e1b4b;
+        --morning-color: #fbbf24;
+        --afternoon-color: #60a5fa;
+        --evening-color: #f97316;
+        --text-color: #1f2937;
+        --text-light: #6b7280;
+        --bg-light: #f8fafc;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .team-availability-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
+    }
+
+    /* Hero Section */
+    .hero-section {
+        position: relative;
+        padding: 4rem 0 2rem;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        overflow: hidden;
+    }
+
+    .hero-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+    }
+
+    .hero-particle {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .hero-particle:nth-child(1) {
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .hero-particle:nth-child(2) {
+        top: 60%;
+        right: 15%;
+        animation-delay: 2s;
+    }
+
+    .hero-particle:nth-child(3) {
+        bottom: 20%;
+        left: 60%;
+        animation-delay: 4s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-icon {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+    }
+
+    .hero-icon i {
+        font-size: 4rem;
+        color: white;
+        position: relative;
+        z-index: 2;
+    }
+
+    .icon-rings {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .ring {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        animation: pulse-ring 2s ease-in-out infinite;
+    }
+
+    .ring:nth-child(1) { animation-delay: 0s; }
+    .ring:nth-child(2) { animation-delay: 1s; }
+
+    @keyframes pulse-ring {
+        0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    .hero-breadcrumb {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .breadcrumb {
+        background: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .breadcrumb-item.active {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        color: rgba(255, 255, 255, 0.6);
+        padding: 0 0.5rem;
+    }
+
+    /* Main Container */
+    .team-availability-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 3rem 1rem;
+    }
+
+    /* Team Info Section */
+    .team-info-section {
+        margin-bottom: 3rem;
+    }
+
+    .team-projects-card, .team-stats-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        height: 100%;
+    }
+
+    .team-projects-card .card-header {
+        padding: 1.5rem;
+        border-bottom: 2px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .team-projects-card .card-header i {
+        color: var(--primary-color);
+        font-size: 1.5rem;
+    }
+
+    .team-projects-card h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .projects-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+
+    .project-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--primary-color);
+        padding: 0.75rem 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+        border: 2px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .team-stats-card {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+        border-radius: 12px;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text-color);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    /* Period Statistics Section */
+    .period-stats-section {
+        margin-bottom: 3rem;
+    }
+
+    .period-stats-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .period-stats-header h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .period-stats-header p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+
+    .period-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .period-stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .period-stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .period-stat-card.most-active {
+        border-color: var(--warning-color);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(245, 158, 11, 0.05));
+    }
+
+    .period-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .period-stat-card .period-icon {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    }
+
+    .period-stat-card.most-active .period-icon {
+        background: linear-gradient(135deg, var(--warning-color), #f59e0b);
+    }
+
+    .period-content h4 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .period-count {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .active-badge {
+        background: var(--warning-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    /* Peak Times Section */
+    .peak-times-section {
+        margin-bottom: 3rem;
+    }
+
+    .peak-times-card {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(251, 191, 36, 0.05));
+        border: 2px solid rgba(245, 158, 11, 0.2);
+        border-radius: 16px;
+        padding: 2rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .peak-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--warning-color), #f59e0b);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .peak-content h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .peak-content p {
+        color: var(--text-light);
+        margin-bottom: 1rem;
+    }
+
+    .peak-times-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .peak-time-badge {
+        background: var(--warning-color);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Calendar Navigation */
+    .calendar-navigation {
+        margin-bottom: 3rem;
+    }
+
+    .nav-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .nav-header h3 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-header p {
+        color: var(--text-light);
+        font-size: 1rem;
+    }
+
+    .time-period-nav {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .period-nav-btn {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .period-nav-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--card-shadow-hover);
+        border-color: var(--primary-color);
+    }
+
+    .period-nav-btn.active {
+        border-color: var(--primary-color);
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .period-nav-btn i {
+        font-size: 2rem;
+        color: var(--primary-color);
+    }
+
+    .period-nav-btn span {
+        font-weight: 600;
+        color: var(--text-color);
+        line-height: 1.3;
+    }
+
+    .period-nav-btn small {
+        color: var(--text-light);
+        font-size: 0.8rem;
+    }
+
+    /* Calendar Section */
+    .calendar-section {
+        margin-bottom: 3rem;
+    }
+
+    .calendar-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .calendar-header h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .calendar-header p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+
+    .calendar-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .table-responsive {
+        max-height: 600px;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+
+    .team-calendar {
+        margin: 0;
+        font-size: 0.85rem;
+        width: 100%;
+        min-width: 800px;
+    }
+
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .sticky-column {
+        position: sticky;
+        left: 0;
+        z-index: 50;
+        background: white;
+    }
+
+    .team-calendar th {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        padding: 1rem 0.75rem;
+        border: none;
+        white-space: nowrap;
+    }
+
+    .time-header {
+        width: 120px;
+        background: linear-gradient(135deg, #4b5563, #374151) !important;
+    }
+
+    .day-header {
+        min-width: 160px;
+    }
+
+    .time-cell {
+        background: #f8fafc;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        width: 120px;
+        border-right: 2px solid #e5e7eb;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .time-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .time-main {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-color);
+    }
+
+    .time-range {
+        font-size: 0.7rem;
+        color: var(--text-light);
+    }
+
+    .availability-cell {
+        padding: 0.5rem 0.25rem;
+        vertical-align: top;
+        min-height: 60px;
+        position: relative;
+        background: #fafafa;
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+
+    .availability-cell.has-availability {
+        background: rgba(59, 130, 246, 0.05);
+        border-left: 3px solid var(--primary-color);
+    }
+
+    /* Color coding based on availability count */
+    .availability-cell[data-count="1"] {
+        background: rgba(34, 197, 94, 0.1);
+        border-left-color: #22c55e;
+    }
+
+    .availability-cell[data-count="2"], .availability-cell[data-count="3"] {
+        background: rgba(59, 130, 246, 0.15);
+        border-left-color: var(--primary-color);
+    }
+
+    .availability-cell[data-count="4"], .availability-cell[data-count="5"], .availability-cell[data-count="6"], .availability-cell[data-count="7"], .availability-cell[data-count="8"], .availability-cell[data-count="9"] {
+        background: rgba(245, 158, 11, 0.15);
+        border-left-color: var(--warning-color);
+    }
+
+    .availability-cell:hover {
+        background: rgba(59, 130, 246, 0.1);
+        transform: scale(1.02);
+        z-index: 10;
+    }
+
+    .teammate-count {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .teammate-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        max-height: 100px;
+        overflow-y: auto;
+    }
+
+    .teammate-name {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--primary-color);
+        padding: 0.2rem 0.4rem;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-align: center;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .no-availability {
+        text-align: center;
+        color: var(--text-light);
+        font-style: italic;
+        padding: 1rem 0;
+        font-size: 0.8rem;
+    }
+
+    /* Time period highlighting */
+    .time-row[data-period="night"] {
+        background: rgba(30, 27, 75, 0.02);
+    }
+
+    .time-row[data-period="morning"] {
+        background: rgba(251, 191, 36, 0.02);
+    }
+
+    .time-row[data-period="afternoon"] {
+        background: rgba(96, 165, 250, 0.02);
+    }
+
+    .time-row[data-period="evening"] {
+        background: rgba(249, 115, 22, 0.02);
+    }
+
+    /* Calendar Legend */
+    .calendar-legend {
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .calendar-legend h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .legend-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--text-color);
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .legend-color.no-avail {
+        background: #fafafa;
+    }
+
+    .legend-color.low-avail {
+        background: rgba(34, 197, 94, 0.1);
+        border-color: #22c55e;
+    }
+
+    .legend-color.med-avail {
+        background: rgba(59, 130, 246, 0.15);
+        border-color: var(--primary-color);
+    }
+
+    .legend-color.high-avail {
+        background: rgba(245, 158, 11, 0.15);
+        border-color: var(--warning-color);
+    }
+
+    /* Teammates Section */
+    .teammates-section {
+        margin-bottom: 3rem;
+    }
+
+    .teammates-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .teammates-header h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .teammates-header p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+
+    .teammates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .teammate-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .teammate-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .teammate-avatar {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .teammate-info {
+        flex: 1;
+    }
+
+    .teammate-info h4 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+
+    .status-badge.available {
+        background: rgba(5, 150, 105, 0.1);
+        color: var(--success-color);
+        border: 1px solid rgba(5, 150, 105, 0.2);
+    }
+
+    .status-badge.unavailable {
+        background: rgba(107, 114, 128, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(107, 114, 128, 0.2);
+    }
+
+    .availability-summary {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        font-style: italic;
+    }
+
+    /* No Data Section */
+    .no-data-section {
+        margin-bottom: 3rem;
+    }
+
+    .no-data-card {
+        background: white;
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        border: 2px solid rgba(107, 114, 128, 0.1);
+    }
+
+    .no-data-icon {
+        width: 100px;
+        height: 100px;
+        background: rgba(107, 114, 128, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        color: var(--text-light);
+        font-size: 3rem;
+    }
+
+    .no-data-content h3 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .no-data-content p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+        line-height: 1.6;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Action Buttons */
+    .action-section {
+        text-align: center;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 200px;
+    }
+
+    .btn-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #f8fafc;
+        color: var(--text-color);
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        color: var(--text-color);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+
+    .btn-outline:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+
+        .team-availability-container {
+            padding: 2rem 1rem;
+        }
+
+        .team-info-section .row {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .peak-times-card {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .projects-list {
+            flex-direction: column;
+        }
+
+        .period-stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .time-period-nav {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .team-calendar {
+            font-size: 0.75rem;
+        }
+
+        .day-header {
+            min-width: 120px;
+        }
+
+        .availability-cell {
+            min-height: 50px;
+            padding: 0.25rem 0.1rem;
+        }
+
+        .teammate-name {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.3rem;
+        }
+
+        .time-main {
+            font-size: 0.9rem;
+        }
+
+        .teammates-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .peak-times-list {
+            justify-content: center;
+        }
+
+        .legend-items {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+
+    /* Extra Small Screens */
+    @media (max-width: 576px) {
+        .table-responsive {
+            font-size: 0.7rem;
+        }
+
+        .time-cell {
+            width: 80px;
+        }
+
+        .day-header {
+            min-width: 100px;
+        }
+
+        .teammate-count {
+            font-size: 0.65rem;
+        }
+
+        .teammate-name {
+            font-size: 0.6rem;
+        }
+
+        .time-period-nav {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+
+    // Period navigation functionality
+    const periodNavBtns = document.querySelectorAll('.period-nav-btn');
+    const calendar = document.getElementById('teamCalendar');
+    
+    periodNavBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const period = this.dataset.period;
+            
+            // Remove active class from all buttons
+            periodNavBtns.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Scroll to the first row of the selected period
+            const firstRow = calendar.querySelector(`tr[data-period="${period}"]`);
+            if (firstRow) {
+                firstRow.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }
+        });
+    });
+
+    // Add hover effects to calendar cells
+    const availabilityCells = document.querySelectorAll('.availability-cell.has-availability');
+    availabilityCells.forEach(cell => {
+        cell.addEventListener('mouseenter', function() {
+            const day = this.dataset.day;
+            const time = this.dataset.time;
+            
+            // Highlight the corresponding time and day headers
+            const timeCell = document.querySelector(`.time-cell .time-display .time-main:contains("${time.split('-')[0]}")`);
+            const dayHeader = document.querySelector(`th:contains("${day}")`);
+            
+            // Add subtle highlighting effect
+            this.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.2)';
+        });
+        
+        cell.addEventListener('mouseleave', function() {
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Add click functionality to teammate cards for future expansion
+    const teammateCards = document.querySelectorAll('.teammate-card');
+    teammateCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Future: Could show detailed availability for specific teammate
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
+
+    // Auto-highlight current time period based on current hour
+    const currentHour = new Date().getHours();
+    let currentPeriod = 'night';
+    
+    if (currentHour >= 6 && currentHour < 12) {
+        currentPeriod = 'morning';
+    } else if (currentHour >= 12 && currentHour < 18) {
+        currentPeriod = 'afternoon';
+    } else if (currentHour >= 18) {
+        currentPeriod = 'evening';
+    }
+    
+    // Highlight current period button
+    const currentPeriodBtn = document.querySelector(`[data-period="${currentPeriod}"]`);
+    if (currentPeriodBtn) {
+        currentPeriodBtn.classList.add('active');
+    }
+
+    // Add smooth scrolling for period rows
+    function smoothScrollToPeriod(period) {
+        const firstRowOfPeriod = document.querySelector(`tr[data-period="${period}"]`);
+        if (firstRowOfPeriod) {
+            const tableContainer = document.querySelector('.table-responsive');
+            const rowOffsetTop = firstRowOfPeriod.offsetTop;
+            
+            tableContainer.scrollTo({
+                top: rowOffsetTop - 100, // Offset for sticky header
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    // Update period navigation buttons to use smooth scrolling
+    periodNavBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const period = this.dataset.period;
+            smoothScrollToPeriod(period);
+        });
+    });
+});
+</script>
+{% endblock %}

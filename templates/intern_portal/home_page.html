@@ -2,69 +2,298 @@
 {% load socialaccount %}
 
 {% block content %}
-<div class="home-page">
-    <!-- Hero Section -->
-    <div class="hero-section">
-        <div class="hero-background">
-            <div class="hero-particle"></div>
-            <div class="hero-particle"></div>
-            <div class="hero-particle"></div>
-        </div>
-        <div class="container">
-            <div class="hero-content text-center" data-aos="fade-up">
-                {% if user.is_authenticated %}
-                    <!-- Authenticated User Dashboard -->
-                    <div class="dashboard-card">
-                        <div class="user-avatar">
-                            {% if user.is_staff or user.is_superuser %}
-                                <i class="fas fa-user-shield"></i>
-                            {% else %}
-                                <i class="fas fa-user-graduate"></i>
-                            {% endif %}
+<div class="modern-dashboard">
+    {% if user.is_authenticated %}
+        <!-- Authenticated User Dashboard -->
+        <div class="dashboard-container">
+            <!-- Welcome Header -->
+            <div class="welcome-header" data-aos="fade-down">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <div class="welcome-content">
+                                <div class="greeting-badge">
+                                    {% if user.is_staff or user.is_superuser %}
+                                        <i class="fas fa-user-shield"></i>
+                                        <span>{% if user.is_superuser %}Süper Admin{% else %}Admin{% endif %}</span>
+                                    {% else %}
+                                        <i class="fas fa-user-graduate"></i>
+                                        <span>Stajyer</span>
+                                    {% endif %}
+                                </div>
+                                <h1 class="welcome-title">
+                                    Merhaba, <span class="name-highlight">{{ user.first_name|default:user.username }}!</span>
+                                </h1>
+                                <p class="welcome-subtitle">
+                                    {% if user.is_staff or user.is_superuser %}
+                                        One Eye Systems stajyer yönetim paneline hoş geldiniz
+                                    {% else %}
+                                        One Eye Systems staj programına hoş geldiniz
+                                    {% endif %}
+                                </p>
+                            </div>
                         </div>
-                        
-                        <h1 class="welcome-title">Hoş Geldiniz!</h1>
-                        <h2 class="user-name">{{ user.first_name|default:user.username }}</h2>
-                        
-                        {% if user.is_staff or user.is_superuser %}
-                            <div class="user-badge admin-badge">
-                                <i class="fas fa-crown"></i>
-                                <span>{% if user.is_superuser %}Süper Admin{% else %}Admin{% endif %}</span>
+                        <div class="col-lg-4">
+                            <div class="welcome-visual">
+                                <div class="avatar-container">
+                                    <div class="avatar-circle">
+                                        {% if user.is_staff or user.is_superuser %}
+                                            <i class="fas fa-crown"></i>
+                                        {% else %}
+                                            <i class="fas fa-rocket"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="avatar-rings">
+                                        <div class="ring ring-1"></div>
+                                        <div class="ring ring-2"></div>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="user-description">
-                                Sistem yönetimi ve stajyer koordinasyonu için admin panelini kullanın
-                            </p>
-                            
-                            <div class="action-buttons">
-                                <a href="/admin/" class="btn btn-primary">
-                                    <i class="fas fa-cog"></i>
-                                    <span>Admin Paneli</span>
-                                </a>
-                                <a href="/admin/intern_portal/intern/" class="btn btn-secondary">
-                                    <i class="fas fa-users"></i>
-                                    <span>Stajyerleri Yönet</span>
-                                </a>
-                            </div>
-                        {% else %}
-                            <div class="user-badge intern-badge">
-                                <i class="fas fa-graduation-cap"></i>
-                                <span>Stajyer</span>
-                            </div>
-                            <p class="user-description">
-                                Ortak çalışma saatlerinizi belirlemek için aşağıdaki butonu kullanın
-                            </p>
-                            
-                            <div class="action-buttons">
-                                <a href="{% url 'select_availability' %}" class="btn btn-primary">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <span>Ortak Çalışma Saatlerimi Belirle</span>
-                                </a>
-                            </div>
-                        {% endif %}
+                        </div>
                     </div>
-                {% else %}
-                    <!-- Login Interface -->
-                    <div class="login-interface">
+                </div>
+            </div>
+
+            {% if user.is_staff or user.is_superuser %}
+                <!-- Admin Dashboard -->
+                <div class="container">
+                    <div class="admin-dashboard" data-aos="fade-up" data-aos-delay="200">
+                        <div class="dashboard-grid">
+                            <div class="dashboard-card primary-card">
+                                <div class="card-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Stajyer Yönetimi</h3>
+                                    <p>Stajyerleri görüntüleyin, düzenleyin ve yeni stajyer ekleyin</p>
+                                    <a href="/admin/intern_portal/intern/" class="card-action">
+                                        <span>Stajyerleri Yönet</span>
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card secondary-card">
+                                <div class="card-icon">
+                                    <i class="fas fa-project-diagram"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Proje Yönetimi</h3>
+                                    <p>Projeleri düzenleyin ve stajyer atamalarını yapın</p>
+                                    <a href="/admin/intern_portal/project/" class="card-action">
+                                        <span>Projeleri Yönet</span>
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card accent-card">
+                                <div class="card-icon">
+                                    <i class="fas fa-cog"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Sistem Ayarları</h3>
+                                    <p>Admin paneline erişin ve sistem ayarlarını yapın</p>
+                                    <a href="/admin/" class="card-action">
+                                        <span>Admin Panel</span>
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Intern Dashboard -->
+                <div class="container">
+                    <!-- Quick Stats -->
+                    <div class="stats-section" data-aos="fade-up" data-aos-delay="200">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number">
+                                        {% if availability_data %}
+                                            {{ availability_data.get_total_hours }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
+                                    </div>
+                                    <div class="stat-label">Ortak Çalışma Saati</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number">{{ assigned_projects_count|default:0 }}</div>
+                                    <div class="stat-label">Atanmış Proje</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number">
+                                        {% if has_preferences %}3{% else %}0{% endif %}
+                                    </div>
+                                    <div class="stat-label">Tercih Sayısı</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FIXED: Dynamic Main Action Section Based on Availability Status -->
+                    <div class="action-section" data-aos="fade-up" data-aos-delay="300">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                {% if not has_availability %}
+                                    <!-- Show if NO availability set -->
+                                    <div class="main-action-card">
+                                        <div class="action-content">
+                                            <div class="action-icon">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div class="action-text">
+                                                <h3>Ortak Çalışma Saatinizi Belirleyin</h3>
+                                                <p>Haftalık müsaitlik programınızı oluşturun ve ekiple koordinasyon kurun. Bu bilgi, size en uygun proje takımına atanmanız için kullanılacak.</p>
+                                            </div>
+                                        </div>
+                                        <div class="action-button">
+                                            <a href="{% url 'select_availability' %}" class="btn btn-primary btn-lg">
+                                                <i class="fas fa-calendar-plus"></i>
+                                                <span>Ortak Çalışma Saati Belirle</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <!-- Show if availability IS set -->
+                                    <div class="main-action-card availability-confirmed">
+                                        <div class="action-content">
+                                            <div class="action-icon confirmed">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                            <div class="action-text">
+                                                <h3>✅ Ortak Çalışma Saatiniz Kaydedildi</h3>
+                                                <p>Müsaitlik durumunuz başarıyla kaydedildi. Toplam {{ availability_data.get_total_hours }} saat ortak çalışma saati belirttiniz. Gerektiğinde düzenlemeler yapabilirsiniz.</p>
+                                            </div>
+                                        </div>
+                                        <div class="action-button">
+                                            <a href="{% url 'view_availability' %}" class="btn btn-success btn-lg">
+                                                <i class="fas fa-eye"></i>
+                                                <span>Ortak Çalışma Saati Görüntüle</span>
+                                            </a>
+                                            <a href="{% url 'select_availability' %}" class="btn btn-outline-primary btn-lg">
+                                                <i class="fas fa-edit"></i>
+                                                <span>Düzenle</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="info-cards">
+                                    <!-- FIXED: Show assigned projects or pending status -->
+                                    {% if has_assigned_projects %}
+                                        <div class="info-card projects-card">
+                                            <div class="info-header">
+                                                <i class="fas fa-folder-open"></i>
+                                                <h4>Atanmış Projelerim</h4>
+                                            </div>
+                                            <div class="info-content">
+                                                {% for project in assigned_projects %}
+                                                    <div class="project-item">
+                                                        <div class="project-name">{{ project.name }}</div>
+                                                        <div class="project-meta">
+                                                            <span class="badge">{{ project.get_duration_display }}</span>
+                                                            <span class="badge">{{ project.get_team_size_display }}</span>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <!-- NEW: Team Availability Card - Only show if user has assigned projects -->
+                                        <div class="info-card team-card">
+                                            <div class="info-header">
+                                                <i class="fas fa-users-clock"></i>
+                                                <h4>Takım Ortak Çalışma Saati</h4>
+                                            </div>
+                                            <div class="info-content">
+                                                <p>Takım arkadaşlarınızın müsaitlik durumunu görüntüleyin ve ortak çalışma saatlerinizi planlayın.</p>
+                                                <div class="team-action">
+                                                    <a href="{% url 'team_availability' %}" class="btn btn-outline-secondary btn-sm">
+                                                        <i class="fas fa-calendar-week"></i>
+                                                        <span>Takım Takvimini Görüntüle</span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="info-card pending-card">
+                                            <div class="info-header">
+                                                <i class="fas fa-hourglass-half"></i>
+                                                <h4>Proje Atama Durumu</h4>
+                                            </div>
+                                            <div class="info-content">
+                                                {% if has_availability %}
+                                                    <p>Ortak çalışma saatiniz kaydedildi. Yakında size uygun bir proje atanacak.</p>
+                                                {% else %}
+                                                    <p>Henüz size bir proje atanmamış. Ortak çalışma saatinizi belirledikten sonra size en uygun proje tahsis edilecek.</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Resources -->
+                    <div class="resources-section" data-aos="fade-up" data-aos-delay="400">
+                        <div class="section-header">
+                            <h3>Hızlı Erişim</h3>
+                            <p>Sık kullanılan özellikler</p>
+                        </div>
+                        <div class="resources-grid">
+                            <div class="resource-card">
+                                <div class="resource-icon">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                                <h4>Yardım & Destek</h4>
+                                <p>Sorularınız için IT ekibiyle iletişime geçin</p>
+                            </div>
+                            <div class="resource-card">
+                                <div class="resource-icon">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <h4>Stajyer Rehberi</h4>
+                                <p>Staj sürecinizle ilgili detaylı bilgiler</p>
+                            </div>
+                            <div class="resource-card">
+                                <div class="resource-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h4>İlerleme Takibi</h4>
+                                <p>Staj sürecinizi ve başarılarınızı izleyin</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <!-- Non-authenticated User Landing -->
+        <div class="landing-section">
+            <div class="container">
+                <div class="landing-content text-center" data-aos="fade-up">
+                    <div class="brand-section">
                         <div class="brand-logo">
                             <div class="logo-circle">
                                 <i class="fas fa-eye"></i>
@@ -83,7 +312,9 @@
                                 Ortak çalışma saatlerinizi belirleyin ve ekibimizle koordinasyon kurun
                             </p>
                         </div>
-                        
+                    </div>
+                    
+                    <div class="login-section" data-aos="fade-up" data-aos-delay="200">
                         <div class="login-card">
                             <div class="login-header">
                                 <div class="google-icon">
@@ -101,14 +332,6 @@
                                     </div>
                                     <div class="btn-ripple"></div>
                                 </a>
-                                
-                                <div style="margin-top: 1rem; padding: 1rem; background: #f0f0f0; font-size: 0.8rem;">
-                                    <strong>Debug Info:</strong><br>
-                                    Google Login URL: <code>{% provider_login_url 'google' %}</code><br>
-                                    Direct URL: <code>/accounts/google/login/</code><br>
-                                    <a href="{% provider_login_url 'google' %}" style="color: blue;">Test Link 1</a> | 
-                                    <a href="/accounts/google/login/" style="color: blue;">Test Link 2</a>
-                                </div>
 
                                 <div class="login-info">
                                     <div class="info-item">
@@ -123,47 +346,45 @@
                             </div>
                         </div>
                     </div>
-                {% endif %}
+                </div>
             </div>
         </div>
-    </div>
 
-    {% if not user.is_authenticated %}
-    <!-- Features Section (Only for non-authenticated users) -->
-    <div class="features-section">
-        <div class="container">
-            <div class="features-header text-center" data-aos="fade-up">
-                <h2>Portal Özellikleri</h2>
-                <p>Size sunduğumuz imkanlar</p>
-            </div>
-            
-            <div class="features-grid">
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
-                    <div class="feature-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <h3>Ortak Çalışma Saati</h3>
-                    <p>Haftalık müsaitlik saatlerinizi belirleyin ve ekiple senkronize çalışın</p>
+        <!-- Features Preview -->
+        <div class="features-preview">
+            <div class="container">
+                <div class="features-header text-center" data-aos="fade-up">
+                    <h2>Portal Özellikleri</h2>
+                    <p>Size sunduğumuz imkanlar</p>
                 </div>
                 
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="feature-icon">
-                        <i class="fas fa-users-cog"></i>
+                <div class="features-grid">
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="feature-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <h3>Ortak Çalışma Saati</h3>
+                        <p>Haftalık müsaitlik saatlerinizi belirleyin ve ekiple senkronize çalışın</p>
                     </div>
-                    <h3>Proje Yönetimi</h3>
-                    <p>Size atanan projeleri görüntüleyin ve takım arkadaşlarınızla koordine olun</p>
-                </div>
-                
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
+                    
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="feature-icon">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h3>Proje Yönetimi</h3>
+                        <p>Size atanan projeleri görüntüleyin ve takım arkadaşlarınızla koordine olun</p>
                     </div>
-                    <h3>İlerleme Takibi</h3>
-                    <p>Staj sürecinizi takip edin ve gelişiminizi izleyin</p>
+                    
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>İlerleme Takibi</h3>
+                        <p>Staj sürecinizi takip edin ve gelişiminizi izleyin</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     {% endif %}
 </div>
 
@@ -171,150 +392,587 @@
     :root {
         --primary-color: #3b82f6;
         --secondary-color: #10b981;
-        --admin-gold: #fbbf24;
-        --intern-blue: #3b82f6;
-        --google-blue: #4285f4;
+        --accent-color: #f59e0b;
+        --success-color: #059669;
         --text-color: #1f2937;
         --text-light: #6b7280;
         --bg-light: #f8fafc;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 
-    .home-page {
+    .modern-dashboard {
         min-height: 100vh;
         background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
     }
 
-    /* Hero Section */
-    .hero-section {
-        position: relative;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    /* Welcome Header */
+    .welcome-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         color: white;
+        padding: 4rem 0 3rem;
+        position: relative;
         overflow: hidden;
     }
 
-    .hero-background {
+    .welcome-header::before {
+        content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        z-index: 1;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
     }
 
-    .hero-particle {
-        position: absolute;
+    .welcome-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .greeting-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .welcome-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .name-highlight {
+        color: #fbbf24;
+        display: inline-block;
+        animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+        from { text-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+        to { text-shadow: 0 0 30px rgba(251, 191, 36, 0.8); }
+    }
+
+    .welcome-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .welcome-visual {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .avatar-container {
+        position: relative;
         width: 150px;
         height: 150px;
+    }
+
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.2);
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.1);
-        animation: float 8s ease-in-out infinite;
-    }
-
-    .hero-particle:nth-child(1) {
-        top: 10%;
-        left: 10%;
-        animation-delay: 0s;
-    }
-
-    .hero-particle:nth-child(2) {
-        top: 20%;
-        right: 10%;
-        animation-delay: 2s;
-    }
-
-    .hero-particle:nth-child(3) {
-        bottom: 30%;
-        left: 20%;
-        animation-delay: 4s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 25px auto;
+        color: white;
+        font-size: 2.5rem;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        animation: float 3s ease-in-out infinite;
     }
 
     @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-30px) rotate(180deg); }
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
     }
 
-    .hero-content {
+    .avatar-rings {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .ring {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        animation: pulse-ring 3s ease-in-out infinite;
+    }
+
+    .ring:nth-child(1) { animation-delay: 0s; }
+    .ring:nth-child(2) { animation-delay: 1s; }
+
+    @keyframes pulse-ring {
+        0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+    }
+
+    .info-card.team-card {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+        border: 2px solid rgba(59, 130, 246, 0.1);
+        margin-top: 1rem;
+    }
+
+    .info-card.team-card .info-header i {
+        color: var(--secondary-color);
+    }
+
+    .team-action {
+        margin-top: 1rem;
+    }
+
+    .btn-outline-secondary {
+        background: transparent;
+        color: var(--secondary-color);
+        border: 2px solid var(--secondary-color);
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--secondary-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    /* Mobile responsiveness for new team card */
+    @media (max-width: 768px) {
+        .info-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .team-action {
+            text-align: center;
+        }
+        
+        .btn-outline-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Dashboard Container */
+    .dashboard-container {
+        position: relative;
+    }
+
+    /* Admin Dashboard */
+    .admin-dashboard {
+        padding: 3rem 0;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+    }
+
+    .dashboard-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .primary-card::before {
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    }
+
+    .secondary-card::before {
+        background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+    }
+
+    .accent-card::before {
+        background: linear-gradient(90deg, var(--accent-color), #ef4444);
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .dashboard-card .card-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        color: white;
+    }
+
+    .primary-card .card-icon {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    }
+
+    .secondary-card .card-icon {
+        background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    }
+
+    .accent-card .card-icon {
+        background: linear-gradient(135deg, var(--accent-color), #ef4444);
+    }
+
+    .dashboard-card h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .dashboard-card p {
+        color: var(--text-light);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .card-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .card-action:hover {
+        color: var(--secondary-color);
+        gap: 1rem;
+    }
+
+    /* Stats Section */
+    .stats-section {
+        padding: 3rem 0 2rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text-color);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    /* Action Section */
+    .action-section {
+        padding: 2rem 0;
+    }
+
+    .main-action-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        height: 100%;
+    }
+
+    .action-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .action-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .action-text h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .action-text p {
+        color: var(--text-light);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .action-button .btn {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .action-button .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    /* Info Cards */
+    .info-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        height: 100%;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        flex: 1;
+    }
+
+    .info-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .info-header i {
+        color: var(--primary-color);
+        font-size: 1.25rem;
+    }
+
+    .info-header h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .project-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .project-item:last-child {
+        border-bottom: none;
+    }
+
+    .project-name {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .project-meta .badge {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--primary-color);
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Resources Section */
+    .resources-section {
+        padding: 3rem 0;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .section-header h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .section-header p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+
+    .resources-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .resource-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .resource-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .resource-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: var(--primary-color);
+        font-size: 1.25rem;
+    }
+
+    .resource-card h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .resource-card p {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Landing Section (Non-authenticated) */
+    .landing-section {
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .landing-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+    }
+
+    .landing-content {
         position: relative;
         z-index: 2;
         max-width: 600px;
         margin: 0 auto;
-        width: 100%;
     }
 
-    /* Dashboard Card (for authenticated users) */
-    .dashboard-card {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 24px;
-        padding: 3rem;
-        max-width: 500px;
-        margin: 0 auto;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    }
-
-    .user-avatar {
-        font-size: 5rem;
-        margin-bottom: 1rem;
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-    }
-
-    .welcome-title {
-        font-size: 2rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        opacity: 0.9;
-    }
-
-    .user-name {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        color: #fbbf24;
-    }
-
-    .user-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        border-radius: 25px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .admin-badge {
-        background: linear-gradient(135deg, var(--admin-gold), #f59e0b);
-        color: #92400e;
-    }
-
-    .intern-badge {
-        background: linear-gradient(135deg, var(--intern-blue), #1e40af);
-        color: white;
-    }
-
-    .user-description {
-        opacity: 0.9;
-        margin-bottom: 2rem;
-        line-height: 1.6;
-        font-size: 1.1rem;
-    }
-
-    /* Login Interface (for non-authenticated users) */
-    .login-interface {
-        max-width: 500px;
-        margin: 0 auto;
+    .brand-section {
+        margin-bottom: 3rem;
     }
 
     .brand-logo {
@@ -348,7 +1006,7 @@
         transform: translate(-50%, -50%);
     }
 
-    .ring {
+    .logo-rings .ring {
         position: absolute;
         width: 100px;
         height: 100px;
@@ -357,18 +1015,9 @@
         animation: pulse-ring 3s ease-in-out infinite;
     }
 
-    .ring:nth-child(1) { animation-delay: 0s; }
-    .ring:nth-child(2) { animation-delay: 1s; }
-    .ring:nth-child(3) { animation-delay: 2s; }
-
-    @keyframes pulse-ring {
-        0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
-    }
-
-    .brand-text {
-        margin-bottom: 2rem;
-    }
+    .logo-rings .ring:nth-child(1) { animation-delay: 0s; }
+    .logo-rings .ring:nth-child(2) { animation-delay: 1s; }
+    .logo-rings .ring:nth-child(3) { animation-delay: 2s; }
 
     .brand-title {
         font-size: 3rem;
@@ -394,6 +1043,11 @@
         margin-bottom: 2rem;
     }
 
+    .login-section {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
     .login-card {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(20px);
@@ -411,7 +1065,7 @@
     .google-icon {
         width: 60px;
         height: 60px;
-        background: var(--google-blue);
+        background: #4285f4;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -516,54 +1170,8 @@
         font-size: 1rem;
     }
 
-    /* Action Buttons */
-    .action-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        align-items: center;
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 1rem 2rem;
-        border-radius: 16px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        min-width: 280px;
-        justify-content: center;
-        font-size: 1rem;
-    }
-
-    .btn-primary {
-        background: white;
-        color: var(--primary-color);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        color: var(--primary-color);
-    }
-
-    .btn-secondary {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .btn-secondary:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-        color: white;
-    }
-
-    /* Features Section */
-    .features-section {
+    /* Features Preview */
+    .features-preview {
         padding: 5rem 0;
         background: white;
     }
@@ -596,14 +1204,14 @@
         border-radius: 20px;
         padding: 2rem;
         text-align: center;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--card-shadow);
         border: 1px solid rgba(59, 130, 246, 0.1);
         transition: all 0.3s ease;
     }
 
     .feature-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+        box-shadow: var(--card-shadow-hover);
     }
 
     .feature-icon {
@@ -635,6 +1243,10 @@
 
     /* Responsive Design */
     @media (max-width: 768px) {
+        .welcome-title {
+            font-size: 2rem;
+        }
+
         .brand-title {
             font-size: 2.2rem;
         }
@@ -643,23 +1255,101 @@
             font-size: 1.2rem;
         }
 
-        .dashboard-card, .login-card {
-            margin: 0 1rem;
-            padding: 2rem;
-        }
-
-        .btn {
-            width: 100%;
-            min-width: auto;
-        }
-
-        .features-grid {
+        .dashboard-grid,
+        .stats-grid,
+        .features-grid,
+        .resources-grid {
             grid-template-columns: 1fr;
             gap: 1.5rem;
         }
 
-        .user-avatar {
-            font-size: 4rem;
+        .action-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .login-card {
+            margin: 0 1rem;
+            padding: 1.5rem;
+        }
+
+        .welcome-header {
+            padding: 2rem 0;
+        }
+
+        .avatar-container {
+            width: 100px;
+            height: 100px;
+        }
+
+        .avatar-circle {
+            width: 70px;
+            height: 70px;
+            font-size: 1.8rem;
+        }
+        .main-action-card.availability-confirmed {
+        border-left: 5px solid var(--success-color);
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.05), rgba(16, 185, 129, 0.05));
+        }
+
+        .action-icon.confirmed {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--success-color);
+        }
+
+        .action-button {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), var(--secondary-color));
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.3);
+            color: white;
+        }
+
+        .btn-outline-primary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .project-meta .badge {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+    }
+
+    /* Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
         }
     }
 </style>
@@ -680,10 +1370,38 @@ document.addEventListener('DOMContentLoaded', function() {
     if (loginBtn) {
         loginBtn.addEventListener('click', function(e) {
             const ripple = this.querySelector('.btn-ripple');
-            ripple.style.transform = 'translateX(0)';
+            if (ripple) {
+                ripple.style.transform = 'translateX(0)';
+                setTimeout(() => {
+                    ripple.style.transform = 'translateX(-100%)';
+                }, 600);
+            }
+        });
+    }
+
+    // Add smooth hover effects to dashboard cards
+    const dashboardCards = document.querySelectorAll('.dashboard-card');
+    dashboardCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+
+    // Add loading state to main action button
+    const actionBtn = document.querySelector('.action-button .btn');
+    if (actionBtn) {
+        actionBtn.addEventListener('click', function() {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Yükleniyor...</span>';
+            
+            // Reset after a short delay (in case the page doesn't navigate immediately)
             setTimeout(() => {
-                ripple.style.transform = 'translateX(-100%)';
-            }, 600);
+                this.innerHTML = originalText;
+            }, 3000);
         });
     }
 });

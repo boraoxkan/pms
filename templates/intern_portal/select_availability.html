@@ -1044,13 +1044,8 @@
 </style>
 
 <script>
-// Availability data from Django context
-const availabilityData = {{ availability_data|safe }};
-
-// Template filter for getting dictionary values
-function getItemFromDict(dict, key) {
-    return dict && dict[key] ? dict[key] : [];
-}
+// FIXED: Get saved availability data from Django context
+const savedAvailability = {{ saved_availability|safe|default:'{}' }};
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
@@ -1063,7 +1058,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Set initial checkbox states based on availability data
+    // FIXED: Set initial checkbox states based on saved availability data
     setInitialCheckboxStates();
     
     // Initialize selected counts for all days
@@ -1089,18 +1084,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Set initial checkbox states based on availability data
+// FIXED: Set initial checkbox states based on saved availability data
 function setInitialCheckboxStates() {
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     
     days.forEach(day => {
-        const daySlots = availabilityData[day] || [];
+        const daySlots = savedAvailability[day] || [];
         daySlots.forEach(timeSlot => {
-            // Remove colons and dashes to create a valid ID
+            // Create the checkbox ID - remove colons and dashes to match the template format
             const cleanTimeSlot = timeSlot.replace(/[:-]/g, '');
             const checkbox = document.getElementById(`slot_${day}_${cleanTimeSlot}`);
             if (checkbox) {
                 checkbox.checked = true;
+                console.log(`Checked: slot_${day}_${cleanTimeSlot}`); // Debug log
+            } else {
+                console.warn(`Checkbox not found: slot_${day}_${cleanTimeSlot}`); // Debug log
             }
         });
     });

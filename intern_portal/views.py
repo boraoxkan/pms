@@ -24,16 +24,223 @@ def verify_token(view_func):
 
 def home_page(request):
     """
-    New homepage with Google SSO login
+    Homepage with Google SSO login and dynamic content based on user state
     """
-    # Don't redirect if user is authenticated - always show the homepage
-    # Users can navigate manually if they want to go to availability
-    return render(request, 'intern_portal/home_page.html')
+    context = {
+        'user': request.user,
+    }
+    
+    # If user is authenticated, add additional context
+    if request.user.is_authenticated and not (request.user.is_staff or request.user.is_superuser):
+        try:
+            # FIXED: Get intern object and related data
+            intern = Intern.objects.get(user=request.user)
+            
+            # Get assigned projects for this intern
+            assigned_projects = intern.assigned_projects.all()
+            
+            # Check if intern has availability data
+            has_availability = False
+            availability_data = None
+            try:
+                availability = InternAvailability.objects.get(intern=intern)
+                has_availability = bool(availability.availability_data and 
+                                      any(slots for slots in availability.availability_data.values()))
+                availability_data = availability
+            except InternAvailability.DoesNotExist:
+                pass
+            
+            # Check if intern has submitted preferences
+            has_preferences = False
+            try:
+                preferences = ProjectPreference.objects.get(intern=intern)
+                has_preferences = preferences.is_submitted
+            except ProjectPreference.DoesNotExist:
+                pass
+            
+            # Add intern-specific context
+            context.update({
+                'intern': intern,
+                'assigned_projects': assigned_projects,
+                'assigned_projects_count': assigned_projects.count(),
+                'has_assigned_projects': assigned_projects.exists(),
+                'has_availability': has_availability,
+                'availability_data': availability_data,
+                'has_preferences': has_preferences,
+            })
+            
+        except Intern.DoesNotExist:
+            # User is authenticated but no intern record exists
+            # This could happen if admin hasn't created intern record yet
+            pass
+    
+    return render(request, 'intern_portal/home_page.html', context)
+
+@login_required
+def team_availability(request):
+    """
+    Display team availability calendar for Google SSO authenticated users
+    Shows combined availability of all teammates (interns assigned to same projects)
+    Displays full 24-hour time range (00:00 to 23:00)
+    """
+    # Check if user is admin (staff/superuser)
+    if request.user.is_staff or request.user.is_superuser:
+        messages.info(request, 'Admin kullanıcıları için takım müsaitlik sistemi kullanılmaz. Lütfen admin panelini kullanın.')
+        return redirect('/admin/')
+    
+    # Get the intern object linked to the authenticated user
+    try:
+        current_intern = Intern.objects.get(user=request.user)
+    except Intern.DoesNotExist:
+        messages.error(
+            request, 
+            'Hesabınız ile ilgili bir sorun var. Lütfen sistem yöneticisi ile iletişime geçin.'
+        )
+        return redirect('home_page')
+    
+    # Get all projects assigned to current intern
+    assigned_projects = current_intern.assigned_projects.all()
+    
+    if not assigned_projects.exists():
+        messages.info(request, 'Henüz size atanmış bir proje bulunmuyor. Takım müsaitliği görüntülemek için önce bir projeye atanmanız gerekiyor.')
+        return redirect('home_page')
+    
+    # Find all teammates (other interns assigned to the same projects)
+    teammate_ids = set()
+    for project in assigned_projects:
+        # Get all interns assigned to this project, excluding current intern
+        project_interns = project.assigned_interns.exclude(id=current_intern.id).values_list('id', flat=True)
+        teammate_ids.update(project_interns)
+    
+    # Get teammate objects
+    teammates = Intern.objects.filter(id__in=teammate_ids, is_active=True)
+    
+    # Define time slots for full 24-hour day (00:00 to 23:00)
+    TIME_SLOTS = [
+        '00:00-01:00', '01:00-02:00', '02:00-03:00', '03:00-04:00',
+        '04:00-05:00', '05:00-06:00', '06:00-07:00', '07:00-08:00',
+        '08:00-09:00', '09:00-10:00', '10:00-11:00', '11:00-12:00',
+        '12:00-13:00', '13:00-14:00', '14:00-15:00', '15:00-16:00',
+        '16:00-17:00', '17:00-18:00', '18:00-19:00', '19:00-20:00',
+        '20:00-21:00', '21:00-22:00', '22:00-23:00', '23:00-00:00'
+    ]
+    
+    # Define days of the week
+    WEEKDAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+    DAY_NAMES = {
+        'monday': 'Pazartesi',
+        'tuesday': 'Salı', 
+        'wednesday': 'Çarşamba',
+        'thursday': 'Perşembe',
+        'friday': 'Cuma'
+    }
+    
+    # Group time slots by periods for better organization
+    TIME_PERIODS = {
+        'Gece (00:00 - 06:00)': TIME_SLOTS[0:6],
+        'Sabah (06:00 - 12:00)': TIME_SLOTS[6:12],
+        'Öğleden Sonra (12:00 - 18:00)': TIME_SLOTS[12:18],
+        'Akşam (18:00 - 24:00)': TIME_SLOTS[18:24]
+    }
+    
+    # Initialize the calendar structure
+    team_calendar = {}
+    for day in WEEKDAYS:
+        team_calendar[day] = {}
+        for time_slot in TIME_SLOTS:
+            team_calendar[day][time_slot] = []
+    
+    # Fetch availability data for all teammates
+    teammate_availabilities = InternAvailability.objects.filter(
+        intern__in=teammates
+    ).select_related('intern')
+    
+    # Process each teammate's availability
+    for availability in teammate_availabilities:
+        intern_name = availability.intern.get_full_name()
+        
+        if availability.availability_data:
+            for day_code, time_slots in availability.availability_data.items():
+                if day_code in WEEKDAYS and time_slots:
+                    for time_slot in time_slots:
+                        if time_slot in TIME_SLOTS:
+                            team_calendar[day_code][time_slot].append(intern_name)
+    
+    # Create a more template-friendly structure
+    calendar_grid = []
+    for day in WEEKDAYS:
+        day_data = {
+            'day_code': day,
+            'day_name': DAY_NAMES[day],
+            'time_slots': []
+        }
+        for time_slot in TIME_SLOTS:
+            available_teammates = team_calendar[day][time_slot]
+            day_data['time_slots'].append({
+                'time': time_slot,
+                'time_display': time_slot.replace('-', ' - '),  # Format for display
+                'available_count': len(available_teammates),
+                'available_teammates': available_teammates
+            })
+        calendar_grid.append(day_data)
+    
+    # Calculate some statistics
+    total_teammates = teammates.count()
+    teammates_with_availability = teammate_availabilities.count()
+    
+    # Get current intern's projects for context
+    current_intern_projects = list(assigned_projects.values('name', 'id'))
+    
+    # Find peak availability times (times when most people are available)
+    peak_times = []
+    max_availability = 0
+    
+    for day in WEEKDAYS:
+        for time_slot in TIME_SLOTS:
+            count = len(team_calendar[day][time_slot])
+            if count > max_availability:
+                max_availability = count
+                peak_times = [(DAY_NAMES[day], time_slot)]
+            elif count == max_availability and count > 0:
+                peak_times.append((DAY_NAMES[day], time_slot))
+    
+    # Calculate availability statistics by time period
+    period_stats = {}
+    for period_name, period_slots in TIME_PERIODS.items():
+        total_availability = 0
+        for day in WEEKDAYS:
+            for time_slot in period_slots:
+                total_availability += len(team_calendar[day][time_slot])
+        period_stats[period_name] = total_availability
+    
+    # Find most active period
+    most_active_period = max(period_stats.items(), key=lambda x: x[1]) if period_stats else None
+    
+    context = {
+        'current_intern': current_intern,
+        'teammates': teammates,
+        'assigned_projects': assigned_projects,
+        'current_intern_projects': current_intern_projects,
+        'team_calendar': team_calendar,
+        'calendar_grid': calendar_grid,
+        'time_slots': TIME_SLOTS,
+        'time_periods': TIME_PERIODS,
+        'weekdays': WEEKDAYS,
+        'day_names': DAY_NAMES,
+        'total_teammates': total_teammates,
+        'teammates_with_availability': teammates_with_availability,
+        'peak_times': peak_times,
+        'max_availability': max_availability,
+        'period_stats': period_stats,
+        'most_active_period': most_active_period,
+    }
+    
+    return render(request, 'intern_portal/team_availability.html', context)
 
 @login_required
 def select_availability(request):
     """
-    New availability view for Google SSO authenticated users
+    Availability selection view for Google SSO authenticated users
     """
     # Check if user is admin (staff/superuser)
     if request.user.is_staff or request.user.is_superuser:
@@ -41,11 +248,9 @@ def select_availability(request):
         return redirect('/admin/')
     
     # Get the intern object linked to the authenticated user
-    # The adapter should have already linked them, so this should always work
     try:
         intern = Intern.objects.get(user=request.user)
     except Intern.DoesNotExist:
-        # This should not happen if the adapter worked correctly
         messages.error(
             request, 
             'Hesabınız ile ilgili bir sorun var. Lütfen sistem yöneticisi ile iletişime geçin.'
@@ -124,18 +329,86 @@ def select_availability(request):
         else:
             messages.info(request, 'Ortak çalışma saati durumunuz temizlendi.')
         
-        return redirect('select_availability')
+        # FIXED: Redirect to confirmation page instead of same page
+        return redirect('view_availability')
     
-    # Prepare context for template
+    # For GET requests, prepare context for template
+    saved_availability = {}
+    if availability.availability_data:
+        for day_code, slots in availability.availability_data.items():
+            saved_availability[day_code] = slots
+    
     context = {
         'intern': intern,
         'availability': availability,
         'days': DAYS,
         'time_slots': TIME_SLOTS,
-        'availability_data': json.dumps(availability.availability_data),
+        'saved_availability': saved_availability,
     }
     
     return render(request, 'intern_portal/select_availability.html', context)
+
+@login_required
+def view_availability(request):
+    """
+    Read-only view to display saved availability for Google SSO authenticated users
+    """
+    # Check if user is admin (staff/superuser)
+    if request.user.is_staff or request.user.is_superuser:
+        messages.info(request, 'Admin kullanıcıları için müsaitlik sistemi kullanılmaz. Lütfen admin panelini kullanın.')
+        return redirect('/admin/')
+    
+    # Get the intern object linked to the authenticated user
+    try:
+        intern = Intern.objects.get(user=request.user)
+    except Intern.DoesNotExist:
+        messages.error(
+            request, 
+            'Hesabınız ile ilgili bir sorun var. Lütfen sistem yöneticisi ile iletişime geçin.'
+        )
+        return redirect('home_page')
+    
+    # Get availability record for the intern
+    try:
+        availability = InternAvailability.objects.get(intern=intern)
+    except InternAvailability.DoesNotExist:
+        # If no availability record exists, redirect to selection page
+        messages.info(request, 'Henüz ortak çalışma saati belirtmemişsiniz. Lütfen müsaitlik durumunuzu belirleyin.')
+        return redirect('select_availability')
+    
+    # Define day names for display
+    DAY_NAMES = {
+        'monday': 'Pazartesi',
+        'tuesday': 'Salı',
+        'wednesday': 'Çarşamba',
+        'thursday': 'Perşembe',
+        'friday': 'Cuma',
+        'saturday': 'Cumartesi',
+    }
+    
+    # Process availability data for display
+    formatted_availability = {}
+    total_hours = 0
+    
+    if availability.availability_data:
+        for day_code, time_slots in availability.availability_data.items():
+            if time_slots:  # Only include days with selected times
+                formatted_availability[DAY_NAMES.get(day_code, day_code)] = time_slots
+                total_hours += len(time_slots)
+    
+    # Check if user has any availability set
+    has_availability = total_hours > 0
+    
+    context = {
+        'intern': intern,
+        'availability': availability,
+        'formatted_availability': formatted_availability,
+        'total_hours': total_hours,
+        'has_availability': has_availability,
+        'available_days_count': len(formatted_availability),
+    }
+    
+    return render(request, 'intern_portal/view_availability.html', context)
 
 # ================================
 # LEGACY VIEWS (Token-based)
@@ -286,118 +559,3 @@ def legacy_select_availability(request, token):
     }
     
     return render(request, 'intern_portal/select_availability.html', context)
-
-# Add this to your views.py for detailed debugging
-
-from django.http import HttpResponse
-from django.contrib.sites.models import Site
-from allauth.socialaccount.models import SocialApp
-from allauth.socialaccount.providers.google.views import oauth2_login
-from django.conf import settings
-from django.urls import reverse
-
-def debug_detailed_oauth(request):
-    """Detailed OAuth debugging"""
-    html = "<h1>Detailed OAuth Debug</h1>"
-    
-    # 1. Check basic configuration
-    html += "<h2>1. Basic Configuration</h2>"
-    html += f"<p><strong>SITE_ID:</strong> {getattr(settings, 'SITE_ID', 'NOT SET')}</p>"
-    html += f"<p><strong>SOCIALACCOUNT_LOGIN_ON_GET:</strong> {getattr(settings, 'SOCIALACCOUNT_LOGIN_ON_GET', 'NOT SET')}</p>"
-    html += f"<p><strong>Current domain:</strong> {request.get_host()}</p>"
-    
-    # 2. Check sites
-    html += "<h2>2. Sites Configuration</h2>"
-    try:
-        current_site = Site.objects.get(pk=settings.SITE_ID)
-        html += f"<p><strong>Current Site:</strong> {current_site.domain} (ID: {current_site.id})</p>"
-        if current_site.domain != request.get_host():
-            html += f"<p style='color: red;'><strong>⚠️ MISMATCH:</strong> Site domain ({current_site.domain}) != Request host ({request.get_host()})</p>"
-    except Site.DoesNotExist:
-        html += f"<p style='color: red;'><strong>❌ ERROR:</strong> Site with ID {settings.SITE_ID} does not exist</p>"
-    
-    # 3. Check Google app
-    html += "<h2>3. Google OAuth App</h2>"
-    try:
-        google_app = SocialApp.objects.get(provider='google')
-        html += f"<p><strong>Google App Found:</strong> ✅</p>"
-        html += f"<p><strong>Client ID:</strong> {google_app.client_id[:20]}...</p>"
-        html += f"<p><strong>Has Secret:</strong> {'✅' if google_app.secret else '❌'}</p>"
-        html += f"<p><strong>App Sites:</strong> {[s.domain for s in google_app.sites.all()]}</p>"
-        
-        # Check if current site is linked to Google app
-        if current_site in google_app.sites.all():
-            html += f"<p><strong>Site Linked:</strong> ✅</p>"
-        else:
-            html += f"<p style='color: red;'><strong>❌ Site NOT linked to Google app</strong></p>"
-            
-    except SocialApp.DoesNotExist:
-        html += f"<p style='color: red;'><strong>❌ Google OAuth app not found</strong></p>"
-    
-    # 4. Test URL generation
-    html += "<h2>4. URL Testing</h2>"
-    try:
-        from allauth.socialaccount.providers.google.urls import urlpatterns as google_urls
-        html += f"<p><strong>Google URLs loaded:</strong> ✅ ({len(google_urls)} patterns)</p>"
-    except Exception as e:
-        html += f"<p style='color: red;'><strong>❌ Google URLs error:</strong> {e}</p>"
-    
-    # 5. Test OAuth URL generation
-    html += "<h2>5. OAuth URL Generation</h2>"
-    try:
-        from allauth.socialaccount.providers import registry
-        google_provider = registry.by_id('google')
-        html += f"<p><strong>Google Provider:</strong> ✅ {google_provider}</p>"
-        
-        # Try to get the OAuth URL
-        oauth_url = google_provider.get_login_url(request)
-        html += f"<p><strong>OAuth URL:</strong> <a href='{oauth_url}' target='_blank'>{oauth_url}</a></p>"
-        
-        if 'accounts.google.com' in oauth_url:
-            html += f"<p style='color: green;'><strong>✅ OAuth URL looks correct</strong></p>"
-        else:
-            html += f"<p style='color: red;'><strong>❌ OAuth URL doesn't point to Google</strong></p>"
-            
-    except Exception as e:
-        html += f"<p style='color: red;'><strong>❌ OAuth URL generation error:</strong> {e}</p>"
-    
-    # 6. Test direct access
-    html += "<h2>6. Direct Access Test</h2>"
-    from django.test import Client
-    client = Client()
-    try:
-        response = client.get('/accounts/google/login/', HTTP_HOST=request.get_host())
-        html += f"<p><strong>Direct access status:</strong> {response.status_code}</p>"
-        if response.status_code == 302:
-            html += f"<p><strong>Redirects to:</strong> <a href='{response.url}' target='_blank'>{response.url}</a></p>"
-        elif response.status_code == 200:
-            html += f"<p style='color: orange;'><strong>Shows page (should redirect)</strong></p>"
-        else:
-            html += f"<p style='color: red;'><strong>Unexpected status</strong></p>"
-    except Exception as e:
-        html += f"<p style='color: red;'><strong>Direct access error:</strong> {e}</p>"
-    
-    # 7. Recommendations
-    html += "<h2>7. Recommendations</h2>"
-    html += "<ul>"
-    
-    try:
-        current_site = Site.objects.get(pk=settings.SITE_ID)
-        if current_site.domain != request.get_host():
-            html += f"<li style='color: red;'>Update site domain to match request host: <code>python manage.py setup_dev_oauth --domain='{request.get_host()}'</code></li>"
-    except:
-        pass
-    
-    try:
-        google_app = SocialApp.objects.get(provider='google')
-        if current_site not in google_app.sites.all():
-            html += f"<li style='color: red;'>Link Google app to current site</li>"
-    except:
-        html += f"<li style='color: red;'>Create Google OAuth app</li>"
-    
-    html += f"<li>Ensure Google Console has redirect URI: <code>http://{request.get_host()}/accounts/google/login/callback/</code></li>"
-    html += "</ul>"
-    
-    return HttpResponse(html)
-
-# Add this URL to your urls.py:

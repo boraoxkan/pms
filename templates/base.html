@@ -530,9 +530,11 @@
     </div>
 
     <div class="content-wrapper">
+                <!-- Extract from base.html - Fixed Navigation Section -->
         <nav class="navbar navbar-expand-lg">
             <div class="container">
-                <a class="navbar-brand" href="{% if intern %}{% url 'intern_home' token=intern.access_token %}{% else %}#{% endif %}">
+                <!-- FIXED: Always link to home page using named URL -->
+                <a class="navbar-brand" href="{% url 'home_page' %}">
                     <i class="fas fa-eye me-2"></i>
                     <span>One Eye Systems PMS</span>
                 </a>
@@ -564,6 +566,11 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'select_availability' %}">
                                         <i class="fas fa-calendar-check me-1"></i>Ortak Çalışma Saati
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'view_availability' %}">
+                                        <i class="fas fa-eye me-1"></i>Ortak Çalışma Saati Görüntüle
                                     </a>
                                 </li>
                             {% endif %}
