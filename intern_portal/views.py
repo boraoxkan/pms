@@ -35,6 +35,11 @@ def select_availability(request):
     """
     New availability view for Google SSO authenticated users
     """
+    # Check if user is admin (staff/superuser)
+    if request.user.is_staff or request.user.is_superuser:
+        messages.info(request, 'Admin kullanıcıları için müsaitlik sistemi kullanılmaz. Lütfen admin panelini kullanın.')
+        return redirect('/admin/')
+    
     # Get the intern object linked to the authenticated user
     try:
         intern = Intern.objects.get(user=request.user)
