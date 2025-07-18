@@ -149,54 +149,86 @@
                         </div>
                     </div>
 
-                    <!-- FIXED: Dynamic Main Action Section Based on Availability Status -->
+                    <!-- Replace the existing action-section -->
                     <div class="action-section" data-aos="fade-up" data-aos-delay="300">
                         <div class="row">
                             <div class="col-lg-8">
                                 {% if not has_availability %}
-                                    <!-- Show if NO availability set -->
-                                    <div class="main-action-card">
+                                    <!-- Enhanced design for NO availability set -->
+                                    <div class="main-action-card modern-card">
+                                        <div class="card-gradient-bg"></div>
                                         <div class="action-content">
-                                            <div class="action-icon">
-                                                <i class="fas fa-clock"></i>
+                                            <div class="action-icon-modern">
+                                                <div class="icon-pulse"></div>
+                                                <i class="fas fa-calendar-plus"></i>
                                             </div>
                                             <div class="action-text">
                                                 <h3>Ortak Çalışma Saatinizi Belirleyin</h3>
-                                                <p>Haftalık müsaitlik programınızı oluşturun ve ekiple koordinasyon kurun. Bu bilgi, size en uygun proje takımına atanmanız için kullanılacak.</p>
+                                                <p>Haftalık müsaitlik programınızı oluşturun ve ekip koordinasyonunu sağlayın. Bu bilgi, size en uygun proje takımına atanmanız için kritik öneme sahiptir.</p>
+                                                <div class="benefits-list">
+                                                    <div class="benefit-item">
+                                                        <i class="fas fa-check-circle"></i>
+                                                        <span>Ekip ile uyumlu çalışma</span>
+                                                    </div>
+                                                    <div class="benefit-item">
+                                                        <i class="fas fa-check-circle"></i>
+                                                        <span>Verimli proje yönetimi</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="action-button">
-                                            <a href="{% url 'select_availability' %}" class="btn btn-primary btn-lg">
-                                                <i class="fas fa-calendar-plus"></i>
-                                                <span>Ortak Çalışma Saati Belirle</span>
+                                        <div class="action-button-modern">
+                                            <a href="{% url 'select_availability' %}" class="btn btn-primary-modern">
+                                                <span class="btn-text">Ortak Çalışma Saati Belirle</span>
+                                                <div class="btn-arrow">
+                                                    <i class="fas fa-arrow-right"></i>
+                                                </div>
                                             </a>
                                         </div>
                                     </div>
                                 {% else %}
-                                    <!-- Show if availability IS set -->
-                                    <div class="main-action-card availability-confirmed">
+                                    <!-- Enhanced design for availability IS set -->
+                                    <div class="main-action-card modern-card confirmed">
+                                        <div class="card-gradient-bg success"></div>
                                         <div class="action-content">
-                                            <div class="action-icon confirmed">
-                                                <i class="fas fa-check-circle"></i>
+                                            <div class="action-icon-modern success">
+                                                <div class="success-animation">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
                                             </div>
                                             <div class="action-text">
-                                                <h3>✅ Ortak Çalışma Saatiniz Kaydedildi</h3>
-                                                <p>Müsaitlik durumunuz başarıyla kaydedildi. Toplam {{ availability_data.get_total_hours }} saat ortak çalışma saati belirttiniz. Gerektiğinde düzenlemeler yapabilirsiniz.</p>
+                                                <h3>Ortak Çalışma Saatiniz Onaylandı</h3>
+                                                <p>Müsaitlik durumunuz başarıyla kaydedildi. <strong>{{ availability_data.get_total_hours }} saat</strong> ortak çalışma saati belirttiniz.</p>
+                                                <div class="stats-mini">
+                                                    <div class="mini-stat">
+                                                        <span class="stat-number">{{ availability_data.get_total_hours }}</span>
+                                                        <span class="stat-label">Saat/Hafta</span>
+                                                    </div>
+                                                    <div class="mini-stat">
+                                                        <span class="stat-number">{{ availability_data.get_available_days|length }}</span>
+                                                        <span class="stat-label">Aktif Gün</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="action-button">
-                                            <a href="{% url 'view_availability' %}" class="btn btn-success btn-lg">
-                                                <i class="fas fa-eye"></i>
-                                                <span>Ortak Çalışma Saati Görüntüle</span>
+                                        <div class="action-button-modern">
+                                            <a href="{% url 'view_availability' %}" class="btn btn-success-modern">
+                                                <span class="btn-text">Detayları Görüntüle</span>
+                                                <div class="btn-arrow">
+                                                    <i class="fas fa-eye"></i>
+                                                </div>
                                             </a>
-                                            <a href="{% url 'select_availability' %}" class="btn btn-outline-primary btn-lg">
-                                                <i class="fas fa-edit"></i>
-                                                <span>Düzenle</span>
+                                            <a href="{% url 'select_availability' %}" class="btn btn-outline-modern">
+                                                <span class="btn-text">Düzenle</span>
+                                                <div class="btn-arrow">
+                                                    <i class="fas fa-edit"></i>
+                                                </div>
                                             </a>
                                         </div>
                                     </div>
                                 {% endif %}
                             </div>
+                            <!-- Keep the existing col-lg-4 section unchanged -->
                             <div class="col-lg-4">
                                 <div class="info-cards">
                                     <!-- FIXED: Show assigned projects or pending status -->
@@ -208,12 +240,10 @@
                                             </div>
                                             <div class="info-content">
                                                 {% for project in assigned_projects %}
+                                                    <!-- Replace the existing project-item structure -->
                                                     <div class="project-item">
                                                         <div class="project-name">{{ project.name }}</div>
-                                                        <div class="project-meta">
-                                                            <span class="badge">{{ project.get_duration_display }}</span>
-                                                            <span class="badge">{{ project.get_team_size_display }}</span>
-                                                        </div>
+                                                        <div class="project-description">{{ project.short_description|truncatewords:15 }}</div>
                                                     </div>
                                                 {% endfor %}
                                             </div>
@@ -254,38 +284,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Additional Resources -->
-                    <div class="resources-section" data-aos="fade-up" data-aos-delay="400">
-                        <div class="section-header">
-                            <h3>Hızlı Erişim</h3>
-                            <p>Sık kullanılan özellikler</p>
-                        </div>
-                        <div class="resources-grid">
-                            <div class="resource-card">
-                                <div class="resource-icon">
-                                    <i class="fas fa-question-circle"></i>
-                                </div>
-                                <h4>Yardım & Destek</h4>
-                                <p>Sorularınız için IT ekibiyle iletişime geçin</p>
-                            </div>
-                            <div class="resource-card">
-                                <div class="resource-icon">
-                                    <i class="fas fa-book"></i>
-                                </div>
-                                <h4>Stajyer Rehberi</h4>
-                                <p>Staj sürecinizle ilgili detaylı bilgiler</p>
-                            </div>
-                            <div class="resource-card">
-                                <div class="resource-icon">
-                                    <i class="fas fa-chart-line"></i>
-                                </div>
-                                <h4>İlerleme Takibi</h4>
-                                <p>Staj sürecinizi ve başarılarınızı izleyin</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             {% endif %}
         </div>
     {% else %}
@@ -564,6 +562,267 @@
     .btn-sm {
         padding: 0.5rem 1rem;
         font-size: 0.875rem;
+    }
+
+    /* Modern Action Card Styles */
+    .modern-card {
+        position: relative;
+        background: white;
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modern-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-gradient-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        border-radius: 24px 24px 0 0;
+    }
+
+    .card-gradient-bg.success {
+        background: linear-gradient(90deg, var(--success-color), var(--secondary-color));
+    }
+
+    .action-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .action-icon-modern {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .action-icon-modern.success {
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.1));
+    }
+
+    .icon-pulse {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.2));
+        border-radius: 20px;
+        animation: pulse-modern 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-modern {
+        0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    }
+
+    .action-icon-modern i {
+        font-size: 2rem;
+        color: var(--primary-color);
+        position: relative;
+        z-index: 2;
+    }
+
+    .action-icon-modern.success i {
+        color: var(--success-color);
+    }
+
+    .success-animation {
+        animation: success-bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes success-bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .action-text h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+
+    .action-text p {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .benefits-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.95rem;
+        color: var(--text-color);
+    }
+
+    .benefit-item i {
+        color: var(--success-color);
+        font-size: 0.9rem;
+    }
+
+    .stats-mini {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .mini-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        background: rgba(5, 150, 105, 0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(5, 150, 105, 0.1);
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--success-color);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .action-button-modern {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-primary-modern, .btn-success-modern, .btn-outline-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 2rem;
+        border-radius: 16px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        border: none;
+    }
+
+    .btn-primary-modern {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-success-modern {
+        background: linear-gradient(135deg, var(--success-color), var(--secondary-color));
+        color: white;
+        box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+    }
+
+    .btn-outline-modern {
+        background: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+
+    .btn-primary-modern:hover, .btn-success-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    .btn-outline-modern:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-arrow {
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-modern .btn-arrow {
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-primary-modern:hover .btn-arrow,
+    .btn-success-modern:hover .btn-arrow {
+        transform: translateX(4px);
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-outline-modern:hover .btn-arrow {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(4px);
+    }
+
+    .project-description {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        line-height: 1.4;
+        margin-top: 0.5rem;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .action-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+        
+        .action-button-modern {
+            justify-content: center;
+        }
+        
+        .stats-mini {
+            justify-content: center;
+        }
     }
 
     /* Mobile responsiveness for new team card */
@@ -874,16 +1133,6 @@
         font-weight: 500;
     }
 
-    /* Resources Section */
-    .resources-section {
-        padding: 3rem 0;
-    }
-
-    .section-header {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-
     .section-header h3 {
         font-size: 2rem;
         font-weight: 700;
@@ -896,37 +1145,9 @@
         font-size: 1.1rem;
     }
 
-    .resources-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .resource-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: var(--card-shadow);
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-
     .resource-card:hover {
         transform: translateY(-3px);
         box-shadow: var(--card-shadow-hover);
-    }
-
-    .resource-icon {
-        width: 50px;
-        height: 50px;
-        background: rgba(59, 130, 246, 0.1);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1rem;
-        color: var(--primary-color);
-        font-size: 1.25rem;
     }
 
     .resource-card h4 {

@@ -26,7 +26,7 @@
                 <nav class="hero-breadcrumb" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a href="{% if user.is_authenticated %}{% url 'select_availability' %}{% else %}{% url 'intern_home' token=intern.access_token %}{% endif %}">
+                            <a href="{% url 'home_page' %}">
                                 <i class="fas fa-home me-1"></i>Ana Sayfa
                             </a>
                         </li>
@@ -59,49 +59,28 @@
                         </div>
                         <div class="info-point">
                             <i class="fas fa-check"></i>
-                            <span>Değişikliklerinizi kaydetmeyi unutmayın</span>
+                            <span>En az {{ settings.minimum_hours_required }} saat seçmelisiniz</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Current Stats -->
-            {% if availability.availability_data %}
-            <div class="stats-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="stats-header">
-                    <h3>Mevcut Ortak Çalışma Saati Durumu</h3>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number">{{ availability.get_total_hours }}</div>
-                            <div class="stat-label">Toplam Saat</div>
-                        </div>
+            <!-- Minimum Hours Info -->
+            <div class="minimum-hours-info" data-aos="fade-up" data-aos-delay="200">
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fas fa-clock"></i>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-icon">
-                            <i class="fas fa-calendar-day"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number">{{ availability.get_available_days|length }}</div>
-                            <div class="stat-label">Ortak Çalışma Günü</div>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-icon">
-                            <i class="fas fa-percentage"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number">{% widthratio availability.get_total_hours 144 100 %}%</div>
-                            <div class="stat-label">Haftalık Oran</div>
+                    <div class="info-content">
+                        <h4>Minimum Saat Gereksinimi</h4>
+                        <p>En az <strong>{{ settings.minimum_hours_required }} saat</strong> seçmelisiniz. 
+                           Şu anki seçiminiz: <span id="total-hours-display">0</span> saat</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="hours-progress"></div>
                         </div>
                     </div>
                 </div>
             </div>
-            {% endif %}
 
             <!-- Availability Form -->
             <div class="availability-form-card" data-aos="fade-up" data-aos-delay="300">
@@ -113,126 +92,47 @@
                         <p>Pazartesi'den Cumartesi'ye kadar olan günlerde ortak çalışma saatinizi seçin</p>
                     </div>
 
-                    <div class="days-grid">
+                    <!-- Compact Time Selection -->
+                    <div class="time-slots-container-compact">
                         {% for day_code, day_name in days %}
-                        <div class="day-card {% if day_code == 'saturday' %}weekend-day{% endif %}" data-aos="fade-up" data-aos-delay="{% cycle '400' '450' '500' '550' '600' '650' %}">
-                            <div class="day-header">
+                        <div class="day-card-compact {% if day_code == 'saturday' %}weekend-day{% endif %}" data-aos="fade-up" data-aos-delay="{% cycle '400' '450' '500' '550' '600' '650' %}">
+                            <div class="day-header-compact">
                                 <div class="day-info">
                                     <h4>{{ day_name }}</h4>
-                                    <span class="selected-count" id="count-{{ day_code }}">0 saat seçili</span>
+                                    <span class="selected-count" id="count-{{ day_code }}">0 saat</span>
                                 </div>
-                                <div class="day-actions">
-                                    <button type="button" class="btn-toggle" onclick="toggleAllSlots('{{ day_code }}')">
+                                <div class="day-actions-compact">
+                                    <button type="button" class="btn-toggle-compact" onclick="toggleAllSlots('{{ day_code }}')">
                                         <i class="fas fa-check-double"></i>
-                                        <span>Tümünü Seç</span>
                                     </button>
-                                    <button type="button" class="btn-clear" onclick="clearAllSlots('{{ day_code }}')">
+                                    <button type="button" class="btn-clear-compact" onclick="clearAllSlots('{{ day_code }}')">
                                         <i class="fas fa-times"></i>
-                                        <span>Temizle</span>
                                     </button>
                                 </div>
                             </div>
                             
-                            <div class="time-slots-container">
-                                <div class="time-category">
-                                    <h5 class="category-title">Gece (00:00 - 06:00)</h5>
-                                    <div class="time-slots-grid night-slots">
-                                        {% for time_slot_value, time_slot_display in time_slots %}
-                                        {% if time_slot_value|slice:":2" < "06" %}
-                                        <div class="time-slot">
-                                            <input type="checkbox" 
-                                                   id="slot_{{ day_code }}_{{ time_slot_value|cut:':' }}" 
-                                                   name="availability_{{ day_code }}" 
-                                                   value="{{ time_slot_value }}"
-                                                   data-day="{{ day_code }}"
-                                                   data-time="{{ time_slot_value }}"
-                                                   onchange="updateSelectedCount('{{ day_code }}')">
-                                            <label for="slot_{{ day_code }}_{{ time_slot_value|cut:':' }}" class="time-slot-label">
-                                                <div class="time-display">{{ time_slot_display }}</div>
-                                                <div class="slot-indicator">
-                                                    <i class="fas fa-check"></i>
-                                                </div>
-                                            </label>
+                            <!-- Compact time slot grid -->
+                            <div class="time-slots-grid-compact">
+                                {% for time_slot_value, time_slot_display in time_slots %}
+                                <div class="time-slot-compact 
+                                    {% if time_slot_value|slice:':2' < '06' %}night
+                                    {% elif time_slot_value|slice:':2' < '12' %}morning  
+                                    {% elif time_slot_value|slice:':2' < '18' %}afternoon
+                                    {% else %}evening{% endif %}">
+                                    <input type="checkbox" 
+                                           id="slot_{{ day_code }}_{{ time_slot_value|cut:':' }}" 
+                                           name="availability_{{ day_code }}" 
+                                           value="{{ time_slot_value }}"
+                                           data-day="{{ day_code }}"
+                                           onchange="updateSelectedCount('{{ day_code }}')">
+                                    <label for="slot_{{ day_code }}_{{ time_slot_value|cut:':' }}" class="time-slot-label-compact">
+                                        <span class="time-text">{{ time_slot_value|slice:':5' }}</span>
+                                        <div class="check-indicator">
+                                            <i class="fas fa-check"></i>
                                         </div>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </div>
+                                    </label>
                                 </div>
-
-                                <div class="time-category">
-                                    <h5 class="category-title">Sabah (06:00 - 12:00)</h5>
-                                    <div class="time-slots-grid morning-slots">
-                                        {% for time_slot_value, time_slot_display in time_slots %}
-                                        {% if time_slot_value|slice:":2" >= "06" and time_slot_value|slice:":2" < "12" %}
-                                        <div class="time-slot">
-                                            <input type="checkbox" 
-                                                   id="slot_{{ day_code }}_{{ time_slot_value|cut:':' }}" 
-                                                   name="availability_{{ day_code }}" 
-                                                   value="{{ time_slot_value }}"
-                                                   data-day="{{ day_code }}"
-                                                   data-time="{{ time_slot_value }}"
-                                                   onchange="updateSelectedCount('{{ day_code }}')">
-                                            <label for="slot_{{ day_code }}_{{ time_slot_value|cut:':' }}" class="time-slot-label">
-                                                <div class="time-display">{{ time_slot_display }}</div>
-                                                <div class="slot-indicator">
-                                                    <i class="fas fa-check"></i>
-                                                </div>
-                                            </label>
-                                        </div>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-
-                                <div class="time-category">
-                                    <h5 class="category-title">Öğleden Sonra (12:00 - 18:00)</h5>
-                                    <div class="time-slots-grid afternoon-slots">
-                                        {% for time_slot_value, time_slot_display in time_slots %}
-                                        {% if time_slot_value|slice:":2" >= "12" and time_slot_value|slice:":2" < "18" %}
-                                        <div class="time-slot">
-                                            <input type="checkbox" 
-                                                   id="slot_{{ day_code }}_{{ time_slot_value|cut:':' }}" 
-                                                   name="availability_{{ day_code }}" 
-                                                   value="{{ time_slot_value }}"
-                                                   data-day="{{ day_code }}"
-                                                   data-time="{{ time_slot_value }}"
-                                                   onchange="updateSelectedCount('{{ day_code }}')">
-                                            <label for="slot_{{ day_code }}_{{ time_slot_value|cut:':' }}" class="time-slot-label">
-                                                <div class="time-display">{{ time_slot_display }}</div>
-                                                <div class="slot-indicator">
-                                                    <i class="fas fa-check"></i>
-                                                </div>
-                                            </label>
-                                        </div>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-
-                                <div class="time-category">
-                                    <h5 class="category-title">Akşam (18:00 - 24:00)</h5>
-                                    <div class="time-slots-grid evening-slots">
-                                        {% for time_slot_value, time_slot_display in time_slots %}
-                                        {% if time_slot_value|slice:":2" >= "18" or time_slot_value|slice:":2" == "23" %}
-                                        <div class="time-slot">
-                                            <input type="checkbox" 
-                                                   id="slot_{{ day_code }}_{{ time_slot_value|cut:':' }}" 
-                                                   name="availability_{{ day_code }}" 
-                                                   value="{{ time_slot_value }}"
-                                                   data-day="{{ day_code }}"
-                                                   data-time="{{ time_slot_value }}"
-                                                   onchange="updateSelectedCount('{{ day_code }}')">
-                                            <label for="slot_{{ day_code }}_{{ time_slot_value|cut:':' }}" class="time-slot-label">
-                                                <div class="time-display">{{ time_slot_display }}</div>
-                                                <div class="slot-indicator">
-                                                    <i class="fas fa-check"></i>
-                                                </div>
-                                            </label>
-                                        </div>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
+                                {% endfor %}
                             </div>
                         </div>
                         {% endfor %}
@@ -240,7 +140,7 @@
 
                     <!-- Action Buttons -->
                     <div class="action-buttons" data-aos="fade-up" data-aos-delay="700">
-                        <button type="submit" class="btn btn-primary" id="saveAvailability">
+                        <button type="submit" class="btn btn-primary disabled" id="saveAvailability" disabled>
                             <div class="btn-content">
                                 <i class="fas fa-save"></i>
                                 <span>Ortak Çalışma Saati Durumunu Kaydet</span>
@@ -255,7 +155,7 @@
                             </div>
                         </button>
                         
-                        <a href="{% if user.is_authenticated %}{% url 'select_availability' %}{% else %}{% url 'intern_home' token=intern.access_token %}{% endif %}" class="btn btn-outline">
+                        <a href="{% url 'home_page' %}" class="btn btn-outline">
                             <div class="btn-content">
                                 <i class="fas fa-arrow-left"></i>
                                 <span>Ana Sayfaya Dön</span>
@@ -372,27 +272,13 @@
         animation: pulse-ring 2s ease-in-out infinite;
     }
 
-    .ring:nth-child(1) {
-        animation-delay: 0s;
-    }
-
-    .ring:nth-child(2) {
-        animation-delay: 0.7s;
-    }
-
-    .ring:nth-child(3) {
-        animation-delay: 1.4s;
-    }
+    .ring:nth-child(1) { animation-delay: 0s; }
+    .ring:nth-child(2) { animation-delay: 0.7s; }
+    .ring:nth-child(3) { animation-delay: 1.4s; }
 
     @keyframes pulse-ring {
-        0% {
-            transform: translate(-50%, -50%) scale(0.8);
-            opacity: 1;
-        }
-        100% {
-            transform: translate(-50%, -50%) scale(2);
-            opacity: 0;
-        }
+        0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
     }
 
     .hero-title {
@@ -520,68 +406,6 @@
         font-weight: 500;
     }
 
-    /* Stats Card */
-    .stats-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    .stats-header h3 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin-bottom: 1.5rem;
-        text-align: center;
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1.5rem;
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
-        border-radius: 16px;
-        border: 1px solid rgba(59, 130, 246, 0.1);
-    }
-
-    .stat-icon {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.2rem;
-    }
-
-    .stat-content {
-        flex: 1;
-    }
-
-    .stat-number {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--text-color);
-        line-height: 1;
-    }
-
-    .stat-label {
-        font-size: 0.9rem;
-        color: var(--text-light);
-        font-weight: 500;
-    }
-
     /* Availability Form */
     .availability-form-card {
         background: white;
@@ -608,83 +432,39 @@
         line-height: 1.6;
     }
 
-    /* Days Grid */
-    .days-grid {
+    /* Compact Time Selection Styles */
+    .time-slots-container-compact {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-bottom: 3rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
     }
 
-    .day-card {
-        background: #f8fafc;
+    .day-card-compact {
+        background: white;
         border-radius: 16px;
-        padding: 1.5rem;
+        padding: 1.25rem;
         border: 2px solid transparent;
         transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-    .day-card.weekend-day {
-        background: linear-gradient(135deg, #fef3c7, #fbbf24);
-        border-color: rgba(245, 158, 11, 0.2);
-    }
-
-    .day-card.weekend-day::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, transparent, rgba(245, 158, 11, 0.1));
-        z-index: 1;
-    }
-
-    .day-card.weekend-day .day-info h4 {
-        color: #92400e;
-        font-weight: 800;
-    }
-
-    .day-card.weekend-day .day-info h4::after {
-        content: ' 🌅';
-        font-size: 1rem;
-    }
-
-    .day-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, transparent, rgba(59, 130, 246, 0.02));
-        z-index: 1;
-    }
-
-    .day-card:hover {
+    .day-card-compact:hover {
         border-color: rgba(59, 130, 246, 0.2);
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     }
 
-    .day-card.weekend-day:hover {
-        border-color: rgba(245, 158, 11, 0.4);
-        box-shadow: 0 5px 20px rgba(245, 158, 11, 0.2);
-    }
-
-    .day-header {
+    .day-header-compact {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 1rem;
-        position: relative;
-        z-index: 2;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #f1f5f9;
     }
 
     .day-info h4 {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
         font-weight: 700;
         color: var(--text-color);
         margin: 0;
@@ -696,176 +476,194 @@
         font-weight: 500;
     }
 
-    .day-actions {
+    .day-actions-compact {
         display: flex;
         gap: 0.5rem;
-        flex-wrap: wrap;
     }
 
-    .btn-toggle, .btn-clear {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
+    .btn-toggle-compact, .btn-clear-compact {
+        width: 32px;
+        height: 32px;
         border: none;
         border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
         transition: all 0.3s ease;
+        font-size: 0.8rem;
     }
 
-    .btn-toggle {
+    .btn-toggle-compact {
         background: rgba(16, 185, 129, 0.1);
         color: var(--secondary-color);
     }
 
-    .btn-toggle:hover {
-        background: rgba(16, 185, 129, 0.2);
-        transform: translateY(-1px);
-    }
-
-    .btn-clear {
+    .btn-clear-compact {
         background: rgba(239, 68, 68, 0.1);
         color: #dc2626;
     }
 
-    .btn-clear:hover {
-        background: rgba(239, 68, 68, 0.2);
-        transform: translateY(-1px);
+    .btn-toggle-compact:hover, .btn-clear-compact:hover {
+        transform: scale(1.1);
     }
 
-    /* Time Slots Container */
-    .time-slots-container {
+    .time-slots-grid-compact {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.4rem;
+    }
+
+    .time-slot-compact {
+        position: relative;
+    }
+
+    .time-slot-compact input[type="checkbox"] {
+        display: none;
+    }
+
+    .time-slot-label-compact {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
-        position: relative;
-        z-index: 2;
-    }
-
-    .time-category {
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 12px;
-        padding: 1rem;
-        border: 1px solid rgba(59, 130, 246, 0.1);
-    }
-
-    .category-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-color);
-        margin-bottom: 0.75rem;
-        text-align: center;
-        padding: 0.5rem;
-        background: rgba(59, 130, 246, 0.1);
+        align-items: center;
+        justify-content: center;
+        height: 48px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
         border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        font-size: 0.75rem;
     }
 
-    /* Time Slots Grid */
-    .time-slots-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 0.5rem;
+    .time-slot-label-compact:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
-    .night-slots .time-slot-label {
+    /* Time period colors */
+    .time-slot-compact.night .time-slot-label-compact {
         background: linear-gradient(135deg, #1e293b, #334155);
         color: white;
         border-color: #475569;
     }
 
-    .night-slots .time-slot input[type="checkbox"]:checked + .time-slot-label {
-        background: linear-gradient(135deg, #3b82f6, #1e40af);
-        border-color: #3b82f6;
-    }
-
-    .morning-slots .time-slot-label {
+    .time-slot-compact.morning .time-slot-label-compact {
         background: linear-gradient(135deg, #fef3c7, #fbbf24);
         color: #92400e;
         border-color: #f59e0b;
     }
 
-    .morning-slots .time-slot input[type="checkbox"]:checked + .time-slot-label {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        border-color: #f59e0b;
-        color: white;
-    }
-
-    .afternoon-slots .time-slot-label {
+    .time-slot-compact.afternoon .time-slot-label-compact {
         background: linear-gradient(135deg, #dbeafe, #60a5fa);
         color: #1e40af;
         border-color: #3b82f6;
     }
 
-    .afternoon-slots .time-slot input[type="checkbox"]:checked + .time-slot-label {
-        background: linear-gradient(135deg, #3b82f6, #1e40af);
-        border-color: #3b82f6;
-        color: white;
-    }
-
-    .evening-slots .time-slot-label {
+    .time-slot-compact.evening .time-slot-label-compact {
         background: linear-gradient(135deg, #f3e8ff, #a855f7);
         color: #7c3aed;
         border-color: #a855f7;
     }
 
-    .evening-slots .time-slot input[type="checkbox"]:checked + .time-slot-label {
-        background: linear-gradient(135deg, #a855f7, #7c3aed);
-        border-color: #a855f7;
+    .time-slot-compact input[type="checkbox"]:checked + .time-slot-label-compact {
+        transform: scale(0.95);
+        border: 2px solid var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .time-slot-compact.night input[type="checkbox"]:checked + .time-slot-label-compact {
+        background: linear-gradient(135deg, #3b82f6, #1e40af);
+    }
+
+    .time-slot-compact.morning input[type="checkbox"]:checked + .time-slot-label-compact {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
         color: white;
     }
 
-    .time-slot {
-        position: relative;
+    .time-slot-compact.afternoon input[type="checkbox"]:checked + .time-slot-label-compact {
+        background: linear-gradient(135deg, #3b82f6, #1e40af);
+        color: white;
     }
 
-    .time-slot input[type="checkbox"] {
-        display: none;
+    .time-slot-compact.evening input[type="checkbox"]:checked + .time-slot-label-compact {
+        background: linear-gradient(135deg, #a855f7, #7c3aed);
+        color: white;
     }
 
-    .time-slot-label {
+    .time-text {
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    .check-indicator {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        opacity: 0;
+        transition: all 0.3s ease;
+        font-size: 0.6rem;
+    }
+
+    .time-slot-compact input[type="checkbox"]:checked + .time-slot-label-compact .check-indicator {
+        opacity: 1;
+    }
+
+    /* Minimum Hours Info */
+    .minimum-hours-info {
+        margin-bottom: 2rem;
+    }
+
+    .info-card {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(251, 191, 36, 0.05));
+        border: 2px solid rgba(245, 158, 11, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .info-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--warning-color), #f59e0b);
+        border-radius: 50%;
+        display: flex;
         align-items: center;
         justify-content: center;
-        height: 60px;
-        background: white;
-        border: 2px solid #e5e7eb;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .info-content h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .info-content p {
+        color: var(--text-light);
+        margin-bottom: 0.75rem;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
         overflow: hidden;
     }
 
-    .time-slot-label:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .time-display {
-        font-size: 0.8rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        text-align: center;
-        line-height: 1.2;
-    }
-
-    .slot-indicator {
-        position: absolute;
-        top: 4px;
-        right: 4px;
-        opacity: 0;
-        transition: all 0.3s ease;
-    }
-
-    .slot-indicator i {
-        font-size: 0.8rem;
-    }
-
-    .time-slot input[type="checkbox"]:checked + .time-slot-label .slot-indicator {
-        opacity: 1;
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--warning-color), var(--success-color));
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        width: 0%;
     }
 
     /* Action Buttons */
@@ -912,6 +710,17 @@
         box-shadow: 0 10px 25px rgba(var(--primary-rgb), 0.3);
     }
 
+    .btn-primary.disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .btn-primary.disabled:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
     .btn-secondary {
         background: #f8fafc;
         color: var(--text-color);
@@ -952,7 +761,7 @@
         transform: translateX(0);
     }
 
-    /* Responsive Design */
+    /* Responsive design */
     @media (max-width: 768px) {
         .hero-title {
             font-size: 2rem;
@@ -972,54 +781,18 @@
             gap: 1rem;
         }
 
-        .stats-grid {
-            grid-template-columns: 1fr;
+        .time-slots-grid-compact {
+            grid-template-columns: repeat(4, 1fr);
         }
-
-        .days-grid {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        .day-card.weekend-day .day-info h4::after {
-            content: ' 🌅';
-            font-size: 0.8rem;
-        }
-
-        .day-header {
-            flex-direction: column;
-            gap: 1rem;
-            text-align: center;
-        }
-
-        .day-actions {
-            justify-content: center;
-        }
-
-        .time-slots-container {
-            gap: 1rem;
-        }
-
-        .time-category {
-            padding: 0.75rem;
-        }
-
-        .category-title {
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .time-slots-grid {
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 0.4rem;
-        }
-
-        .time-slot-label {
-            height: 50px;
-        }
-
-        .time-display {
+        
+        .time-slot-label-compact {
+            height: 42px;
             font-size: 0.7rem;
+        }
+        
+        .info-card {
+            flex-direction: column;
+            text-align: center;
         }
 
         .action-buttons {
@@ -1067,106 +840,152 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSelectedCount(day);
     });
     
+    // Update total hours display
+    updateTotalHours();
+    
     // Form submission handler
     const form = document.getElementById('availabilityForm');
     const submitBtn = document.getElementById('saveAvailability');
     
     if (form && submitBtn) {
         form.addEventListener('submit', function(e) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `
-                <div class="btn-content">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <span>Kaydediliyor...</span>
-                </div>
-            `;
-        });
-    }
+           const totalHours = document.querySelectorAll('input[type="checkbox"][name^="availability_"]:checked').length;
+           const minRequired = {{ settings.minimum_hours_required }};
+           
+           if (totalHours < minRequired) {
+               e.preventDefault();
+               alert(`En az ${minRequired} saat seçmelisiniz. Şu anda ${totalHours} saat seçtiniz.`);
+               return false;
+           }
+           
+           submitBtn.disabled = true;
+           submitBtn.innerHTML = `
+               <div class="btn-content">
+                   <i class="fas fa-spinner fa-spin"></i>
+                   <span>Kaydediliyor...</span>
+               </div>
+           `;
+       });
+   }
 });
 
 // FIXED: Set initial checkbox states based on saved availability data
 function setInitialCheckboxStates() {
-    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    
-    days.forEach(day => {
-        const daySlots = savedAvailability[day] || [];
-        daySlots.forEach(timeSlot => {
-            // Create the checkbox ID - remove colons and dashes to match the template format
-            const cleanTimeSlot = timeSlot.replace(/[:-]/g, '');
-            const checkbox = document.getElementById(`slot_${day}_${cleanTimeSlot}`);
-            if (checkbox) {
-                checkbox.checked = true;
-                console.log(`Checked: slot_${day}_${cleanTimeSlot}`); // Debug log
-            } else {
-                console.warn(`Checkbox not found: slot_${day}_${cleanTimeSlot}`); // Debug log
-            }
-        });
-    });
+   const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+   
+   days.forEach(day => {
+       const daySlots = savedAvailability[day] || [];
+       daySlots.forEach(timeSlot => {
+           // Create the checkbox ID - remove colons and dashes to match the template format
+           const cleanTimeSlot = timeSlot.replace(/[:-]/g, '');
+           const checkbox = document.getElementById(`slot_${day}_${cleanTimeSlot}`);
+           if (checkbox) {
+               checkbox.checked = true;
+           }
+       });
+   });
+}
+
+// Update total hours and progress
+function updateTotalHours() {
+   const allCheckboxes = document.querySelectorAll('input[type="checkbox"][name^="availability_"]:checked');
+   const totalHours = allCheckboxes.length;
+   const minRequired = {{ settings.minimum_hours_required }};
+   
+   // Update display
+   const totalDisplay = document.getElementById('total-hours-display');
+   const progressBar = document.getElementById('hours-progress');
+   
+   if (totalDisplay) {
+       totalDisplay.textContent = totalHours;
+       totalDisplay.style.color = totalHours >= minRequired ? 'var(--success-color)' : 'var(--warning-color)';
+       totalDisplay.style.fontWeight = 'bold';
+   }
+   
+   if (progressBar) {
+       const percentage = Math.min((totalHours / minRequired) * 100, 100);
+       progressBar.style.width = percentage + '%';
+   }
+   
+   // Update submit button state
+   const submitBtn = document.getElementById('saveAvailability');
+   if (submitBtn) {
+       if (totalHours >= minRequired) {
+           submitBtn.disabled = false;
+           submitBtn.classList.remove('disabled');
+       } else {
+           submitBtn.disabled = true;
+           submitBtn.classList.add('disabled');
+       }
+   }
 }
 
 // Update selected count for a specific day
 function updateSelectedCount(dayCode) {
-    const checkboxes = document.querySelectorAll(`input[name="availability_${dayCode}"]:checked`);
-    const countElement = document.getElementById(`count-${dayCode}`);
-    const count = checkboxes.length;
-    
-    if (countElement) {
-        countElement.textContent = `${count} saat seçili`;
-        
-        // Update visual state
-        const dayCard = countElement.closest('.day-card');
-        if (dayCard) {
-            if (count > 0) {
-                dayCard.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-                dayCard.style.background = 'rgba(59, 130, 246, 0.02)';
-            } else {
-                dayCard.style.borderColor = 'transparent';
-                dayCard.style.background = '#f8fafc';
-            }
-        }
-    }
+   const checkboxes = document.querySelectorAll(`input[name="availability_${dayCode}"]:checked`);
+   const countElement = document.getElementById(`count-${dayCode}`);
+   const count = checkboxes.length;
+   
+   if (countElement) {
+       countElement.textContent = `${count} saat`;
+       
+       // Update visual state
+       const dayCard = countElement.closest('.day-card-compact');
+       if (dayCard) {
+           if (count > 0) {
+               dayCard.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+               dayCard.style.background = 'rgba(59, 130, 246, 0.02)';
+           } else {
+               dayCard.style.borderColor = 'transparent';
+               dayCard.style.background = 'white';
+           }
+       }
+   }
+   
+   // Update total hours
+   updateTotalHours();
 }
 
 // Toggle all slots for a specific day
 function toggleAllSlots(dayCode) {
-    const checkboxes = document.querySelectorAll(`input[name="availability_${dayCode}"]`);
-    const checkedCount = document.querySelectorAll(`input[name="availability_${dayCode}"]:checked`).length;
-    const shouldCheck = checkedCount === 0;
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = shouldCheck;
-    });
-    
-    updateSelectedCount(dayCode);
+   const checkboxes = document.querySelectorAll(`input[name="availability_${dayCode}"]`);
+   const checkedCount = document.querySelectorAll(`input[name="availability_${dayCode}"]:checked`).length;
+   const shouldCheck = checkedCount === 0;
+   
+   checkboxes.forEach(checkbox => {
+       checkbox.checked = shouldCheck;
+   });
+   
+   updateSelectedCount(dayCode);
 }
 
 // Clear all slots for a specific day
 function clearAllSlots(dayCode) {
-    const checkboxes = document.querySelectorAll(`input[name="availability_${dayCode}"]`);
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    
-    updateSelectedCount(dayCode);
+   const checkboxes = document.querySelectorAll(`input[name="availability_${dayCode}"]`);
+   
+   checkboxes.forEach(checkbox => {
+       checkbox.checked = false;
+   });
+   
+   updateSelectedCount(dayCode);
 }
 
 // Clear all form selections
 function clearAllForm() {
-    if (confirm('Tüm seçimleri temizlemek istediğinizden emin misiniz?')) {
-        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        days.forEach(day => {
-            clearAllSlots(day);
-        });
-    }
+   if (confirm('Tüm seçimleri temizlemek istediğinizden emin misiniz?')) {
+       const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+       days.forEach(day => {
+           clearAllSlots(day);
+       });
+   }
 }
 
 // Add click handlers for time slots
 document.addEventListener('change', function(e) {
-    if (e.target.type === 'checkbox' && e.target.name.startsWith('availability_')) {
-        const dayCode = e.target.name.replace('availability_', '');
-        updateSelectedCount(dayCode);
-    }
+   if (e.target.type === 'checkbox' && e.target.name.startsWith('availability_')) {
+       const dayCode = e.target.name.replace('availability_', '');
+       updateSelectedCount(dayCode);
+   }
 });
 </script>
 {% endblock %}

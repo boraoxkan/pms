@@ -335,6 +335,23 @@ def select_availability(request):
             availability_data={}
         )
     
+    # Check if user can modify availability
+    if not availability.can_modify():
+        settings = AvailabilitySettings.get_settings()
+        if availability.is_locked:
+            messages.error(
+                request,
+                'Müsaitlik durumunuz yönetici tarafından kilitlenmiş. '
+                'Değişiklik yapmak için lütfen sistem yöneticisi ile iletişime geçin.'
+            )
+        elif settings.weekly_submission_enabled and availability.week_year:
+            messages.warning(
+                request,
+                f'Bu hafta için müsaitlik durumunuzu zaten belirttiniz. '
+                f'Değişiklik yapmak için lütfen sistem yöneticisi ile iletişime geçin.'
+            )
+        return redirect('view_availability')
+    
     if request.method == 'POST':
         # Process the submitted availability data
         new_availability_data = {}
@@ -350,35 +367,50 @@ def select_availability(request):
             if valid_slots:
                 new_availability_data[day_code] = valid_slots
         
-        # Update the availability record
-        availability.availability_data = new_availability_data
-        availability.save()
-        
-        # Show success message
-        total_hours = sum(len(slots) for slots in new_availability_data.values())
-        if total_hours > 0:
-            messages.success(request, f'Ortak çalışma saati durumunuz başarıyla kaydedildi! Toplam {total_hours} saat ortak çalışma saati belirttiniz.')
-        else:
-            messages.info(request, 'Ortak çalışma saati durumunuz temizlendi.')
-        
-        # FIXED: Redirect to confirmation page instead of same page
-        return redirect('view_availability')
-    
-    # For GET requests, prepare context for template
-    saved_availability = {}
-    if availability.availability_data:
-        for day_code, slots in availability.availability_data.items():
-            saved_availability[day_code] = slots
-    
-    context = {
-        'intern': intern,
-        'availability': availability,
-        'days': DAYS,
-        'time_slots': TIME_SLOTS,
-        'saved_availability': saved_availability,
-    }
-    
-    return render(request, 'intern_portal/select_availability.html', context)
+        try:
+            # Update the availability record
+            availability.availability_data = new_availability_data
+            availability.week_year = availability.get_current_week_year()
+            availability.submission_date = timezone.now()
+            
+            # This will trigger validation in the save method
+            availability.save()
+            
+            # Show success message
+            total_hours = sum(len(slots) for slots in new_availability_data.values())
+            messages.success(
+                request, 
+                f'Ortak çalışma saati durumunuz başarıyla kaydedildi! '
+                f'Toplam {total_hours} saat ortak çalışma saati belirttiniz.'
+           )
+           return redirect('view_availability')
+           
+       except Exception as e:
+           # Handle validation errors from the model
+           messages.error(request, str(e))
+           # Don't redirect, show form again with error
+   
+   # For GET requests, prepare context for template
+   saved_availability = {}
+   if availability.availability_data:
+       for day_code, slots in availability.availability_data.items():
+           saved_availability[day_code] = slots
+   
+   # Add settings info to context
+   settings = AvailabilitySettings.get_settings()
+   context = {
+       'intern': intern,
+       'availability': availability,
+       'days': DAYS,
+       'time_slots': TIME_SLOTS,
+       'saved_availability': saved_availability,
+       'settings': settings,
+       'can_modify': availability.can_modify(),
+       'is_locked': availability.is_locked,
+       'current_week_submission': availability.is_current_week_submission() if availability.week_year else False,
+   }
+   
+   return render(request, 'intern_portal/select_availability.html', context)
 
 @login_required
 def view_availability(request):

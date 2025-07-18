@@ -123,6 +123,42 @@ class ProjectPreference(models.Model):
     def __str__(self):
         return f"{self.intern.get_full_name()} - Proje Tercihleri"
 
+class AvailabilitySettings(models.Model):
+    """
+    Global settings for availability system
+    """
+    minimum_hours_required = models.PositiveIntegerField(
+        default=30,
+        verbose_name='Minimum Required Hours',
+        help_text='Minimum total hours an intern must select per week'
+    )
+    weekly_submission_enabled = models.BooleanField(
+        default=True,
+        verbose_name='Enable Weekly Submission Limit',
+        help_text='If enabled, interns can only submit once per week'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Availability System Settings'
+        verbose_name_plural = 'Availability System Settings'
+
+    def __str__(self):
+        return f"Min Hours: {self.minimum_hours_required}, Weekly Limit: {self.weekly_submission_enabled}"
+
+    @classmethod
+    def get_settings(cls):
+        """Get or create the settings object"""
+        settings, created = cls.objects.get_or_create(
+            pk=1,
+            defaults={
+                'minimum_hours_required': 30,
+                'weekly_submission_enabled': True
+            }
+        )
+        return settings
+
 class InternAvailability(models.Model):
     intern = models.OneToOneField(Intern, on_delete=models.CASCADE, related_name='availability')
     availability_data = models.JSONField(
@@ -131,6 +167,20 @@ class InternAvailability(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # NEW FIELDS for weekly submission control
+    week_year = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text='Week number and year (YYYYWW format) when this was submitted'
+    )
+    submission_date = models.DateTimeField(
+        null=True, blank=True,
+        help_text='When this availability was last submitted'
+    )
+    is_locked = models.BooleanField(
+        default=False,
+        help_text='If true, intern cannot modify until admin unlocks'
+    )
 
     class Meta:
         verbose_name = 'Stajyer Ortak Çalışma Saati'
@@ -157,3 +207,76 @@ class InternAvailability(models.Model):
     def get_available_days(self):
         """Ortak çalışma saati olan günleri döndürür"""
         return [day for day, slots in self.availability_data.items() if slots]
+
+    def get_current_week_year(self):
+        """Get current week in YYYYWW format"""
+        from datetime import datetime
+        now = datetime.now()
+        year, week, _ = now.isocalendar()
+        return int(f"{year}{week:02d}")
+
+    def is_current_week_submission(self):
+        """Check if this submission is for the current week"""
+        current_week = self.get_current_week_year()
+        return self.week_year == current_week
+
+    def can_modify(self):
+        """Check if the intern can modify their availability"""
+        if self.is_locked:
+            return False
+        
+        settings = AvailabilitySettings.get_settings()
+        if not settings.weekly_submission_enabled:
+            return True
+            
+        # If weekly limit is enabled, check if it's still the same week
+        return self.is_current_week_submission() or not self.week_year
+
+    def validate_minimum_hours(self):
+        """Validate that minimum hours requirement is met"""
+        settings = AvailabilitySettings.get_settings()
+        total_hours = self.get_total_hours()
+        
+        if total_hours < settings.minimum_hours_required:
+            from django.core.exceptions import ValidationError
+            raise ValidationError(
+                f'En az {settings.minimum_hours_required} saat seçmelisiniz. '
+                f'Şu anda {total_hours} saat seçtiniz.'
+            )
+
+    def get_availability_summary(self):
+        """Get a formatted summary of availability for admin display"""
+        if not self.availability_data:
+            return '<span style="color: red;">Henüz ortak çalışma saati belirtilmemiş</span>'
+        
+        day_names = {
+            'monday': 'Pazartesi',
+            'tuesday': 'Salı',
+            'wednesday': 'Çarşamba',
+            'thursday': 'Perşembe',
+            'friday': 'Cuma',
+            'saturday': 'Cumartesi'
+        }
+        
+        summary_html = '<div style="max-width: 600px;">'
+        for day_code, day_name in day_names.items():
+            slots = self.availability_data.get(day_code, [])
+            if slots:
+                slots_str = ', '.join(slots)
+                summary_html += f'<p><strong>{day_name}:</strong> {slots_str}</p>'
+            else:
+                summary_html += f'<p><strong>{day_name}:</strong> <span style="color: gray;">Ortak çalışma saati yok</span></p>'
+        summary_html += '</div>'
+        
+        return summary_html
+
+    def save(self, *args, **kwargs):
+        # Set week_year on save
+        if not self.week_year:
+            self.week_year = self.get_current_week_year()
+        
+        # Validate minimum hours before saving
+        if self.availability_data:
+            self.validate_minimum_hours()
+            
+        super().save(*args, **kwargs)

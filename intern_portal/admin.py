@@ -2,12 +2,42 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.conf import settings
-from .models import Project, ProjectPreference, Intern, InternAvailability
+from django.contrib import messages
+from django.utils import timezone
+from .models import Project, ProjectPreference, Intern, InternAvailability, AvailabilitySettings
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import GroupAdmin
 
 # Gereksiz modelleri admin panelinden kaldır
 admin.site.unregister(Group)
+
+@admin.register(AvailabilitySettings)
+class AvailabilitySettingsAdmin(admin.ModelAdmin):
+    list_display = ('minimum_hours_required', 'weekly_submission_enabled', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    fieldsets = (
+        ('Hour Requirements', {
+            'fields': ('minimum_hours_required',),
+            'description': 'Configure minimum hour requirements for intern availability submissions.'
+        }),
+        ('Submission Rules', {
+            'fields': ('weekly_submission_enabled',),
+            'description': 'Configure how often interns can submit their availability.'
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def has_add_permission(self, request):
+        # Only allow one settings object
+        return not AvailabilitySettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        # Don't allow deletion of settings
+        return False
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
@@ -28,9 +58,10 @@ class ProjectAdmin(admin.ModelAdmin):
 class InternAdmin(admin.ModelAdmin):
     list_display = ('get_full_name', 'email', 'get_auth_method', 'access_link', 'has_availability', 'get_assigned_projects_count', 'is_active')
     search_fields = ('first_name', 'last_name', 'email', 'user__email')
-    list_filter = ('is_active', 'user')  # Changed from 'user__isnull' to 'user'
+    list_filter = ('is_active', 'user')
     readonly_fields = ('access_token', 'access_link_display', 'get_auth_method')
-    filter_horizontal = ('assigned_projects',)  # Better UI for ManyToMany
+    filter_horizontal = ('assigned_projects',)
+    actions = ['reset_availability_lock', 'reset_weekly_submission']
     
     fieldsets = (
         ('Stajyer Bilgileri', {
@@ -49,6 +80,46 @@ class InternAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    def reset_availability_lock(self, request, queryset):
+        """Reset availability lock for selected interns"""
+        count = 0
+        for intern in queryset:
+            try:
+                availability = intern.availability
+                availability.is_locked = False
+                availability.save()
+                count += 1
+            except InternAvailability.DoesNotExist:
+                pass
+        
+        self.message_user(
+            request,
+            f'{count} stajyerin müsaitlik kilidi sıfırlandı.',
+            messages.SUCCESS
+        )
+    reset_availability_lock.short_description = 'Reset availability lock for selected interns'
+
+    def reset_weekly_submission(self, request, queryset):
+        """Reset weekly submission for selected interns (allows new submission)"""
+        count = 0
+        for intern in queryset:
+            try:
+                availability = intern.availability
+                availability.week_year = None
+                availability.submission_date = None
+                availability.is_locked = False
+                availability.save()
+                count += 1
+            except InternAvailability.DoesNotExist:
+                pass
+        
+        self.message_user(
+            request,
+            f'{count} stajyerin haftalık gönderim durumu sıfırlandı.',
+            messages.SUCCESS
+        )
+    reset_weekly_submission.short_description = 'Reset weekly submission for selected interns'
 
     def get_auth_method(self, obj):
         """Kimlik doğrulama metodunu gösterir"""
@@ -126,17 +197,22 @@ class ProjectPreferenceAdmin(admin.ModelAdmin):
 
 @admin.register(InternAvailability)
 class InternAvailabilityAdmin(admin.ModelAdmin):
-    list_display = ('intern', 'get_total_hours', 'get_available_days_count', 'updated_at')
-    list_filter = ('updated_at',)
+    list_display = ('intern', 'get_total_hours', 'week_year', 'submission_date', 'is_locked', 'get_available_days_count', 'updated_at')
+    list_filter = ('is_locked', 'week_year', 'submission_date', 'updated_at')
     search_fields = ('intern__first_name', 'intern__last_name', 'intern__email')
-    readonly_fields = ('created_at', 'updated_at', 'availability_summary')
+    readonly_fields = ('created_at', 'updated_at', 'get_availability_summary', 'week_year', 'submission_date')
+    actions = ['unlock_availability', 'lock_availability']
     
     fieldsets = (
         ('Stajyer Bilgileri', {
             'fields': ('intern',)
         }),
+        ('Submission Control', {
+            'fields': ('week_year', 'submission_date', 'is_locked'),
+            'description': 'Week submission tracking and lock controls.'
+        }),
         ('Ortak Çalışma Saati Verileri', {
-            'fields': ('availability_data', 'availability_summary'),
+            'fields': ('availability_data', 'get_availability_summary'),
             'description': 'JSON formatında haftalık ortak çalışma saati verileri.'
         }),
         ('Zaman Bilgileri', {
@@ -144,6 +220,26 @@ class InternAvailabilityAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    def unlock_availability(self, request, queryset):
+        """Unlock selected availability records"""
+        updated = queryset.update(is_locked=False)
+        self.message_user(
+            request,
+            f'{updated} müsaitlik kaydının kilidi açıldı.',
+            messages.SUCCESS
+        )
+    unlock_availability.short_description = 'Unlock selected availability records'
+
+    def lock_availability(self, request, queryset):
+        """Lock selected availability records"""
+        updated = queryset.update(is_locked=True)
+        self.message_user(
+            request,
+            f'{updated} müsaitlik kaydı kilitlendi.',
+            messages.SUCCESS
+        )
+    lock_availability.short_description = 'Lock selected availability records'
 
     def get_total_hours(self, obj):
         total = obj.get_total_hours()
@@ -168,31 +264,9 @@ class InternAvailabilityAdmin(admin.ModelAdmin):
         return format_html('<span style="color: red;">Ortak çalışma saati yok</span>')
     get_available_days_count.short_description = 'Ortak Çalışma Saati Günleri'
 
-    def availability_summary(self, obj):
-        if not obj.availability_data:
-            return format_html('<span style="color: red;">Henüz ortak çalışma saati belirtilmemiş</span>')
-        
-        day_names = {
-            'monday': 'Pazartesi',
-            'tuesday': 'Salı',
-            'wednesday': 'Çarşamba',
-            'thursday': 'Perşembe',
-            'friday': 'Cuma',
-            'saturday': 'Cumartesi'
-        }
-        
-        summary_html = '<div style="max-width: 600px;">'
-        for day_code, day_name in day_names.items():
-            slots = obj.availability_data.get(day_code, [])
-            if slots:
-                slots_str = ', '.join(slots)
-                summary_html += f'<p><strong>{day_name}:</strong> {slots_str}</p>'
-            else:
-                summary_html += f'<p><strong>{day_name}:</strong> <span style="color: gray;">Ortak çalışma saati yok</span></p>'
-        summary_html += '</div>'
-        
-        return format_html(summary_html)
-    availability_summary.short_description = 'Ortak Çalışma Saati Özeti'
+    def get_availability_summary(self, obj):
+        return format_html(obj.get_availability_summary())
+    get_availability_summary.short_description = 'Ortak Çalışma Saati Özeti'
 
 # Admin site başlığını ve başlık çubuğunu özelleştir
 admin.site.site_header = 'PMS Stajyer Portalı Yönetimi'
