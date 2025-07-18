@@ -112,8 +112,25 @@ def team_availability(request):
         project_interns = project.assigned_interns.exclude(id=current_intern.id).values_list('id', flat=True)
         teammate_ids.update(project_interns)
     
-    # Get teammate objects
-    teammates = Intern.objects.filter(id__in=teammate_ids, is_active=True)
+    # Get teammate objects with their assigned projects
+    teammates = Intern.objects.filter(id__in=teammate_ids, is_active=True).prefetch_related('assigned_projects')
+    
+    # Create a detailed teammates list with ONLY common projects
+    teammates_with_projects = []
+    for teammate in teammates:
+        teammate_projects = teammate.assigned_projects.all()
+        # Find common projects between current intern and this teammate
+        common_projects = assigned_projects.intersection(teammate_projects)
+        
+        # Only include teammates who have common projects (they should by definition, but safety check)
+        if common_projects.exists():
+            teammates_with_projects.append({
+                'intern': teammate,
+                'common_projects': common_projects,  # Only show common projects
+                'common_projects_count': common_projects.count(),
+                'has_availability': False,
+                'availability_data': None
+            })
     
     # Define time slots for full 24-hour day (00:00 to 23:00)
     TIME_SLOTS = [
@@ -155,7 +172,21 @@ def team_availability(request):
         intern__in=teammates
     ).select_related('intern')
     
-    # Process each teammate's availability
+    # Create a mapping of intern ID to availability for easy lookup
+    availability_map = {}
+    for availability in teammate_availabilities:
+        availability_map[availability.intern.id] = availability
+    
+    # Update teammates_with_projects with availability data
+    for teammate_data in teammates_with_projects:
+        intern_id = teammate_data['intern'].id
+        if intern_id in availability_map:
+            availability = availability_map[intern_id]
+            teammate_data['has_availability'] = bool(availability.availability_data and 
+                                                  any(slots for slots in availability.availability_data.values()))
+            teammate_data['availability_data'] = availability
+    
+    # Process each teammate's availability for the calendar
     for availability in teammate_availabilities:
         intern_name = availability.intern.get_full_name()
         
@@ -218,7 +249,8 @@ def team_availability(request):
     
     context = {
         'current_intern': current_intern,
-        'teammates': teammates,
+        'teammates': teammates,  # Keep original for backward compatibility
+        'teammates_with_projects': teammates_with_projects,  # New enhanced data with only common projects
         'assigned_projects': assigned_projects,
         'current_intern_projects': current_intern_projects,
         'team_calendar': team_calendar,

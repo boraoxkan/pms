@@ -248,24 +248,24 @@
                 <div class="teammates-section" data-aos="fade-up" data-aos-delay="400">
                     <div class="teammates-header">
                         <h3>Takım Arkadaşlarınız</h3>
-                        <p>Aynı projelerde çalıştığınız stajyer arkadaşlarınız</p>
+                        <p>Aynı projelerde çalıştığınız stajyer arkadaşlarınız ve ortak projeleriniz</p>
                     </div>
                     <div class="teammates-grid">
-                        {% for teammate in teammates %}
+                        {% for teammate_data in teammates_with_projects %}
                         <div class="teammate-card">
                             <div class="teammate-avatar">
                                 <i class="fas fa-user-graduate"></i>
                             </div>
                             <div class="teammate-info">
-                                <h4>{{ teammate.get_full_name }}</h4>
+                                <h4>{{ teammate_data.intern.get_full_name }}</h4>
                                 <div class="teammate-status">
-                                    {% if teammate.availability %}
+                                    {% if teammate_data.has_availability %}
                                         <span class="status-badge available">
                                             <i class="fas fa-check-circle"></i>
                                             Müsaitlik Belirtti
                                         </span>
                                         <div class="availability-summary">
-                                            {{ teammate.availability.get_total_hours }} saat/hafta
+                                            {{ teammate_data.availability_data.get_total_hours }} saat/hafta
                                         </div>
                                     {% else %}
                                         <span class="status-badge unavailable">
@@ -274,12 +274,44 @@
                                         </span>
                                     {% endif %}
                                 </div>
+                                
+                                <!-- Enhanced: Display only common projects -->
+                                <div class="teammate-projects">
+                                    <div class="projects-header">
+                                        <i class="fas fa-handshake"></i>
+                                        <span>Ortak Projeler:</span>
+                                    </div>
+                                    <div class="projects-badges">
+                                        {% for project in teammate_data.common_projects %}
+                                            <!-- All projects shown are common projects -->
+                                            <span class="badge bg-primary common-project" 
+                                                  title="Ortak Proje: {{ project.name }}">
+                                                <i class="fas fa-star"></i>
+                                                {{ project.name }}
+                                            </span>
+                                        {% empty %}
+                                            <span class="badge bg-light text-muted no-projects">
+                                                <i class="fas fa-info-circle"></i>
+                                                Ortak proje bulunamadı
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <!-- Project statistics - simplified since we only show common projects -->
+                                    {% if teammate_data.common_projects %}
+                                    <div class="project-stats">
+                                        <span class="stat-item common-stat">
+                                            <i class="fas fa-handshake"></i>
+                                            {{ teammate_data.common_projects_count }} ortak proje
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
-
             {% else %}
                 <!-- No Availability Data -->
                 <div class="no-data-section" data-aos="fade-up" data-aos-delay="200">
@@ -326,20 +358,20 @@
 
 <style>
     :root {
-        --primary-color: #3b82f6;
-        --secondary-color: #10b981;
-        --success-color: #059669;
-        --warning-color: #f59e0b;
-        --error-color: #ef4444;
-        --night-color: #1e1b4b;
-        --morning-color: #fbbf24;
-        --afternoon-color: #60a5fa;
-        --evening-color: #f97316;
-        --text-color: #1f2937;
-        --text-light: #6b7280;
-        --bg-light: #f8fafc;
-        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --primary-color: #3b82f6;
+    --secondary-color: #10b981;
+    --success-color: #059669;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --night-color: #1e1b4b;
+    --morning-color: #fbbf24;
+    --afternoon-color: #60a5fa;
+    --evening-color: #f97316;
+    --text-color: #1f2937;
+    --text-light: #6b7280;
+    --bg-light: #f8fafc;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 
     .team-availability-page {
@@ -347,7 +379,7 @@
         background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
     }
 
-    /* Hero Section */
+    /* ===== HERO SECTION ===== */
     .hero-section {
         position: relative;
         padding: 4rem 0 2rem;
@@ -483,14 +515,14 @@
         padding: 0 0.5rem;
     }
 
-    /* Main Container */
+    /* ===== MAIN CONTAINER ===== */
     .team-availability-container {
         max-width: 1400px;
         margin: 0 auto;
         padding: 3rem 1rem;
     }
 
-    /* Team Info Section */
+    /* ===== TEAM INFO SECTION ===== */
     .team-info-section {
         margin-bottom: 3rem;
     }
@@ -583,7 +615,7 @@
         font-weight: 500;
     }
 
-    /* Period Statistics Section */
+    /* ===== PERIOD STATISTICS SECTION ===== */
     .period-stats-section {
         margin-bottom: 3rem;
     }
@@ -603,7 +635,295 @@
     .period-stats-header p {
         color: var(--text-light);
         font-size: 1.1rem;
+        line-height: 1.6;
+        max-width: 600px;
+        margin: 0 auto;
     }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-section {
+        text-align: center;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 200px;
+    }
+
+    .btn-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #f8fafc;
+        color: var(--text-color);
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        color: var(--text-color);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+
+    .btn-outline:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    /* Enhanced loading state for teammate cards */
+    .teammate-card.loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    .teammate-card.loading::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    /* ===== ACCESSIBILITY ===== */
+    /* Focus styles for accessibility */
+    .badge:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+
+    .period-nav-btn:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .common-project {
+            border: 2px solid var(--primary-color) !important;
+        }
+        
+        .other-project {
+            border: 2px solid #6b7280 !important;
+        }
+        
+        .no-projects {
+            border: 2px solid #9ca3af !important;
+        }
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+
+        .team-availability-container {
+            padding: 2rem 1rem;
+        }
+
+        .team-info-section .row {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .peak-times-card {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .projects-list {
+            flex-direction: column;
+        }
+
+        .period-stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .time-period-nav {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .team-calendar {
+            font-size: 0.75rem;
+        }
+
+        .day-header {
+            min-width: 120px;
+        }
+
+        .availability-cell {
+            min-height: 50px;
+            padding: 0.25rem 0.1rem;
+        }
+
+        .teammate-name {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.3rem;
+        }
+
+        .time-main {
+            font-size: 0.9rem;
+        }
+
+        .teammates-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .teammate-card {
+            padding: 1rem;
+        }
+        
+        .projects-badges {
+            gap: 0.25rem;
+        }
+        
+        .projects-badges .badge {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.7rem;
+        }
+        
+        .project-stats {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .teammate-info h4 {
+            font-size: 1rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .peak-times-list {
+            justify-content: center;
+        }
+
+        .legend-items {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+
+    /* Extra Small Screens */
+    @media (max-width: 576px) {
+        .table-responsive {
+            font-size: 0.7rem;
+        }
+
+        .time-cell {
+            width: 80px;
+        }
+
+        .day-header {
+            min-width: 100px;
+        }
+
+        .teammate-count {
+            font-size: 0.65rem;
+        }
+
+        .teammate-name {
+            font-size: 0.6rem;
+        }
+
+        .time-period-nav {
+            grid-template-columns: 1fr;
+        }
+
+        .projects-badges .badge {
+            font-size: 0.65rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .projects-header {
+            font-size: 0.85rem;
+        }
+        
+        .project-stats {
+            font-size: 0.75rem;
+        }
+    }
+
+    /* Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    };
 
     .period-stats-grid {
         display: grid;
@@ -676,7 +996,7 @@
         display: inline-block;
     }
 
-    /* Peak Times Section */
+    /* ===== PEAK TIMES SECTION ===== */
     .peak-times-section {
         margin-bottom: 3rem;
     }
@@ -731,7 +1051,7 @@
         font-size: 0.9rem;
     }
 
-    /* Calendar Navigation */
+    /* ===== CALENDAR NAVIGATION ===== */
     .calendar-navigation {
         margin-bottom: 3rem;
     }
@@ -802,7 +1122,7 @@
         font-size: 0.8rem;
     }
 
-    /* Calendar Section */
+    /* ===== CALENDAR SECTION ===== */
     .calendar-section {
         margin-bottom: 3rem;
     }
@@ -997,7 +1317,7 @@
         background: rgba(249, 115, 22, 0.02);
     }
 
-    /* Calendar Legend */
+    /* ===== CALENDAR LEGEND ===== */
     .calendar-legend {
         background: #f8fafc;
         padding: 1.5rem;
@@ -1053,7 +1373,7 @@
         border-color: var(--warning-color);
     }
 
-    /* Teammates Section */
+    /* ===== TEAMMATES SECTION ===== */
     .teammates-section {
         margin-bottom: 3rem;
     }
@@ -1087,14 +1407,16 @@
         padding: 1.5rem;
         box-shadow: var(--card-shadow);
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 1rem;
         transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
     }
 
     .teammate-card:hover {
-        transform: translateY(-3px);
+        transform: translateY(-5px);
         box-shadow: var(--card-shadow-hover);
+        border-color: var(--primary-color);
     }
 
     .teammate-avatar {
@@ -1115,10 +1437,14 @@
     }
 
     .teammate-info h4 {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
         font-weight: 700;
         color: var(--text-color);
         margin-bottom: 0.5rem;
+    }
+
+    .teammate-status {
+        margin-bottom: 1rem;
     }
 
     .status-badge {
@@ -1150,7 +1476,148 @@
         font-style: italic;
     }
 
-    /* No Data Section */
+    /* ===== ENHANCED TEAMMATE PROJECTS ===== */
+    .teammate-projects {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+        animation: fadeInUp 0.5s ease forwards;
+    }
+
+    .projects-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .projects-header i {
+        color: var(--primary-color);
+        font-size: 0.85rem;
+    }
+
+    .projects-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .projects-badges .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        position: relative;
+        overflow: hidden;
+        cursor: help;
+    }
+
+    .projects-badges .badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .projects-badges .badge:hover::before {
+        left: 100%;
+    }
+
+    /* Common project styling (highlighted) */
+    .common-project {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+        color: white !important;
+        border: 1px solid rgba(59, 130, 246, 0.3) !important;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        font-weight: 600;
+    }
+
+    .common-project:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .common-project i {
+        font-size: 0.7rem;
+        animation: sparkle 2s ease-in-out infinite;
+    }
+
+    @keyframes sparkle {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+
+    /* Other project styling */
+    .other-project {
+        background: #6b7280 !important;
+        color: white !important;
+        border: 1px solid rgba(107, 114, 128, 0.3) !important;
+    }
+
+    .other-project:hover {
+        background: #4b5563 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+    }
+
+    /* No projects styling */
+    .no-projects {
+        background: #f3f4f6 !important;
+        color: #6b7280 !important;
+        border: 1px solid #e5e7eb !important;
+        font-style: italic;
+    }
+
+    .no-projects i {
+        font-size: 0.7rem;
+    }
+
+    /* Project statistics */
+    .project-stats {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: var(--text-light);
+    }
+
+    .project-stats .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0;
+        background: none;
+        border: none;
+        border-radius: 0;
+    }
+
+    .project-stats .stat-item i {
+        font-size: 0.75rem;
+        color: var(--text-light);
+    }
+
+    .common-stat {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .common-stat i {
+        color: var(--primary-color);
+    }
+
+    /* ===== NO DATA SECTION ===== */
     .no-data-section {
         margin-bottom: 3rem;
     }
@@ -1186,200 +1653,9 @@
 
     .no-data-content p {
         color: var(--text-light);
-        font-size: 1.1rem;
-        line-height: 1.6;
-        max-width: 600px;
-        margin: 0 auto;
+        font-size: 1.1rem
     }
 
-    /* Action Buttons */
-    .action-section {
-        text-align: center;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem 2rem;
-        border: none;
-        border-radius: 12px;
-        font-size: 1rem;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-width: 200px;
-    }
-
-    .btn-content {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        color: white;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
-        color: white;
-    }
-
-    .btn-secondary {
-        background: #f8fafc;
-        color: var(--text-color);
-        border: 2px solid #e5e7eb;
-    }
-
-    .btn-secondary:hover {
-        background: #e5e7eb;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        color: var(--text-color);
-    }
-
-    .btn-outline {
-        background: transparent;
-        color: var(--primary-color);
-        border: 2px solid var(--primary-color);
-    }
-
-    .btn-outline:hover {
-        background: var(--primary-color);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2rem;
-        }
-
-        .hero-subtitle {
-            font-size: 1rem;
-        }
-
-        .team-availability-container {
-            padding: 2rem 1rem;
-        }
-
-        .team-info-section .row {
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .peak-times-card {
-            flex-direction: column;
-            text-align: center;
-            gap: 1rem;
-        }
-
-        .projects-list {
-            flex-direction: column;
-        }
-
-        .period-stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .time-period-nav {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .team-calendar {
-            font-size: 0.75rem;
-        }
-
-        .day-header {
-            min-width: 120px;
-        }
-
-        .availability-cell {
-            min-height: 50px;
-            padding: 0.25rem 0.1rem;
-        }
-
-        .teammate-name {
-            font-size: 0.65rem;
-            padding: 0.15rem 0.3rem;
-        }
-
-        .time-main {
-            font-size: 0.9rem;
-        }
-
-        .teammates-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .action-buttons {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .btn {
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .peak-times-list {
-            justify-content: center;
-        }
-
-        .legend-items {
-            flex-direction: column;
-            align-items: center;
-        }
-    }
-
-    /* Extra Small Screens */
-    @media (max-width: 576px) {
-        .table-responsive {
-            font-size: 0.7rem;
-        }
-
-        .time-cell {
-            width: 80px;
-        }
-
-        .day-header {
-            min-width: 100px;
-        }
-
-        .teammate-count {
-            font-size: 0.65rem;
-        }
-
-        .teammate-name {
-            font-size: 0.6rem;
-        }
-
-        .time-period-nav {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    /* Reduced Motion Support */
-    @media (prefers-reduced-motion: reduce) {
-        * {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-        }
-    }
 </style>
 
 <script>
