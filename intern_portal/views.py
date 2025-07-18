@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import Http404
 from django.urls import reverse
-from .models import Project, ProjectPreference, Intern, InternAvailability
+from django.utils import timezone  # ADDED: Missing import
+from .models import Project, ProjectPreference, Intern, InternAvailability, AvailabilitySettings  # ADDED: Missing models
 from .forms import ProjectPreferenceForm
 import json
 
@@ -382,35 +383,35 @@ def select_availability(request):
                 request, 
                 f'Ortak çalışma saati durumunuz başarıyla kaydedildi! '
                 f'Toplam {total_hours} saat ortak çalışma saati belirttiniz.'
-           )
-           return redirect('view_availability')
+            )
+            return redirect('view_availability')
            
-       except Exception as e:
-           # Handle validation errors from the model
-           messages.error(request, str(e))
-           # Don't redirect, show form again with error
+        except Exception as e:
+            # Handle validation errors from the model
+            messages.error(request, str(e))
+            # Don't redirect, show form again with error
    
-   # For GET requests, prepare context for template
-   saved_availability = {}
-   if availability.availability_data:
-       for day_code, slots in availability.availability_data.items():
-           saved_availability[day_code] = slots
+    # For GET requests, prepare context for template
+    saved_availability = {}
+    if availability.availability_data:
+        for day_code, slots in availability.availability_data.items():
+            saved_availability[day_code] = slots
    
-   # Add settings info to context
-   settings = AvailabilitySettings.get_settings()
-   context = {
-       'intern': intern,
-       'availability': availability,
-       'days': DAYS,
-       'time_slots': TIME_SLOTS,
-       'saved_availability': saved_availability,
-       'settings': settings,
-       'can_modify': availability.can_modify(),
-       'is_locked': availability.is_locked,
-       'current_week_submission': availability.is_current_week_submission() if availability.week_year else False,
-   }
+    # Add settings info to context
+    settings = AvailabilitySettings.get_settings()
+    context = {
+        'intern': intern,
+        'availability': availability,
+        'days': DAYS,
+        'time_slots': TIME_SLOTS,
+        'saved_availability': saved_availability,
+        'settings': settings,
+        'can_modify': availability.can_modify(),
+        'is_locked': availability.is_locked,
+        'current_week_submission': availability.is_current_week_submission() if availability.week_year else False,
+    }
    
-   return render(request, 'intern_portal/select_availability.html', context)
+    return render(request, 'intern_portal/select_availability.html', context)
 
 @login_required
 def view_availability(request):

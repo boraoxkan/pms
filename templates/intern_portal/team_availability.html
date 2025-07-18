@@ -39,175 +39,264 @@
     <!-- Main Content -->
     <div class="container">
         <div class="team-availability-container">
-            <!-- Team Info Section -->
-            <div class="team-info-section" data-aos="fade-up" data-aos-delay="100">
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="team-projects-card">
-                            <div class="card-header">
-                                <i class="fas fa-project-diagram"></i>
-                                <h3>Ortak Projeleriniz</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="projects-list">
-                                    {% for project in assigned_projects %}
-                                    <div class="project-badge">
-                                        <i class="fas fa-folder"></i>
-                                        <span>{{ project.name }}</span>
-                                    </div>
-                                    {% endfor %}
-                                </div>
+            <!-- REDESIGNED: Common Projects Section -->
+            <div class="common-projects-section" data-aos="fade-up" data-aos-delay="100">
+                <div class="projects-showcase-card">
+                    <div class="showcase-header">
+                        <div class="header-icon-modern">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <div class="header-content-modern">
+                            <h3>Ortak Projeleriniz</h3>
+                            <p>{{ assigned_projects.count }} proje üzerinde birlikte çalışıyoruz</p>
+                        </div>
+                        <div class="header-stats">
+                            <div class="stat-badge">
+                                <span class="stat-number">{{ total_teammates }}</span>
+                                <span class="stat-label">Takım Arkadaşı</span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="team-stats-card">
-                            <div class="stat-item">
-                                <div class="stat-icon">
-                                    <i class="fas fa-users"></i>
+                    
+                    <div class="projects-showcase-grid">
+                        {% for project in assigned_projects %}
+                        <div class="project-showcase-item" data-aos="zoom-in" data-aos-delay="{% cycle '150' '200' '250' %}">
+                            <div class="project-visual">
+                                <div class="project-icon-large">
+                                    <i class="fas {% if 'lastik' in project.name|lower or 'tyre' in project.name|lower %}fa-cog{% elif 'track' in project.name|lower %}fa-chart-line{% elif 'opti' in project.name|lower %}fa-eye{% elif 'law' in project.name|lower %}fa-balance-scale{% elif 'voc' in project.name|lower %}fa-microphone{% else %}fa-code{% endif %}"></i>
                                 </div>
-                                <div class="stat-content">
-                                    <div class="stat-number">{{ total_teammates }}</div>
-                                    <div class="stat-label">Takım Arkadaşı</div>
-                                </div>
+                                <div class="project-glow"></div>
                             </div>
-                            <div class="stat-item">
-                                <div class="stat-icon">
-                                    <i class="fas fa-calendar-check"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-number">{{ teammates_with_availability }}</div>
-                                    <div class="stat-label">Müsaitlik Belirten</div>
+                            <div class="project-info-modern">
+                                <h4>{{ project.name }}</h4>
+                                <p>{{ project.short_description|truncatewords:12 }}</p>
+                                <div class="project-features-modern">
+                                    <span class="feature-tag">{{ project.get_team_size_display }}</span>
+                                    <span class="feature-tag">{{ project.get_work_type_display }}</span>
+                                    <span class="feature-tag">{{ project.get_duration_display }}</span>
                                 </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
 
             {% if teammates_with_availability > 0 %}
-                <!-- Time Period Statistics -->
-                <div class="period-stats-section" data-aos="fade-up" data-aos-delay="200">
-                    <div class="period-stats-header">
-                        <h3>Zaman Periyodu Analizi</h3>
-                        <p>Takım arkadaşlarınızın hangi zaman dilimlerinde daha aktif olduğunu görün</p>
+                <!-- ENHANCED: Time Period Analysis -->
+                <div class="period-analysis-section" data-aos="fade-up" data-aos-delay="200">
+                    <div class="analysis-header-modern">
+                        <div class="analysis-title-container">
+                            <div class="title-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="title-content">
+                                <h3>Zaman Periyodu Analizi</h3>
+                                <p>Takım aktivitesinin zaman dilimleri bazında dağılımı</p>
+                            </div>
+                        </div>
+                        <div class="analysis-summary">
+                            <div class="summary-stat">
+                                <span class="summary-number">{{ teammates_with_availability }}/{{ total_teammates }}</span>
+                                <span class="summary-label">Aktif Üye</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="period-stats-grid">
+                    
+                    <div class="period-analysis-grid">
                         {% for period_name, availability_count in period_stats.items %}
-                        <div class="period-stat-card {% if most_active_period.0 == period_name %}most-active{% endif %}">
-                            <div class="period-icon">
-                                {% if 'Gece' in period_name %}
-                                    <i class="fas fa-moon"></i>
-                                {% elif 'Sabah' in period_name %}
-                                    <i class="fas fa-sun"></i>
-                                {% elif 'Öğleden Sonra' in period_name %}
-                                    <i class="fas fa-sun"></i>
-                                {% else %}
-                                    <i class="fas fa-sunset"></i>
+                        <div class="period-analysis-card {% if most_active_period.0 == period_name %}peak-period{% endif %}" 
+                             data-aos="flip-left" data-aos-delay="{% cycle '250' '300' '350' '400' %}">
+                            <div class="period-card-header">
+                                <div class="period-time-icon">
+                                    {% if 'Gece' in period_name %}
+                                        <i class="fas fa-moon"></i>
+                                    {% elif 'Sabah' in period_name %}
+                                        <i class="fas fa-sunrise"></i>
+                                    {% elif 'Öğleden Sonra' in period_name %}
+                                        <i class="fas fa-sun"></i>
+                                    {% else %}
+                                        <i class="fas fa-sunset"></i>
+                                    {% endif %}
+                                </div>
+                                {% if most_active_period.0 == period_name and availability_count > 0 %}
+                                    <div class="peak-badge">
+                                        <i class="fas fa-crown"></i>
+                                        <span>En Aktif</span>
+                                    </div>
                                 {% endif %}
                             </div>
-                            <div class="period-content">
-                                <h4>{{ period_name }}</h4>
-                                <div class="period-count">{{ availability_count }} toplam müsaitlik</div>
-                                {% if most_active_period.0 == period_name and availability_count > 0 %}
-                                    <div class="active-badge">En Aktif Zaman</div>
-                                {% endif %}
+                            
+                            <div class="period-card-body">
+                                <h4>{{ period_name|slice:":-13" }}</h4>
+                                <div class="period-time-range">{{ period_name|slice:"-12:" }}</div>
+                                
+                                <div class="activity-visualization">
+                                    <div class="activity-bar-container">
+                                        <div class="activity-bar" style="width: {% if period_stats.values %}{% widthratio availability_count most_active_period.1 100 %}%{% else %}0%{% endif %}"></div>
+                                    </div>
+                                    <div class="activity-stats">
+                                        <span class="activity-count">{{ availability_count }}</span>
+                                        <span class="activity-label">toplam müsaitlik</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="period-activity-level">
+                                    {% if availability_count == 0 %}
+                                        <span class="activity-status inactive">Aktivite Yok</span>
+                                    {% elif availability_count <= 5 %}
+                                        <span class="activity-status low">Düşük Aktivite</span>
+                                    {% elif availability_count <= 15 %}
+                                        <span class="activity-status medium">Orta Aktivite</span>
+                                    {% else %}
+                                        <span class="activity-status high">Yüksek Aktivite</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
 
-                <!-- Peak Times Info -->
-                {% if peak_times %}
-                <div class="peak-times-section" data-aos="fade-up" data-aos-delay="250">
-                    <div class="peak-times-card">
-                        <div class="peak-icon">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div class="peak-content">
-                            <h4>🎯 En Uygun Ortak Çalışma Saatleri</h4>
-                            <p>En fazla takım arkadaşınızın müsait olduğu saatler ({{ max_availability }} kişi):</p>
-                            <div class="peak-times-list">
-                                {% for day, time in peak_times %}
-                                <span class="peak-time-badge">{{ day }} {{ time }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Calendar Navigation -->
-                <div class="calendar-navigation" data-aos="fade-up" data-aos-delay="300">
-                    <div class="nav-header">
+                <!-- FIXED: Calendar Navigation - Single Row Layout -->
+                <div class="calendar-navigation-modern" data-aos="fade-up" data-aos-delay="300">
+                    <div class="nav-header-modern">
                         <h3>Zaman Dilimlerine Geçiş</h3>
                         <p>Hızlı navigasyon için istediğiniz zaman dilimine tıklayın</p>
                     </div>
-                    <div class="time-period-nav">
-                        <button class="period-nav-btn" data-period="night">
-                            <i class="fas fa-moon"></i>
-                            <span>Gece<br><small>00:00-06:00</small></span>
+                    <div class="time-period-nav-single-row">
+                        <button class="period-nav-btn-modern" data-period="night">
+                            <div class="nav-btn-icon">
+                                <i class="fas fa-moon"></i>
+                            </div>
+                            <div class="nav-btn-content">
+                                <span class="nav-btn-title">Gece</span>
+                                <small class="nav-btn-time">00:00-06:00</small>
+                            </div>
                         </button>
-                        <button class="period-nav-btn" data-period="morning">
-                            <i class="fas fa-sun"></i>
-                            <span>Sabah<br><small>06:00-12:00</small></span>
+                        <button class="period-nav-btn-modern" data-period="morning">
+                            <div class="nav-btn-icon">
+                                <i class="fas fa-sunrise"></i>
+                            </div>
+                            <div class="nav-btn-content">
+                                <span class="nav-btn-title">Sabah</span>
+                                <small class="nav-btn-time">06:00-12:00</small>
+                            </div>
                         </button>
-                        <button class="period-nav-btn" data-period="afternoon">
-                            <i class="fas fa-sun"></i>
-                            <span>Öğleden Sonra<br><small>12:00-18:00</small></span>
+                        <button class="period-nav-btn-modern" data-period="afternoon">
+                            <div class="nav-btn-icon">
+                                <i class="fas fa-sun"></i>
+                            </div>
+                            <div class="nav-btn-content">
+                                <span class="nav-btn-title">Öğleden Sonra</span>
+                                <small class="nav-btn-time">12:00-18:00</small>
+                            </div>
                         </button>
-                        <button class="period-nav-btn" data-period="evening">
-                            <i class="fas fa-sunset"></i>
-                            <span>Akşam<br><small>18:00-24:00</small></span>
+                        <button class="period-nav-btn-modern" data-period="evening">
+                            <div class="nav-btn-icon">
+                                <i class="fas fa-sunset"></i>
+                            </div>
+                            <div class="nav-btn-content">
+                                <span class="nav-btn-title">Akşam</span>
+                                <small class="nav-btn-time">18:00-24:00</small>
+                            </div>
                         </button>
                     </div>
                 </div>
 
-                <!-- Team Calendar -->
-                <div class="calendar-section" data-aos="fade-up" data-aos-delay="350">
-                    <div class="calendar-header">
-                        <h3>24 Saat Haftalık Takım Ortak Çalışma Takvimi</h3>
-                        <p>Her hücre o saatte müsait olan takım arkadaşlarınızı gösterir. Tabloda gezinmek için kaydırın.</p>
+                <!-- IMPROVED: Team Calendar -->
+                <div class="calendar-section-modern" data-aos="fade-up" data-aos-delay="350">
+                    <div class="calendar-header-modern">
+                        <div class="calendar-title-section">
+                            <h3>24 Saat Haftalık Takım Ortak Çalışma Takvimi</h3>
+                            <p>Her hücre o saatte müsait olan takım arkadaşlarınızı gösterir</p>
+                        </div>
+                        <div class="calendar-controls">
+                            <div class="view-toggle">
+                                <button class="toggle-btn active" data-view="compact">
+                                    <i class="fas fa-th"></i>
+                                    <span>Kompakt</span>
+                                </button>
+                                <button class="toggle-btn" data-view="detailed">
+                                    <i class="fas fa-list"></i>
+                                    <span>Detaylı</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="calendar-container">
-                        <div class="table-responsive">
-                            <table class="table table-bordered team-calendar" id="teamCalendar">
-                                <thead class="sticky-header">
+                    <div class="calendar-container-modern">
+                        <div class="table-responsive-modern">
+                            <table class="table table-bordered team-calendar-modern" id="teamCalendar">
+                                <thead class="sticky-header-modern">
                                     <tr>
-                                        <th class="time-header sticky-column">Saat</th>
+                                        <th class="time-header-modern sticky-column-modern">
+                                            <div class="header-content">
+                                                <i class="fas fa-clock"></i>
+                                                <span>Saat</span>
+                                            </div>
+                                        </th>
                                         {% for day_data in calendar_grid %}
-                                        <th class="day-header">{{ day_data.day_name }}</th>
+                                        <th class="day-header-modern">
+                                            <div class="day-header-content">
+                                                <div class="day-name">{{ day_data.day_name }}</div>
+                                                <div class="day-summary">
+                                                    {% with day_total=0 %}
+                                                        {% for slot_data in day_data.time_slots %}
+                                                            {% if slot_data.available_count > 0 %}
+                                                                {% with day_total=day_total|add:slot_data.available_count %}
+                                                                {% endwith %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        <span class="day-activity-count">{{ day_total }} aktivite</span>
+                                                    {% endwith %}
+                                                </div>
+                                            </div>
+                                        </th>
                                         {% endfor %}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for time_slot in time_slots %}
-                                    <tr class="time-row" data-time="{{ time_slot }}" 
+                                    <tr class="time-row-modern" data-time="{{ time_slot }}" 
                                         data-period="{% if time_slot|slice:':2' < '06' %}night{% elif time_slot|slice:':2' < '12' %}morning{% elif time_slot|slice:':2' < '18' %}afternoon{% else %}evening{% endif %}">
-                                        <td class="time-cell sticky-column">
-                                            <div class="time-display">
+                                        <td class="time-cell-modern sticky-column-modern">
+                                            <div class="time-display-modern">
                                                 <div class="time-main">{{ time_slot|slice:':5' }}</div>
-                                                <div class="time-range">{{ time_slot }}</div>
+                                                <div class="time-period-indicator {% if time_slot|slice:':2' < '06' %}night{% elif time_slot|slice:':2' < '12' %}morning{% elif time_slot|slice:':2' < '18' %}afternoon{% else %}evening{% endif %}"></div>
                                             </div>
                                         </td>
                                         {% for day_data in calendar_grid %}
                                             {% for slot_data in day_data.time_slots %}
                                                 {% if slot_data.time == time_slot %}
-                                                <td class="availability-cell {% if slot_data.available_count > 0 %}has-availability{% endif %}"
+                                                <td class="availability-cell-modern {% if slot_data.available_count > 0 %}has-availability{% endif %} {% if slot_data.available_count == 1 %}single-user{% elif slot_data.available_count <= 3 %}few-users{% else %}many-users{% endif %}"
                                                     data-day="{{ day_data.day_code }}" 
                                                     data-time="{{ time_slot }}"
-                                                    data-count="{{ slot_data.available_count }}">
+                                                    data-count="{{ slot_data.available_count }}"
+                                                    title="{% if slot_data.available_teammates %}{{ slot_data.available_count }} kişi müsait: {{ slot_data.available_teammates|join:', ' }}{% else %}Kimse müsait değil{% endif %}">
                                                     {% if slot_data.available_teammates %}
-                                                        <div class="teammate-count">{{ slot_data.available_count }} kişi</div>
-                                                        <div class="teammate-list">
-                                                            {% for teammate in slot_data.available_teammates %}
-                                                            <div class="teammate-name">{{ teammate }}</div>
-                                                            {% endfor %}
+                                                        <div class="cell-content">
+                                                            <div class="availability-indicator">
+                                                                <div class="user-count">{{ slot_data.available_count }}</div>
+                                                                <div class="availability-dots">
+                                                                    {% for teammate in slot_data.available_teammates|slice:":3" %}
+                                                                    <div class="user-dot" title="{{ teammate }}"></div>
+                                                                    {% endfor %}
+                                                                    {% if slot_data.available_count > 3 %}
+                                                                    <div class="user-dot overflow" title="+{{ slot_data.available_count|add:'-3' }} kişi daha">+</div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <div class="teammate-list-hover">
+                                                                {% for teammate in slot_data.available_teammates %}
+                                                                <div class="teammate-item">{{ teammate }}</div>
+                                                                {% endfor %}
+                                                            </div>
                                                         </div>
                                                     {% else %}
-                                                        <div class="no-availability">-</div>
+                                                        <div class="cell-content empty">
+                                                            <div class="empty-indicator">-</div>
+                                                        </div>
                                                     {% endif %}
                                                 </td>
                                                 {% endif %}
@@ -220,24 +309,24 @@
                         </div>
                     </div>
 
-                    <!-- Calendar Legend -->
-                    <div class="calendar-legend">
-                        <h4>Takvim Açıklamaları</h4>
-                        <div class="legend-items">
-                            <div class="legend-item">
-                                <div class="legend-color no-avail"></div>
-                                <span>Kimse müsait değil</span>
+                    <!-- Enhanced Calendar Legend -->
+                    <div class="calendar-legend-modern">
+                        <h4>Takvim Rehberi</h4>
+                        <div class="legend-grid">
+                            <div class="legend-item-modern">
+                                <div class="legend-visual empty"></div>
+                                <span>Müsait kimse yok</span>
                             </div>
-                            <div class="legend-item">
-                                <div class="legend-color low-avail"></div>
+                            <div class="legend-item-modern">
+                                <div class="legend-visual single-user"></div>
                                 <span>1 kişi müsait</span>
                             </div>
-                            <div class="legend-item">
-                                <div class="legend-color med-avail"></div>
+                            <div class="legend-item-modern">
+                                <div class="legend-visual few-users"></div>
                                 <span>2-3 kişi müsait</span>
                             </div>
-                            <div class="legend-item">
-                                <div class="legend-color high-avail"></div>
+                            <div class="legend-item-modern">
+                                <div class="legend-visual many-users"></div>
                                 <span>4+ kişi müsait</span>
                             </div>
                         </div>
@@ -275,7 +364,6 @@
                                     {% endif %}
                                 </div>
                                 
-                                <!-- Enhanced: Display only common projects -->
                                 <div class="teammate-projects">
                                     <div class="projects-header">
                                         <i class="fas fa-handshake"></i>
@@ -283,7 +371,6 @@
                                     </div>
                                     <div class="projects-badges">
                                         {% for project in teammate_data.common_projects %}
-                                            <!-- All projects shown are common projects -->
                                             <span class="badge bg-primary common-project" 
                                                   title="Ortak Proje: {{ project.name }}">
                                                 <i class="fas fa-star"></i>
@@ -297,7 +384,6 @@
                                         {% endfor %}
                                     </div>
                                     
-                                    <!-- Project statistics - simplified since we only show common projects -->
                                     {% if teammate_data.common_projects %}
                                     <div class="project-stats">
                                         <span class="stat-item common-stat">
@@ -358,20 +444,20 @@
 
 <style>
     :root {
-    --primary-color: #3b82f6;
-    --secondary-color: #10b981;
-    --success-color: #059669;
-    --warning-color: #f59e0b;
-    --error-color: #ef4444;
-    --night-color: #1e1b4b;
-    --morning-color: #fbbf24;
-    --afternoon-color: #60a5fa;
-    --evening-color: #f97316;
-    --text-color: #1f2937;
-    --text-light: #6b7280;
-    --bg-light: #f8fafc;
-    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --primary-color: #3b82f6;
+        --secondary-color: #10b981;
+        --success-color: #059669;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
+        --night-color: #1e1b4b;
+        --morning-color: #fbbf24;
+        --afternoon-color: #60a5fa;
+        --evening-color: #f97316;
+        --text-color: #1f2937;
+        --text-light: #6b7280;
+        --bg-light: #f8fafc;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 
     .team-availability-page {
@@ -379,7 +465,7 @@
         background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
     }
 
-    /* ===== HERO SECTION ===== */
+    /* Hero Section */
     .hero-section {
         position: relative;
         padding: 4rem 0 2rem;
@@ -515,97 +601,80 @@
         padding: 0 0.5rem;
     }
 
-    /* ===== MAIN CONTAINER ===== */
+    /* Main Container */
     .team-availability-container {
         max-width: 1400px;
         margin: 0 auto;
         padding: 3rem 1rem;
     }
 
-    /* ===== TEAM INFO SECTION ===== */
-    .team-info-section {
-        margin-bottom: 3rem;
+    /* REDESIGNED: Common Projects Section */
+    .common-projects-section {
+        margin-bottom: 4rem;
     }
 
-    .team-projects-card, .team-stats-card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        height: 100%;
+    .projects-showcase-card {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+        border: 2px solid rgba(59, 130, 246, 0.1);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: var(--card-shadow-hover);
     }
 
-    .team-projects-card .card-header {
-        padding: 1.5rem;
-        border-bottom: 2px solid #f1f5f9;
+    .showcase-header {
         display: flex;
         align-items: center;
-        gap: 1rem;
-    }
-
-    .team-projects-card .card-header i {
-        color: var(--primary-color);
-        font-size: 1.5rem;
-    }
-
-    .team-projects-card h3 {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin: 0;
-    }
-
-    .projects-list {
-        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
         flex-wrap: wrap;
         gap: 1rem;
-        padding: 1.5rem;
     }
 
-    .project-badge {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: rgba(59, 130, 246, 0.1);
-        color: var(--primary-color);
-        padding: 0.75rem 1rem;
-        border-radius: 25px;
-        font-weight: 600;
-        border: 2px solid rgba(59, 130, 246, 0.2);
-    }
-
-    .team-stats-card {
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-
-    .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem;
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
-        border-radius: 12px;
-        border: 1px solid rgba(59, 130, 246, 0.1);
-    }
-
-    .stat-icon {
-        width: 50px;
-        height: 50px;
+    .header-icon-modern {
+        width: 80px;
+        height: 80px;
         background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        border-radius: 50%;
+        border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 1.25rem;
+        font-size: 2rem;
+        box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+    }
+
+    .header-content-modern h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .header-content-modern p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .header-stats {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .stat-badge {
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: var(--card-shadow);
+        border: 2px solid rgba(59, 130, 246, 0.1);
     }
 
     .stat-number {
+        display: block;
         font-size: 2rem;
         font-weight: 800;
-        color: var(--text-color);
+        color: var(--primary-color);
         line-height: 1;
     }
 
@@ -615,765 +684,846 @@
         font-weight: 500;
     }
 
-    /* ===== PERIOD STATISTICS SECTION ===== */
-    .period-stats-section {
-        margin-bottom: 3rem;
+    .projects-showcase-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
     }
 
-    .period-stats-header {
+    .project-showcase-item {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: var(--card-shadow);
+        border: 2px solid transparent;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .project-showcase-item:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--card-shadow-hover);
+        border-color: var(--primary-color);
+    }
+
+    .project-visual {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .project-icon-large {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+
+    .project-showcase-item:hover .project-icon-large {
+        transform: scale(1.1) rotateY(180deg);
+    }
+
+    .project-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.3), transparent);
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .project-showcase-item:hover .project-glow {
+        opacity: 1;
+    }
+
+    .project-info-modern h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.75rem;
         text-align: center;
-        margin-bottom: 2rem;
     }
 
-    .period-stats-header h3 {
+    .project-info-modern p {
+        color: var(--text-light);
+        line-height: 1.6;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .project-features-modern {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .feature-tag {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--primary-color);
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    /* ENHANCED: Period Analysis Section */
+    .period-analysis-section {
+        margin-bottom: 4rem;
+    }
+
+    .analysis-header-modern {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        padding: 2rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+        border: 2px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .analysis-title-container {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .title-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, var(--warning-color), #f59e0b);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.8rem;
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+    }
+
+    .title-content h3 {
         font-size: 2rem;
         font-weight: 700;
         color: var(--text-color);
         margin-bottom: 0.5rem;
     }
 
-    .period-stats-header p {
+    .title-content p {
         color: var(--text-light);
         font-size: 1.1rem;
-        line-height: 1.6;
-        max-width: 600px;
-        margin: 0 auto;
+        margin: 0;
     }
 
-    /* ===== ACTION BUTTONS ===== */
-    .action-section {
+    .analysis-summary {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1));
+        padding: 1.5rem;
+        border-radius: 16px;
         text-align: center;
+        border: 2px solid rgba(245, 158, 11, 0.2);
     }
 
-    .action-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
+    .summary-number {
+        display: block;
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--warning-color);
+        line-height: 1;
     }
 
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem 2rem;
-        border: none;
-        border-radius: 12px;
+    .summary-label {
         font-size: 1rem;
+        color: var(--text-color);
         font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-width: 200px;
     }
 
-    .btn-content {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        color: white;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
-        color: white;
-    }
-
-    .btn-secondary {
-        background: #f8fafc;
-        color: var(--text-color);
-        border: 2px solid #e5e7eb;
-    }
-
-    .btn-secondary:hover {
-        background: #e5e7eb;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        color: var(--text-color);
-    }
-
-    .btn-outline {
-        background: transparent;
-        color: var(--primary-color);
-        border: 2px solid var(--primary-color);
-    }
-
-    .btn-outline:hover {
-        background: var(--primary-color);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
-    }
-
-    /* ===== ANIMATIONS ===== */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-    }
-
-    /* Enhanced loading state for teammate cards */
-    .teammate-card.loading {
-        opacity: 0.7;
-        pointer-events: none;
-    }
-
-    .teammate-card.loading::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-        animation: shimmer 1.5s ease-in-out infinite;
-    }
-
-    /* ===== ACCESSIBILITY ===== */
-    /* Focus styles for accessibility */
-    .badge:focus {
-        outline: 2px solid var(--primary-color);
-        outline-offset: 2px;
-    }
-
-    .period-nav-btn:focus {
-        outline: 2px solid var(--primary-color);
-        outline-offset: 2px;
-    }
-
-    /* High contrast mode support */
-    @media (prefers-contrast: high) {
-        .common-project {
-            border: 2px solid var(--primary-color) !important;
-        }
-        
-        .other-project {
-            border: 2px solid #6b7280 !important;
-        }
-        
-        .no-projects {
-            border: 2px solid #9ca3af !important;
-        }
-    }
-
-    /* ===== RESPONSIVE DESIGN ===== */
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2rem;
-        }
-
-        .hero-subtitle {
-            font-size: 1rem;
-        }
-
-        .team-availability-container {
-            padding: 2rem 1rem;
-        }
-
-        .team-info-section .row {
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .peak-times-card {
-            flex-direction: column;
-            text-align: center;
-            gap: 1rem;
-        }
-
-        .projects-list {
-            flex-direction: column;
-        }
-
-        .period-stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .time-period-nav {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .team-calendar {
-            font-size: 0.75rem;
-        }
-
-        .day-header {
-            min-width: 120px;
-        }
-
-        .availability-cell {
-            min-height: 50px;
-            padding: 0.25rem 0.1rem;
-        }
-
-        .teammate-name {
-            font-size: 0.65rem;
-            padding: 0.15rem 0.3rem;
-        }
-
-        .time-main {
-            font-size: 0.9rem;
-        }
-
-        .teammates-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .teammate-card {
-            padding: 1rem;
-        }
-        
-        .projects-badges {
-            gap: 0.25rem;
-        }
-        
-        .projects-badges .badge {
-            padding: 0.3rem 0.6rem;
-            font-size: 0.7rem;
-        }
-        
-        .project-stats {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .teammate-info h4 {
-            font-size: 1rem;
-        }
-
-        .action-buttons {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .btn {
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .peak-times-list {
-            justify-content: center;
-        }
-
-        .legend-items {
-            flex-direction: column;
-            align-items: center;
-        }
-    }
-
-    /* Extra Small Screens */
-    @media (max-width: 576px) {
-        .table-responsive {
-            font-size: 0.7rem;
-        }
-
-        .time-cell {
-            width: 80px;
-        }
-
-        .day-header {
-            min-width: 100px;
-        }
-
-        .teammate-count {
-            font-size: 0.65rem;
-        }
-
-        .teammate-name {
-            font-size: 0.6rem;
-        }
-
-        .time-period-nav {
-            grid-template-columns: 1fr;
-        }
-
-        .projects-badges .badge {
-            font-size: 0.65rem;
-            padding: 0.25rem 0.5rem;
-        }
-        
-        .projects-header {
-            font-size: 0.85rem;
-        }
-        
-        .project-stats {
-            font-size: 0.75rem;
-        }
-    }
-
-    /* Reduced Motion Support */
-    @media (prefers-reduced-motion: reduce) {
-        * {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-        }
-    };
-
-    .period-stats-grid {
+    .period-analysis-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
+        gap: 2rem;
     }
 
-    .period-stat-card {
+    .period-analysis-card {
         background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
+        border-radius: 20px;
+        padding: 2rem;
         box-shadow: var(--card-shadow);
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        transition: all 0.3s ease;
         border: 2px solid transparent;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
     }
 
-    .period-stat-card:hover {
-        transform: translateY(-3px);
+    .period-analysis-card:hover {
+        transform: translateY(-5px);
         box-shadow: var(--card-shadow-hover);
     }
 
-    .period-stat-card.most-active {
+    .period-analysis-card.peak-period {
         border-color: var(--warning-color);
         background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(245, 158, 11, 0.05));
     }
 
-    .period-icon {
+    .period-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+    }
+
+    .period-time-icon {
         width: 60px;
         height: 60px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-size: 1.5rem;
-        flex-shrink: 0;
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
     }
 
-    .period-stat-card .period-icon {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    }
-
-    .period-stat-card.most-active .period-icon {
+    .peak-period .period-time-icon {
         background: linear-gradient(135deg, var(--warning-color), #f59e0b);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
     }
 
-    .period-content h4 {
-        font-size: 1.1rem;
+    .peak-badge {
+        background: var(--warning-color);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+
+    .period-card-body h4 {
+        font-size: 1.4rem;
         font-weight: 700;
         color: var(--text-color);
         margin-bottom: 0.5rem;
     }
 
-    .period-count {
+    .period-time-range {
         color: var(--text-light);
         font-size: 0.9rem;
-        margin-bottom: 0.5rem;
+        font-weight: 500;
+        margin-bottom: 2rem;
     }
 
-    .active-badge {
-        background: var(--warning-color);
-        color: white;
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
+    .activity-visualization {
+        margin-bottom: 1.5rem;
+    }
+
+    .activity-bar-container {
+        width: 100%;
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .activity-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        border-radius: 4px;
+        transition: width 0.8s ease;
+        min-width: 2px;
+    }
+
+    .peak-period .activity-bar {
+        background: linear-gradient(90deg, var(--warning-color), #f59e0b);
+    }
+
+    .activity-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .activity-count {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .peak-period .activity-count {
+        color: var(--warning-color);
+    }
+
+    .activity-label {
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+
+    .period-activity-level {
+        text-align: center;
+    }
+
+    .activity-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
         font-size: 0.8rem;
         font-weight: 600;
         display: inline-block;
     }
 
-    /* ===== PEAK TIMES SECTION ===== */
-    .peak-times-section {
-        margin-bottom: 3rem;
+    .activity-status.inactive {
+        background: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
     }
 
-    .peak-times-card {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(251, 191, 36, 0.05));
-        border: 2px solid rgba(245, 158, 11, 0.2);
-        border-radius: 16px;
-        padding: 2rem;
-        display: flex;
-        align-items: flex-start;
-        gap: 1.5rem;
+    .activity-status.low {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
     }
 
-    .peak-icon {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, var(--warning-color), #f59e0b);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.5rem;
-        flex-shrink: 0;
+    .activity-status.medium {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning-color);
     }
 
-    .peak-content h4 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin-bottom: 0.5rem;
+    .activity-status.high {
+        background: rgba(5, 150, 105, 0.1);
+        color: var(--success-color);
     }
 
-    .peak-content p {
-        color: var(--text-light);
-        margin-bottom: 1rem;
+    /* FIXED: Calendar Navigation - Single Row */
+    .calendar-navigation-modern {
+        margin-bottom: 4rem;
     }
 
-    .peak-times-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-    }
-
-    .peak-time-badge {
-        background: var(--warning-color);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-
-    /* ===== CALENDAR NAVIGATION ===== */
-    .calendar-navigation {
-        margin-bottom: 3rem;
-    }
-
-    .nav-header {
+    .nav-header-modern {
         text-align: center;
         margin-bottom: 2rem;
     }
 
-    .nav-header h3 {
-        font-size: 1.8rem;
+    .nav-header-modern h3 {
+        font-size: 2rem;
         font-weight: 700;
         color: var(--text-color);
         margin-bottom: 0.5rem;
     }
 
-    .nav-header p {
+    .nav-header-modern p {
         color: var(--text-light);
-        font-size: 1rem;
+        font-size: 1.1rem;
     }
 
-    .time-period-nav {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    .time-period-nav-single-row {
+        display: flex;
         gap: 1rem;
-        max-width: 800px;
+        justify-content: center;
+        flex-wrap: wrap;
+        max-width: 1000px;
         margin: 0 auto;
     }
 
-    .period-nav-btn {
+    .period-nav-btn-modern {
+        flex: 1;
+        min-width: 200px;
         background: white;
         border: 2px solid #e5e7eb;
         border-radius: 16px;
         padding: 1.5rem 1rem;
-        text-align: center;
         cursor: pointer;
         transition: all 0.3s ease;
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: 0.75rem;
+        gap: 1rem;
+        text-align: left;
     }
 
-    .period-nav-btn:hover {
+    .period-nav-btn-modern:hover {
         transform: translateY(-3px);
         box-shadow: var(--card-shadow-hover);
         border-color: var(--primary-color);
     }
 
-    .period-nav-btn.active {
+    .period-nav-btn-modern.active {
         border-color: var(--primary-color);
         background: rgba(59, 130, 246, 0.05);
     }
 
-    .period-nav-btn i {
-        font-size: 2rem;
-        color: var(--primary-color);
+    .nav-btn-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        flex-shrink: 0;
     }
 
-    .period-nav-btn span {
+    .nav-btn-content {
+        flex: 1;
+    }
+
+    .nav-btn-title {
+        display: block;
         font-weight: 600;
         color: var(--text-color);
-        line-height: 1.3;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
     }
 
-    .period-nav-btn small {
+    .nav-btn-time {
         color: var(--text-light);
-        font-size: 0.8rem;
+        font-size: 0.9rem;
     }
 
-    /* ===== CALENDAR SECTION ===== */
-    .calendar-section {
-        margin-bottom: 3rem;
+    /* IMPROVED: Calendar Section */
+    .calendar-section-modern {
+        margin-bottom: 4rem;
     }
 
-    .calendar-header {
-        text-align: center;
+    .calendar-header-modern {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
     }
 
-    .calendar-header h3 {
+    .calendar-title-section h3 {
         font-size: 2rem;
         font-weight: 700;
         color: var(--text-color);
         margin-bottom: 0.5rem;
     }
 
-    .calendar-header p {
+    .calendar-title-section p {
         color: var(--text-light);
         font-size: 1.1rem;
+        margin: 0;
     }
 
-    .calendar-container {
+    .calendar-controls {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .view-toggle {
+        display: flex;
+        background: #f1f5f9;
+        border-radius: 12px;
+        padding: 0.25rem;
+    }
+
+    .toggle-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border: none;
+        background: transparent;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-light);
+    }
+
+    .toggle-btn.active {
         background: white;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
+        color: var(--primary-color);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .calendar-container-modern {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow-hover);
         overflow: hidden;
-        position: relative;
+        border: 2px solid rgba(59, 130, 246, 0.1);
     }
 
-    .table-responsive {
-        max-height: 600px;
-        overflow-y: auto;
-        overflow-x: auto;
+    .table-responsive-modern {
+        max-height: 70vh;
+        overflow: auto;
+        border-radius: 20px;
     }
 
-    .team-calendar {
+    .team-calendar-modern {
         margin: 0;
         font-size: 0.85rem;
         width: 100%;
-        min-width: 800px;
+        min-width: 900px;
+        border-collapse: separate;
+        border-spacing: 0;
     }
 
-    .sticky-header {
+    .sticky-header-modern {
         position: sticky;
         top: 0;
         z-index: 100;
     }
 
-    .sticky-column {
+    .sticky-column-modern {
         position: sticky;
         left: 0;
         z-index: 50;
         background: white;
     }
 
-    .team-calendar th {
+    .team-calendar-modern th {
         background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         color: white;
         font-weight: 600;
         text-align: center;
-        padding: 1rem 0.75rem;
+        padding: 1.5rem 1rem;
         border: none;
         white-space: nowrap;
+        position: relative;
     }
 
-    .time-header {
-        width: 120px;
+    .time-header-modern {
+        width: 140px;
         background: linear-gradient(135deg, #4b5563, #374151) !important;
     }
 
-    .day-header {
-        min-width: 160px;
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
     }
 
-    .time-cell {
-        background: #f8fafc;
-        font-weight: 600;
-        text-align: center;
-        vertical-align: middle;
-        width: 120px;
-        border-right: 2px solid #e5e7eb;
-        padding: 0.75rem 0.5rem;
+    .day-header-modern {
+        min-width: 180px;
     }
 
-    .time-display {
+    .day-header-content {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.25rem;
+        gap: 0.5rem;
+    }
+
+    .day-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .day-activity-count {
+        font-size: 0.8rem;
+        opacity: 0.9;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+    }
+
+    .time-cell-modern {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        width: 140px;
+        border-right: 3px solid #e5e7eb;
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .time-display-modern {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .time-main {
-        font-size: 1rem;
+        font-size: 1.1rem;
         font-weight: 700;
         color: var(--text-color);
     }
 
-    .time-range {
-        font-size: 0.7rem;
-        color: var(--text-light);
+    .time-period-indicator {
+        width: 30px;
+        height: 4px;
+        border-radius: 2px;
     }
 
-    .availability-cell {
-        padding: 0.5rem 0.25rem;
-        vertical-align: top;
-        min-height: 60px;
+    .time-period-indicator.night {
+        background: var(--night-color);
+    }
+
+    .time-period-indicator.morning {
+        background: var(--morning-color);
+    }
+
+    .time-period-indicator.afternoon {
+        background: var(--afternoon-color);
+    }
+
+    .time-period-indicator.evening {
+        background: var(--evening-color);
+    }
+
+    .availability-cell-modern {
+        padding: 0.75rem 0.5rem;
+        vertical-align: middle;
+        min-height: 80px;
         position: relative;
         background: #fafafa;
         transition: all 0.3s ease;
         border: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
     }
 
-    .availability-cell.has-availability {
-        background: rgba(59, 130, 246, 0.05);
-        border-left: 3px solid var(--primary-color);
-    }
-
-    /* Color coding based on availability count */
-    .availability-cell[data-count="1"] {
-        background: rgba(34, 197, 94, 0.1);
-        border-left-color: #22c55e;
-    }
-
-    .availability-cell[data-count="2"], .availability-cell[data-count="3"] {
-        background: rgba(59, 130, 246, 0.15);
-        border-left-color: var(--primary-color);
-    }
-
-    .availability-cell[data-count="4"], .availability-cell[data-count="5"], .availability-cell[data-count="6"], .availability-cell[data-count="7"], .availability-cell[data-count="8"], .availability-cell[data-count="9"] {
-        background: rgba(245, 158, 11, 0.15);
-        border-left-color: var(--warning-color);
-    }
-
-    .availability-cell:hover {
+    .availability-cell-modern:hover {
         background: rgba(59, 130, 246, 0.1);
         transform: scale(1.02);
         z-index: 10;
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
     }
 
-    .teammate-count {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: var(--primary-color);
-        margin-bottom: 0.5rem;
-        text-align: center;
-    }
-
-    .teammate-list {
+    .cell-content {
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
-        max-height: 100px;
-        overflow-y: auto;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
     }
 
-    .teammate-name {
-        background: rgba(59, 130, 246, 0.1);
-        color: var(--primary-color);
-        padding: 0.2rem 0.4rem;
-        border-radius: 8px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-align: center;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .no-availability {
-        text-align: center;
-        color: var(--text-light);
-        font-style: italic;
-        padding: 1rem 0;
-        font-size: 0.8rem;
-    }
-
-    /* Time period highlighting */
-    .time-row[data-period="night"] {
-        background: rgba(30, 27, 75, 0.02);
-    }
-
-    .time-row[data-period="morning"] {
-        background: rgba(251, 191, 36, 0.02);
-    }
-
-    .time-row[data-period="afternoon"] {
-        background: rgba(96, 165, 250, 0.02);
-    }
-
-    .time-row[data-period="evening"] {
-        background: rgba(249, 115, 22, 0.02);
-    }
-
-    /* ===== CALENDAR LEGEND ===== */
-    .calendar-legend {
-        background: #f8fafc;
-        padding: 1.5rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .calendar-legend h4 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-color);
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-
-    .legend-items {
+    .availability-indicator {
         display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .user-count {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        background: rgba(59, 130, 246, 0.1);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--primary-color);
+    }
+
+    .availability-dots {
+        display: flex;
+        gap: 0.25rem;
         flex-wrap: wrap;
-        gap: 1rem;
         justify-content: center;
     }
 
-    .legend-item {
+    .user-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        transition: all 0.2s ease;
+    }
+
+    .user-dot.overflow {
+        background: var(--warning-color);
+        width: 16px;
+        height: 16px;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.9rem;
+        justify-content: center;
+        font-size: 0.6rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .teammate-list-hover {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        border: 2px solid var(--primary-color);
+        border-radius: 8px;
+        padding: 0.5rem;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 20;
+        min-width: 150px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .availability-cell-modern:hover .teammate-list-hover {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .teammate-item {
+        font-size: 0.8rem;
+        font-weight: 500;
         color: var(--text-color);
+        padding: 0.25rem;
+        text-align: center;
+        border-bottom: 1px solid #e5e7eb;
     }
 
-    .legend-color {
-        width: 20px;
-        height: 20px;
-        border-radius: 4px;
-        border: 1px solid #e5e7eb;
+    .teammate-item:last-child {
+        border-bottom: none;
     }
 
-    .legend-color.no-avail {
-        background: #fafafa;
+    .empty-indicator {
+        color: var(--text-light);
+        font-style: italic;
+        font-size: 1.2rem;
+        opacity: 0.5;
     }
 
-    .legend-color.low-avail {
+    /* Color coding for different availability levels */
+    .availability-cell-modern.single-user {
+        background: rgba(34, 197, 94, 0.05);
+        border-left: 4px solid #22c55e;
+    }
+
+    .availability-cell-modern.single-user .user-count {
+        color: #22c55e;
         background: rgba(34, 197, 94, 0.1);
         border-color: #22c55e;
     }
 
-    .legend-color.med-avail {
-        background: rgba(59, 130, 246, 0.15);
-        border-color: var(--primary-color);
+    .availability-cell-modern.single-user .user-dot {
+        background: #22c55e;
     }
 
-    .legend-color.high-avail {
-        background: rgba(245, 158, 11, 0.15);
+    .availability-cell-modern.few-users {
+        background: rgba(59, 130, 246, 0.05);
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .availability-cell-modern.many-users {
+        background: rgba(245, 158, 11, 0.05);
+        border-left: 4px solid var(--warning-color);
+    }
+
+    .availability-cell-modern.many-users .user-count {
+        color: var(--warning-color);
+        background: rgba(245, 158, 11, 0.1);
         border-color: var(--warning-color);
     }
 
-    /* ===== TEAMMATES SECTION ===== */
+    .availability-cell-modern.many-users .user-dot {
+        background: var(--warning-color);
+    }
+
+    /* Enhanced Calendar Legend */
+    .calendar-legend-modern {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        padding: 2rem;
+        border-top: 1px solid #e5e7eb;
+        border-radius: 0 0 20px 20px;
+    }
+
+    .calendar-legend-modern h4 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .legend-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .legend-item-modern {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e5e7eb;
+    }
+
+    .legend-visual {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 2px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .legend-visual.empty {
+        background: #fafafa;
+        color: var(--text-light);
+    }
+
+    .legend-visual.empty::after {
+        content: "-";
+    }
+
+    .legend-visual.single-user {
+        background: rgba(34, 197, 94, 0.1);
+        border-color: #22c55e;
+        color: #22c55e;
+    }
+
+    .legend-visual.single-user::after {
+        content: "1";
+    }
+
+    .legend-visual.few-users {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .legend-visual.few-users::after {
+        content: "2-3";
+    }
+
+    .legend-visual.many-users {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: var(--warning-color);
+        color: var(--warning-color);
+    }
+
+    .legend-visual.many-users::after {
+        content: "4+";
+    }
+
+    /* Teammates Section */
     .teammates-section {
         margin-bottom: 3rem;
     }
@@ -1476,12 +1626,10 @@
         font-style: italic;
     }
 
-    /* ===== ENHANCED TEAMMATE PROJECTS ===== */
     .teammate-projects {
         margin-top: 1rem;
         padding-top: 1rem;
         border-top: 1px solid #e5e7eb;
-        animation: fadeInUp 0.5s ease forwards;
     }
 
     .projects-header {
@@ -1516,27 +1664,8 @@
         border-radius: 15px;
         transition: all 0.3s ease;
         border: 1px solid transparent;
-        position: relative;
-        overflow: hidden;
-        cursor: help;
     }
 
-    .projects-badges .badge::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.6s ease;
-    }
-
-    .projects-badges .badge:hover::before {
-        left: 100%;
-    }
-
-    /* Common project styling (highlighted) */
     .common-project {
         background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
         color: white !important;
@@ -1550,62 +1679,25 @@
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
     }
 
-    .common-project i {
-        font-size: 0.7rem;
-        animation: sparkle 2s ease-in-out infinite;
-    }
-
-    @keyframes sparkle {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.2); }
-    }
-
-    /* Other project styling */
-    .other-project {
-        background: #6b7280 !important;
-        color: white !important;
-        border: 1px solid rgba(107, 114, 128, 0.3) !important;
-    }
-
-    .other-project:hover {
-        background: #4b5563 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
-    }
-
-    /* No projects styling */
     .no-projects {
-        background: #f3f4f6 !important;
-        color: #6b7280 !important;
-        border: 1px solid #e5e7eb !important;
-        font-style: italic;
+        background: rgba(107, 114, 128, 0.1) !important;
+        color: var(--text-light) !important;
+        border: 1px solid rgba(107, 114, 128, 0.2) !important;
     }
 
-    .no-projects i {
-        font-size: 0.7rem;
-    }
-
-    /* Project statistics */
     .project-stats {
         display: flex;
         gap: 1rem;
-        font-size: 0.8rem;
-        color: var(--text-light);
+        margin-top: 0.5rem;
     }
 
-    .project-stats .stat-item {
+    .stat-item {
         display: flex;
         align-items: center;
         gap: 0.25rem;
-        padding: 0;
-        background: none;
-        border: none;
-        border-radius: 0;
-    }
-
-    .project-stats .stat-item i {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         color: var(--text-light);
+        font-weight: 500;
     }
 
     .common-stat {
@@ -1617,31 +1709,33 @@
         color: var(--primary-color);
     }
 
-    /* ===== NO DATA SECTION ===== */
+    /* No Data Section */
     .no-data-section {
-        margin-bottom: 3rem;
+        margin: 4rem 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .no-data-card {
         background: white;
         border-radius: 20px;
-        padding: 3rem 2rem;
-        box-shadow: var(--card-shadow);
+        padding: 4rem 3rem;
         text-align: center;
+        box-shadow: var(--card-shadow);
         border: 2px solid rgba(107, 114, 128, 0.1);
+        max-width: 600px;
+        width: 100%;
     }
 
     .no-data-icon {
-        width: 100px;
-        height: 100px;
-        background: rgba(107, 114, 128, 0.1);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .no-data-icon i {
+        font-size: 4rem;
         color: var(--text-light);
-        font-size: 3rem;
+        opacity: 0.6;
     }
 
     .no-data-content h3 {
@@ -1653,117 +1747,409 @@
 
     .no-data-content p {
         color: var(--text-light);
-        font-size: 1.1rem
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin: 0;
     }
 
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize AOS
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 800,
-            easing: 'ease-out-cubic',
-            once: true
-        });
+    /* Action Section */
+    .action-section {
+        margin-top: 4rem;
+        padding: 3rem 0;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+        border-radius: 20px;
+        text-align: center;
     }
 
-    // Period navigation functionality
-    const periodNavBtns = document.querySelectorAll('.period-nav-btn');
-    const calendar = document.getElementById('teamCalendar');
-    
-    periodNavBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const period = this.dataset.period;
-            
-            // Remove active class from all buttons
-            periodNavBtns.forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Scroll to the first row of the selected period
-            const firstRow = calendar.querySelector(`tr[data-period="${period}"]`);
-            if (firstRow) {
-                firstRow.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
-                });
-            }
-        });
-    });
-
-    // Add hover effects to calendar cells
-    const availabilityCells = document.querySelectorAll('.availability-cell.has-availability');
-    availabilityCells.forEach(cell => {
-        cell.addEventListener('mouseenter', function() {
-            const day = this.dataset.day;
-            const time = this.dataset.time;
-            
-            // Highlight the corresponding time and day headers
-            const timeCell = document.querySelector(`.time-cell .time-display .time-main:contains("${time.split('-')[0]}")`);
-            const dayHeader = document.querySelector(`th:contains("${day}")`);
-            
-            // Add subtle highlighting effect
-            this.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.2)';
-        });
-        
-        cell.addEventListener('mouseleave', function() {
-            this.style.boxShadow = '';
-        });
-    });
-
-    // Add click functionality to teammate cards for future expansion
-    const teammateCards = document.querySelectorAll('.teammate-card');
-    teammateCards.forEach(card => {
-        card.addEventListener('click', function() {
-            // Future: Could show detailed availability for specific teammate
-            this.style.transform = 'scale(0.98)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 150);
-        });
-    });
-
-    // Auto-highlight current time period based on current hour
-    const currentHour = new Date().getHours();
-    let currentPeriod = 'night';
-    
-    if (currentHour >= 6 && currentHour < 12) {
-        currentPeriod = 'morning';
-    } else if (currentHour >= 12 && currentHour < 18) {
-        currentPeriod = 'afternoon';
-    } else if (currentHour >= 18) {
-        currentPeriod = 'evening';
-    }
-    
-    // Highlight current period button
-    const currentPeriodBtn = document.querySelector(`[data-period="${currentPeriod}"]`);
-    if (currentPeriodBtn) {
-        currentPeriodBtn.classList.add('active');
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
     }
 
-    // Add smooth scrolling for period rows
-    function smoothScrollToPeriod(period) {
-        const firstRowOfPeriod = document.querySelector(`tr[data-period="${period}"]`);
-        if (firstRowOfPeriod) {
-            const tableContainer = document.querySelector('.table-responsive');
-            const rowOffsetTop = firstRowOfPeriod.offsetTop;
-            
-            tableContainer.scrollTo({
-                top: rowOffsetTop - 100, // Offset for sticky header
-                behavior: 'smooth'
-            });
+    .action-buttons .btn {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        padding: 1rem 2rem;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        min-width: 220px;
+        justify-content: center;
+    }
+
+    .btn-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .btn-content i {
+        font-size: 1.1rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-secondary:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        text-decoration: none;
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--text-color);
+        border-color: #e5e7eb;
+    }
+
+    .btn-outline:hover {
+        background: var(--text-color);
+        color: white;
+        border-color: var(--text-color);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(31, 41, 55, 0.2);
+        text-decoration: none;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .showcase-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .analysis-header-modern {
+            flex-direction: column;
+            text-align: center;
+            gap: 2rem;
+        }
+
+        .calendar-header-modern {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
     }
 
-    // Update period navigation buttons to use smooth scrolling
-    periodNavBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const period = this.dataset.period;
-            smoothScrollToPeriod(period);
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+
+        .team-availability-container {
+            padding: 2rem 1rem;
+        }
+
+        .projects-showcase-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .period-analysis-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .time-period-nav-single-row {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .period-nav-btn-modern {
+            min-width: auto;
+            flex-direction: column;
+            text-align: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .teammates-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .action-buttons .btn {
+            min-width: 280px;
+        }
+
+        .table-responsive-modern {
+            max-height: 50vh;
+        }
+
+        .team-calendar-modern {
+            font-size: 0.75rem;
+        }
+
+        .user-count {
+            width: 25px;
+            height: 25px;
+            font-size: 1rem;
+        }
+
+        .availability-dots {
+            gap: 0.15rem;
+        }
+
+        .user-dot {
+            width: 6px;
+            height: 6px;
+        }
+
+        .user-dot.overflow {
+            width: 12px;
+            height: 12px;
+            font-size: 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-section {
+            padding: 2rem 0 1rem;
+        }
+
+        .hero-title {
+            font-size: 1.5rem;
+        }
+
+        .projects-showcase-card,
+        .analysis-header-modern,
+        .calendar-container-modern {
+            padding: 1.5rem;
+        }
+
+        .project-showcase-item,
+        .period-analysis-card {
+            padding: 1.5rem;
+        }
+
+        .time-period-nav-single-row {
+            grid-template-columns: 1fr;
+        }
+
+        .period-nav-btn-modern {
+            padding: 1rem;
+        }
+
+        .teammate-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .teammate-avatar {
+            align-self: center;
+        }
+    }
+
+    /* Accessibility Improvements */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+
+        .hero-particle {
+            animation: none;
+        }
+
+        .ring {
+            animation: none;
+        }
+    }
+
+    /* Print Styles */
+    @media print {
+        .hero-section,
+        .action-section {
+            display: none;
+        }
+
+        .team-availability-page {
+            background: white;
+        }
+
+        .calendar-container-modern,
+        .project-showcase-item,
+        .period-analysis-card,
+        .teammate-card {
+            box-shadow: none;
+            border: 1px solid #ddd;
+        }
+
+        .table-responsive-modern {
+            max-height: none;
+            overflow: visible;
+        }
+    }
+
+    /* Focus Styles for Accessibility */
+    .period-nav-btn-modern:focus,
+    .toggle-btn:focus,
+    .btn:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+
+    /* High Contrast Mode Support */
+    @media (prefers-contrast: high) {
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #007a3e;
+            --text-color: #000000;
+            --text-light: #333333;
+        }
+
+        .project-showcase-item,
+        .period-analysis-card,
+        .teammate-card {
+            border: 2px solid #000000;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Period navigation functionality
+        const periodButtons = document.querySelectorAll('.period-nav-btn-modern');
+        const timeRows = document.querySelectorAll('.time-row-modern');
+
+        periodButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const targetPeriod = this.dataset.period;
+                
+                // Remove active class from all buttons
+                periodButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+
+                // Show/hide time rows based on period
+                timeRows.forEach(row => {
+                    const rowPeriod = row.dataset.period;
+                    if (targetPeriod === 'all' || rowPeriod === targetPeriod) {
+                        row.style.display = '';
+                        row.style.animation = 'fadeIn 0.3s ease-in-out';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Scroll to calendar
+                document.getElementById('teamCalendar').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
         });
+
+        // View toggle functionality
+        const toggleButtons = document.querySelectorAll('.toggle-btn');
+        const calendar = document.getElementById('teamCalendar');
+
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const view = this.dataset.view;
+                
+                // Remove active class from all toggle buttons
+                toggleButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+
+                // Apply view styles
+                if (view === 'compact') {
+                    calendar.classList.remove('detailed-view');
+                    calendar.classList.add('compact-view');
+                } else {
+                    calendar.classList.remove('compact-view');
+                    calendar.classList.add('detailed-view');
+                }
+            });
+        });
+
+        // Enhanced tooltips for availability cells
+        const availabilityCells = document.querySelectorAll('.availability-cell-modern');
+        
+        availabilityCells.forEach(cell => {
+            cell.addEventListener('mouseenter', function() {
+                const count = this.dataset.count;
+                const day = this.dataset.day;
+                const time = this.dataset.time;
+                
+                if (count > 0) {
+                    this.style.transform = 'scale(1.05)';
+                    this.style.zIndex = '15';
+                }
+            });
+
+            cell.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+                this.style.zIndex = '';
+            });
+        });
+
+        // Keyboard navigation for period buttons
+        periodButtons.forEach((button, index) => {
+            button.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const nextIndex = (index + 1) % periodButtons.length;
+                    periodButtons[nextIndex].focus();
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const prevIndex = (index - 1 + periodButtons.length) % periodButtons.length;
+                    periodButtons[prevIndex].focus();
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
+            });
+        });
+
+        // Add fade-in animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
     });
-});
 </script>
 {% endblock %}
