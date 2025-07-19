@@ -36,13 +36,24 @@
                         <div class="col-lg-4">
                             <div class="welcome-visual">
                                 <div class="avatar-container">
-                                    <div class="avatar-circle">
-                                        {% if user.is_staff or user.is_superuser %}
-                                            <i class="fas fa-crown"></i>
-                                        {% else %}
-                                            <i class="fas fa-rocket"></i>
-                                        {% endif %}
-                                    </div>
+                                    {% if not user.is_staff and not user.is_superuser and intern and intern.profile_picture %}
+                                        <!-- NEW: Display intern's profile picture -->
+                                        <div class="profile-picture-container">
+                                            <img src="{{ intern.profile_picture.url }}" 
+                                                 alt="{{ intern.get_full_name }}" 
+                                                 class="profile-picture-large">
+                                            <div class="profile-picture-glow"></div>
+                                        </div>
+                                    {% else %}
+                                        <!-- Existing animated avatar for admins or interns without profile pictures -->
+                                        <div class="avatar-circle">
+                                            {% if user.is_staff or user.is_superuser %}
+                                                <i class="fas fa-crown"></i>
+                                            {% else %}
+                                                <i class="fas fa-rocket"></i>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
                                     <div class="avatar-rings">
                                         <div class="ring ring-1"></div>
                                         <div class="ring ring-2"></div>
@@ -1482,6 +1493,92 @@
             transition-duration: 0.01ms !important;
         }
     }
+
+    /* Add this CSS to the existing <style> block in templates/intern_portal/home_page.html */
+
+    /* NEW: Profile Picture Styles */
+    .profile-picture-container {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .profile-picture-large {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        animation: float 3s ease-in-out infinite;
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-picture-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 170px;
+        height: 170px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent);
+        border-radius: 50%;
+        animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+        0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+        50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    /* Enhanced float animation for profile pictures */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    /* Responsive adjustments for profile pictures */
+    @media (max-width: 768px) {
+        .profile-picture-container {
+            width: 120px;
+            height: 120px;
+        }
+        
+        .profile-picture-large {
+            width: 120px;
+            height: 120px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .profile-picture-glow {
+            width: 140px;
+            height: 140px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .profile-picture-container {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .profile-picture-large {
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .profile-picture-glow {
+            width: 120px;
+            height: 120px;
+        }
+    }
+
 </style>
 
 <script>

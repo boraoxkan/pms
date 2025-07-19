@@ -148,11 +148,12 @@
                                         {% for day_data in calendar_grid %}
                                             {% for slot_data in day_data.time_slots %}
                                                 {% if slot_data.time == time_slot %}
-                                                <td class="availability-cell-modern {% if slot_data.available_count > 0 %}has-availability{% endif %} {% if slot_data.available_count == 1 %}single-user{% elif slot_data.available_count <= 3 %}few-users{% else %}many-users{% endif %}"
+                                                <td class="availability-cell-modern {% if slot_data.available_count > 0 %}has-availability{% endif %} {% if slot_data.available_count == 1 %}single-user{% elif slot_data.available_count <= 3 %}few-users{% else %}many-users{% endif %}{% if slot_data.is_self_available %} is-self{% endif %}"
                                                     data-day="{{ day_data.day_code }}" 
                                                     data-time="{{ time_slot }}"
                                                     data-count="{{ slot_data.available_count }}"
-                                                    title="{% if slot_data.available_teammates %}{{ slot_data.available_count }} kişi müsait: {{ slot_data.available_teammates|join:', ' }}{% else %}Kimse müsait değil{% endif %}">
+                                                    data-self-available="{{ slot_data.is_self_available }}"
+                                                    title="{% if slot_data.is_self_available %}SİZ bu saatte müsaitsiniz{% if slot_data.available_teammates %} - Ayrıca {{ slot_data.available_count }} takım arkadaşınız: {{ slot_data.available_teammates|join:', ' }}{% endif %}{% elif slot_data.available_teammates %}{{ slot_data.available_count }} kişi müsait: {{ slot_data.available_teammates|join:', ' }}{% else %}Kimse müsait değil{% endif %}">
                                                     {% if slot_data.available_teammates %}
                                                         <div class="cell-content">
                                                             <div class="availability-indicator">

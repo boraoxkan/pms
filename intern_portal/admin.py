@@ -7,6 +7,9 @@ from django.utils import timezone
 from .models import Project, ProjectPreference, Intern, InternAvailability, AvailabilitySettings
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import GroupAdmin
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
+from image_cropping import ImageCroppingMixin
 
 # Gereksiz modelleri admin panelinden kaldır
 admin.site.unregister(Group)
@@ -55,17 +58,24 @@ class ProjectAdmin(admin.ModelAdmin):
     )
 
 @admin.register(Intern)
-class InternAdmin(admin.ModelAdmin):
-    list_display = ('get_full_name', 'email', 'get_auth_method', 'access_link', 'has_availability', 'get_assigned_projects_count', 'is_active')
+class InternAdmin(ImageCroppingMixin, admin.ModelAdmin):
+    list_display = (
+        'profile_picture_thumbnail', 'get_full_name', 'email', 'get_auth_method', 
+        'access_link', 'has_availability', 'get_assigned_projects_count', 'is_active'
+    )
     search_fields = ('first_name', 'last_name', 'email', 'user__email')
     list_filter = ('is_active', 'user')
-    readonly_fields = ('access_token', 'access_link_display', 'get_auth_method')
+    readonly_fields = ('access_token', 'access_link_display', 'get_auth_method', 'profile_picture_preview')
     filter_horizontal = ('assigned_projects',)
     actions = ['reset_availability_lock', 'reset_weekly_submission']
     
     fieldsets = (
         ('Stajyer Bilgileri', {
             'fields': ('first_name', 'last_name', 'email', 'user', 'is_active')
+        }),
+        ('Profil Fotoğrafı', {
+            'fields': ('profile_picture', 'cropping', 'profile_picture_preview'),
+            'description': 'Stajyer profil fotoğrafını yükleyin ve istediğiniz bölümü kırpın'
         }),
         ('Proje Atamaları', {
             'fields': ('assigned_projects',),
@@ -80,6 +90,66 @@ class InternAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    def profile_picture_thumbnail(self, obj):
+        """Admin list view'da küçük profil fotoğrafı thumbnail'i gösterir"""
+        if obj.profile_picture:
+            # Use cropped thumbnail if available
+            image_url = obj.get_profile_picture_url('profile_admin')
+            if not image_url:
+                image_url = obj.profile_picture.url
+                
+            return format_html(
+                '<img src="{}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd;" />',
+                image_url
+            )
+        else:
+            return format_html(
+                '<div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #10b981); display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; border: 2px solid #ddd;">'
+                '<i class="fas fa-user"></i>'
+                '</div>'
+            )
+    profile_picture_thumbnail.short_description = 'Profil Fotoğrafı'
+
+    def profile_picture_preview(self, obj):
+        """Admin form'da büyük profil fotoğrafı preview'i gösterir"""
+        if obj.profile_picture:
+            # Show both original and cropped versions
+            original_url = obj.profile_picture.url
+            cropped_url = obj.get_profile_picture_url('profile_large')
+            
+            preview_html = '<div style="text-align: center;">'
+            
+            if cropped_url and cropped_url != original_url:
+                preview_html += f'''
+                <div style="display: flex; gap: 20px; justify-content: center; align-items: center;">
+                    <div>
+                        <img src="{cropped_url}" style="max-width: 150px; max-height: 150px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
+                        <p style="margin: 10px 0 0 0; color: #059669; font-weight: bold;">Kırpılmış Görünüm</p>
+                    </div>
+                    <div>
+                        <img src="{original_url}" style="max-width: 150px; max-height: 150px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.1); opacity: 0.7;" />
+                        <p style="margin: 10px 0 0 0; color: #666; font-style: italic;">Orijinal</p>
+                    </div>
+                </div>
+                '''
+            else:
+                preview_html += f'''
+                <img src="{original_url}" style="max-width: 200px; max-height: 200px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
+                <p style="margin-top: 10px; color: #666; font-style: italic;">Mevcut profil fotoğrafı</p>
+                '''
+            
+            preview_html += '</div>'
+            return format_html(preview_html)
+        else:
+            return format_html(
+                '<div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #ddd;">'
+                '<i class="fas fa-camera" style="font-size: 48px; color: #ccc; margin-bottom: 10px;"></i>'
+                '<p style="color: #666; margin: 0;">Henüz profil fotoğrafı yüklenmemiş</p>'
+                '<p style="color: #999; font-size: 0.9em; margin: 5px 0 0 0;">Fotoğraf yükledikten sonra kırpma aracını kullanabilirsiniz</p>'
+                '</div>'
+            )
+    profile_picture_preview.short_description = 'Profil Fotoğrafı Önizleme'
 
     def reset_availability_lock(self, request, queryset):
         """Reset availability lock for selected interns"""

@@ -84,6 +84,7 @@ def team_availability(request):
     Display team availability calendar for Google SSO authenticated users
     Shows combined availability of all teammates (interns assigned to same projects)
     Displays full 24-hour time range (00:00 to 23:00)
+    NEW: Highlights the current user's own availability
     """
     # Check if user is admin (staff/superuser)
     if request.user.is_staff or request.user.is_superuser:
@@ -114,8 +115,8 @@ def team_availability(request):
         project_interns = project.assigned_interns.exclude(id=current_intern.id).values_list('id', flat=True)
         teammate_ids.update(project_interns)
     
-    # Get teammate objects with their assigned projects
-    teammates = Intern.objects.filter(id__in=teammate_ids, is_active=True).prefetch_related('assigned_projects')
+    # Get teammate objects with their assigned projects and profile pictures
+    teammates = Intern.objects.filter(id__in=teammate_ids, is_active=True).prefetch_related('assigned_projects').select_related('user')
     
     # Create a detailed teammates list with ONLY common projects
     teammates_with_projects = []
@@ -161,6 +162,21 @@ def team_availability(request):
         for time_slot in TIME_SLOTS:
             team_calendar[day][time_slot] = []
     
+    # NEW: Get current user's availability for highlighting
+    current_user_availability = {}
+    try:
+        current_availability = InternAvailability.objects.get(intern=current_intern)
+        for day_code in WEEKDAYS:
+            # Get combined availability (group + individual) for current user
+            group_slots = current_availability.group_meeting_data.get(day_code, [])
+            individual_slots = current_availability.individual_work_data.get(day_code, [])
+            all_current_slots = group_slots + individual_slots
+            current_user_availability[day_code] = all_current_slots
+    except InternAvailability.DoesNotExist:
+        # If current user has no availability, initialize empty
+        for day_code in WEEKDAYS:
+            current_user_availability[day_code] = []
+    
     # Fetch availability data for all teammates
     teammate_availabilities = InternAvailability.objects.filter(
         intern__in=teammates
@@ -198,7 +214,7 @@ def team_availability(request):
                 if time_slot in TIME_SLOTS:
                     team_calendar[day_code][time_slot].append(intern_name)
     
-    # Create a more template-friendly structure
+    # NEW: Create a more template-friendly structure with self-availability flags
     calendar_grid = []
     for day in WEEKDAYS:
         day_data = {
@@ -208,11 +224,15 @@ def team_availability(request):
         }
         for time_slot in TIME_SLOTS:
             available_teammates = team_calendar[day][time_slot]
+            # NEW: Check if current user is available at this time slot
+            is_self_available = time_slot in current_user_availability.get(day, [])
+            
             day_data['time_slots'].append({
                 'time': time_slot,
                 'time_display': time_slot.replace('-', ' - '),
                 'available_count': len(available_teammates),
-                'available_teammates': available_teammates
+                'available_teammates': available_teammates,
+                'is_self_available': is_self_available  # NEW: Flag for current user's availability
             })
         calendar_grid.append(day_data)
     
