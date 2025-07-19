@@ -106,7 +106,7 @@
             {% else %}
                 <!-- Intern Dashboard -->
                 <div class="container">
-                    <!-- Quick Stats -->
+                    <!-- FIXED: Quick Stats - Removed Preference Count -->
                     <div class="stats-section" data-aos="fade-up" data-aos-delay="200">
                         <div class="stats-grid">
                             <div class="stat-card">
@@ -135,21 +135,11 @@
                                 </div>
                             </div>
 
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <i class="fas fa-trophy"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-number">
-                                        {% if has_preferences %}3{% else %}0{% endif %}
-                                    </div>
-                                    <div class="stat-label">Tercih Sayısı</div>
-                                </div>
-                            </div>
+                            <!-- REMOVED: Preference Count stat-card -->
                         </div>
                     </div>
 
-                    <!-- Replace the existing action-section -->
+                    <!-- FIXED: Action Section with Compact Confirmed Box -->
                     <div class="action-section" data-aos="fade-up" data-aos-delay="300">
                         <div class="row">
                             <div class="col-lg-8">
@@ -187,19 +177,19 @@
                                         </div>
                                     </div>
                                 {% else %}
-                                    <!-- Enhanced design for availability IS set -->
-                                    <div class="main-action-card modern-card confirmed">
+                                    <!-- FIXED: Compact design for availability IS set -->
+                                    <div class="main-action-card modern-card confirmed-compact">
                                         <div class="card-gradient-bg success"></div>
-                                        <div class="action-content">
+                                        <div class="action-content-compact">
                                             <div class="action-icon-modern success">
                                                 <div class="success-animation">
                                                     <i class="fas fa-check-circle"></i>
                                                 </div>
                                             </div>
-                                            <div class="action-text">
+                                            <div class="action-text-compact">
                                                 <h3>Ortak Çalışma Saatiniz Onaylandı</h3>
-                                                <p>Müsaitlik durumunuz başarıyla kaydedildi. <strong>{{ availability_data.get_total_hours }} saat</strong> ortak çalışma saati belirttiniz.</p>
-                                                <div class="stats-mini">
+                                                <p><strong>{{ availability_data.get_total_hours }} saat</strong> ortak çalışma saati belirttiniz.</p>
+                                                <div class="stats-mini-compact">
                                                     <div class="mini-stat">
                                                         <span class="stat-number">{{ availability_data.get_total_hours }}</span>
                                                         <span class="stat-label">Saat/Hafta</span>
@@ -211,14 +201,14 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="action-button-modern">
-                                            <a href="{% url 'view_availability' %}" class="btn btn-success-modern">
+                                        <div class="action-button-modern-compact">
+                                            <a href="{% url 'view_availability' %}" class="btn btn-success-modern-compact">
                                                 <span class="btn-text">Detayları Görüntüle</span>
                                                 <div class="btn-arrow">
                                                     <i class="fas fa-eye"></i>
                                                 </div>
                                             </a>
-                                            <a href="{% url 'select_availability' %}" class="btn btn-outline-modern">
+                                            <a href="{% url 'select_availability' %}" class="btn btn-outline-modern-compact">
                                                 <span class="btn-text">Düzenle</span>
                                                 <div class="btn-arrow">
                                                     <i class="fas fa-edit"></i>
@@ -228,10 +218,9 @@
                                     </div>
                                 {% endif %}
                             </div>
-                            <!-- Keep the existing col-lg-4 section unchanged -->
+                            <!-- FIXED: Simplified sidebar with only project names -->
                             <div class="col-lg-4">
                                 <div class="info-cards">
-                                    <!-- FIXED: Show assigned projects or pending status -->
                                     {% if has_assigned_projects %}
                                         <div class="info-card projects-card">
                                             <div class="info-header">
@@ -240,27 +229,27 @@
                                             </div>
                                             <div class="info-content">
                                                 {% for project in assigned_projects %}
-                                                    <!-- Replace the existing project-item structure -->
-                                                    <div class="project-item">
+                                                    <!-- FIXED: Only show project names, no descriptions -->
+                                                    <div class="project-item-simple">
                                                         <div class="project-name">{{ project.name }}</div>
-                                                        <div class="project-description">{{ project.short_description|truncatewords:15 }}</div>
+                                                        <!-- REMOVED: project description -->
                                                     </div>
                                                 {% endfor %}
                                             </div>
                                         </div>
 
-                                        <!-- NEW: Team Availability Card - Only show if user has assigned projects -->
+                                        <!-- Team Availability Card - Only show if user has assigned projects -->
                                         <div class="info-card team-card">
                                             <div class="info-header">
                                                 <i class="fas fa-users-clock"></i>
                                                 <h4>Takım Ortak Çalışma Saati</h4>
                                             </div>
                                             <div class="info-content">
-                                                <p>Takım arkadaşlarınızın müsaitlik durumunu görüntüleyin ve ortak çalışma saatlerinizi planlayın.</p>
+                                                <p>Takım arkadaşlarınızın müsaitlik durumunu görüntüleyin.</p>
                                                 <div class="team-action">
                                                     <a href="{% url 'team_availability' %}" class="btn btn-outline-secondary btn-sm">
                                                         <i class="fas fa-calendar-week"></i>
-                                                        <span>Takım Takvimini Görüntüle</span>
+                                                        <span>Takım Takvimi</span>
                                                     </a>
                                                 </div>
                                             </div>
@@ -523,326 +512,6 @@
         100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
     }
 
-    .info-card.team-card {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
-        border: 2px solid rgba(59, 130, 246, 0.1);
-        margin-top: 1rem;
-    }
-
-    .info-card.team-card .info-header i {
-        color: var(--secondary-color);
-    }
-
-    .team-action {
-        margin-top: 1rem;
-    }
-
-    .btn-outline-secondary {
-        background: transparent;
-        color: var(--secondary-color);
-        border: 2px solid var(--secondary-color);
-        padding: 0.6rem 1.2rem;
-        font-size: 0.9rem;
-        border-radius: 8px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.3s ease;
-        font-weight: 600;
-    }
-
-    .btn-outline-secondary:hover {
-        background: var(--secondary-color);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-
-    .btn-sm {
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
-    }
-
-    /* Modern Action Card Styles */
-    .modern-card {
-        position: relative;
-        background: white;
-        border-radius: 24px;
-        padding: 2.5rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(59, 130, 246, 0.1);
-        overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .modern-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.12);
-    }
-
-    .card-gradient-bg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-        border-radius: 24px 24px 0 0;
-    }
-
-    .card-gradient-bg.success {
-        background: linear-gradient(90deg, var(--success-color), var(--secondary-color));
-    }
-
-    .action-content {
-        display: flex;
-        align-items: flex-start;
-        gap: 2rem;
-        margin-bottom: 2rem;
-        position: relative;
-        z-index: 2;
-    }
-
-    .action-icon-modern {
-        position: relative;
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .action-icon-modern.success {
-        background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.1));
-    }
-
-    .icon-pulse {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.2));
-        border-radius: 20px;
-        animation: pulse-modern 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse-modern {
-        0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
-        50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-    }
-
-    .action-icon-modern i {
-        font-size: 2rem;
-        color: var(--primary-color);
-        position: relative;
-        z-index: 2;
-    }
-
-    .action-icon-modern.success i {
-        color: var(--success-color);
-    }
-
-    .success-animation {
-        animation: success-bounce 2s ease-in-out infinite;
-    }
-
-    @keyframes success-bounce {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-    }
-
-    .action-text h3 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin-bottom: 1rem;
-        line-height: 1.3;
-    }
-
-    .action-text p {
-        font-size: 1.1rem;
-        color: var(--text-light);
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-    }
-
-    .benefits-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .benefit-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-size: 0.95rem;
-        color: var(--text-color);
-    }
-
-    .benefit-item i {
-        color: var(--success-color);
-        font-size: 0.9rem;
-    }
-
-    .stats-mini {
-        display: flex;
-        gap: 1.5rem;
-    }
-
-    .mini-stat {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 1rem;
-        background: rgba(5, 150, 105, 0.05);
-        border-radius: 12px;
-        border: 1px solid rgba(5, 150, 105, 0.1);
-    }
-
-    .stat-number {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--success-color);
-        line-height: 1;
-    }
-
-    .stat-label {
-        font-size: 0.8rem;
-        color: var(--text-light);
-        font-weight: 500;
-    }
-
-    .action-button-modern {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        justify-content: flex-start;
-        flex-wrap: wrap;
-        position: relative;
-        z-index: 2;
-    }
-
-    .btn-primary-modern, .btn-success-modern, .btn-outline-modern {
-        display: inline-flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem 2rem;
-        border-radius: 16px;
-        font-size: 1rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        border: none;
-    }
-
-    .btn-primary-modern {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        color: white;
-        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
-    }
-
-    .btn-success-modern {
-        background: linear-gradient(135deg, var(--success-color), var(--secondary-color));
-        color: white;
-        box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
-    }
-
-    .btn-outline-modern {
-        background: transparent;
-        color: var(--primary-color);
-        border: 2px solid var(--primary-color);
-    }
-
-    .btn-primary-modern:hover, .btn-success-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
-        color: white;
-    }
-
-    .btn-outline-modern:hover {
-        background: var(--primary-color);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
-    }
-
-    .btn-arrow {
-        width: 32px;
-        height: 32px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-
-    .btn-outline-modern .btn-arrow {
-        background: rgba(59, 130, 246, 0.1);
-    }
-
-    .btn-primary-modern:hover .btn-arrow,
-    .btn-success-modern:hover .btn-arrow {
-        transform: translateX(4px);
-        background: rgba(255, 255, 255, 0.3);
-    }
-
-    .btn-outline-modern:hover .btn-arrow {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateX(4px);
-    }
-
-    .project-description {
-        font-size: 0.9rem;
-        color: var(--text-light);
-        line-height: 1.4;
-        margin-top: 0.5rem;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .action-content {
-            flex-direction: column;
-            text-align: center;
-            gap: 1.5rem;
-        }
-        
-        .action-button-modern {
-            justify-content: center;
-        }
-        
-        .stats-mini {
-            justify-content: center;
-        }
-    }
-
-    /* Mobile responsiveness for new team card */
-    @media (max-width: 768px) {
-        .info-cards {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
-        .team-action {
-            text-align: center;
-        }
-        
-        .btn-outline-secondary {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-
     /* Dashboard Container */
     .dashboard-container {
         position: relative;
@@ -949,7 +618,7 @@
         gap: 1rem;
     }
 
-    /* Stats Section */
+    /* FIXED: Stats Section - Removed third stat card */
     .stats-section {
         padding: 3rem 0 2rem;
     }
@@ -959,6 +628,9 @@
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1.5rem;
         margin-bottom: 2rem;
+        max-width: 600px; /* ADDED: Limit width since we have fewer cards */
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .stat-card {
@@ -1011,67 +683,336 @@
         padding: 2rem 0;
     }
 
-    .main-action-card {
+    /* FIXED: Compact Modern Card Styles for Confirmed Availability */
+    .modern-card {
+        position: relative;
         background: white;
-        border-radius: 20px;
+        border-radius: 24px;
         padding: 2rem;
-        box-shadow: var(--card-shadow);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         border: 1px solid rgba(59, 130, 246, 0.1);
-        height: 100%;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .action-content {
+    .modern-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-gradient-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        border-radius: 24px 24px 0 0;
+    }
+
+    .card-gradient-bg.success {
+        background: linear-gradient(90deg, var(--success-color), var(--secondary-color));
+    }
+
+    /* FIXED: Compact styles for confirmed availability */
+    .confirmed-compact {
+        padding: 1.5rem; /* Reduced from 2.5rem */
+    }
+
+    .action-content-compact {
         display: flex;
-        align-items: flex-start;
+        align-items: center; /* Changed from flex-start to center */
         gap: 1.5rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem; /* Reduced from 2rem */
+        position: relative;
+        z-index: 2;
     }
 
-    .action-icon {
-        width: 60px;
-        height: 60px;
-        background: rgba(59, 130, 246, 0.1);
+    .action-text-compact h3 {
+        font-size: 1.5rem; /* Reduced from 1.75rem */
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem; /* Reduced from 1rem */
+        line-height: 1.3;
+    }
+
+    .action-text-compact p {
+        font-size: 1rem; /* Reduced from 1.1rem */
+        color: var(--text-light);
+        line-height: 1.5; /* Reduced from 1.6 */
+        margin-bottom: 1rem; /* Reduced from 1.5rem */
+    }
+
+    .stats-mini-compact {
+        display: flex;
+        gap: 1rem; /* Reduced from 1.5rem */
+    }
+
+    .action-button-modern-compact {
+        display: flex;
+        gap: 0.75rem; /* Reduced gap */
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-success-modern-compact, .btn-outline-modern-compact {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1.5rem; /* Reduced from 1rem 2rem */
+        border-radius: 12px; /* Reduced from 16px */
+        font-size: 0.9rem; /* Reduced from 1rem */
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        border: none;
+    }
+
+    .btn-success-modern-compact {
+        background: linear-gradient(135deg, var(--success-color), var(--secondary-color));
+        color: white;
+        box-shadow: 0 3px 12px rgba(5, 150, 105, 0.25); /* Reduced shadow */
+    }
+
+    .btn-outline-modern-compact {
+        background: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+
+    .btn-success-modern-compact:hover {
+        transform: translateY(-1px); /* Reduced from -2px */
+        box-shadow: 0 6px 18px rgba(5, 150, 105, 0.3); /* Reduced shadow */
+        color: white;
+    }
+
+    .btn-outline-modern-compact:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-1px); /* Reduced from -2px */
+        box-shadow: 0 3px 12px rgba(59, 130, 246, 0.25); /* Reduced shadow */
+    }
+
+    .action-icon-modern {
+        position: relative;
+        width: 60px; /* Reduced from 80px */
+        height: 60px; /* Reduced from 80px */
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+        border-radius: 16px; /* Reduced from 20px */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .action-icon-modern.success {
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.1));
+    }
+
+    .icon-pulse {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.2));
+        border-radius: 16px; /* Reduced from 20px */
+        animation: pulse-modern 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-modern {
+        0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    }
+
+    .action-icon-modern i {
+        font-size: 1.5rem; /* Reduced from 2rem */
+        color: var(--primary-color);
+        position: relative;
+        z-index: 2;
+    }
+
+    .action-icon-modern.success i {
+        color: var(--success-color);
+    }
+
+    .success-animation {
+        animation: success-bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes success-bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .action-text h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+
+    .action-text p {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .benefits-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.95rem;
+        color: var(--text-color);
+    }
+
+    .benefit-item i {
+        color: var(--success-color);
+        font-size: 0.9rem;
+    }
+
+    .stats-mini {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .mini-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.75rem; /* Reduced from 1rem */
+        background: rgba(5, 150, 105, 0.05);
+        border-radius: 10px; /* Reduced from 12px */
+        border: 1px solid rgba(5, 150, 105, 0.1);
+    }
+
+    .stat-number {
+        font-size: 1.25rem; /* Reduced from 1.5rem */
+        font-weight: 700;
+        color: var(--success-color);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.75rem; /* Reduced from 0.8rem */
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .action-button-modern {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-primary-modern, .btn-success-modern, .btn-outline-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 2rem;
+        border-radius: 16px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        border: none;
+    }
+
+    .btn-primary-modern {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-success-modern {
+        background: linear-gradient(135deg, var(--success-color), var(--secondary-color));
+        color: white;
+        box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+    }
+
+    .btn-outline-modern {
+        background: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+
+    .btn-primary-modern:hover, .btn-success-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    .btn-outline-modern:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-arrow {
+        width: 28px; /* Reduced from 32px */
+        height: 28px; /* Reduced from 32px */
+        background: rgba(255, 255, 255, 0.2);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--primary-color);
-        font-size: 1.5rem;
-        flex-shrink: 0;
-    }
-
-    .action-text h3 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin-bottom: 0.5rem;
-    }
-
-    .action-text p {
-        color: var(--text-light);
-        line-height: 1.6;
-        margin: 0;
-    }
-
-    .action-button .btn {
-        padding: 1rem 2rem;
-        font-size: 1.1rem;
-        font-weight: 600;
-        border-radius: 12px;
-        border: none;
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        color: white;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
         transition: all 0.3s ease;
     }
 
-    .action-button .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
-        color: white;
+    .btn-outline-modern .btn-arrow,
+    .btn-outline-modern-compact .btn-arrow {
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-primary-modern:hover .btn-arrow,
+    .btn-success-modern:hover .btn-arrow,
+    .btn-success-modern-compact:hover .btn-arrow {
+        transform: translateX(4px);
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-outline-modern:hover .btn-arrow,
+    .btn-outline-modern-compact:hover .btn-arrow {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(4px);
+    }
+
+    /* FIXED: Simplified project items - only names */
+    .project-item-simple {
+        padding: 0.5rem 0; /* Reduced from 0.75rem */
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .project-item-simple:last-child {
+        border-bottom: none;
+    }
+
+    .project-name {
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.95rem; /* Slightly smaller */
+        /* REMOVED: margin-bottom since there's no description */
     }
 
     /* Info Cards */
@@ -1088,6 +1029,15 @@
         padding: 1.5rem;
         box-shadow: var(--card-shadow);
         flex: 1;
+    }
+
+    .info-card.team-card {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+        border: 2px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .info-card.team-card .info-header i {
+        color: var(--secondary-color);
     }
 
     .info-header {
@@ -1109,59 +1059,46 @@
         margin: 0;
     }
 
-    .project-item {
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #e5e7eb;
+    .info-content {
+        /* Base styles for info content */
     }
 
-    .project-item:last-child {
-        border-bottom: none;
-    }
-
-    .project-name {
-        font-weight: 600;
-        color: var(--text-color);
-        margin-bottom: 0.25rem;
-    }
-
-    .project-meta .badge {
-        background: rgba(59, 130, 246, 0.1);
-        color: var(--primary-color);
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        font-weight: 500;
-    }
-
-    .section-header h3 {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin-bottom: 0.5rem;
-    }
-
-    .section-header p {
-        color: var(--text-light);
-        font-size: 1.1rem;
-    }
-
-    .resource-card:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--card-shadow-hover);
-    }
-
-    .resource-card h4 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-color);
-        margin-bottom: 0.5rem;
-    }
-
-    .resource-card p {
+    .info-content p {
         color: var(--text-light);
         font-size: 0.9rem;
         line-height: 1.5;
-        margin: 0;
+        margin-bottom: 1rem;
+    }
+
+    .team-action {
+        margin-top: 1rem;
+    }
+
+    .btn-outline-secondary {
+        background: transparent;
+        color: var(--secondary-color);
+        border: 2px solid var(--secondary-color);
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--secondary-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
     }
 
     /* Landing Section (Non-authenticated) */
@@ -1478,15 +1415,22 @@
 
         .dashboard-grid,
         .stats-grid,
-        .features-grid,
-        .resources-grid {
+        .features-grid {
             grid-template-columns: 1fr;
             gap: 1.5rem;
         }
 
-        .action-content {
+        .action-content,
+        .action-content-compact {
             flex-direction: column;
             text-align: center;
+        }
+
+        .action-button-modern,
+        .action-button-modern-compact {
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
         }
 
         .login-card {
@@ -1508,60 +1452,25 @@
             height: 70px;
             font-size: 1.8rem;
         }
-        .main-action-card.availability-confirmed {
-        border-left: 5px solid var(--success-color);
-        background: linear-gradient(135deg, rgba(5, 150, 105, 0.05), rgba(16, 185, 129, 0.05));
+
+        .confirmed-compact {
+            padding: 1.25rem; /* Even more compact on mobile */
         }
 
-        .action-icon.confirmed {
-            background: rgba(5, 150, 105, 0.1);
-            color: var(--success-color);
+        .action-icon-modern {
+            width: 50px;
+            height: 50px;
         }
 
-        .action-button {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
+        .action-icon-modern i {
+            font-size: 1.25rem;
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, var(--success-color), var(--secondary-color));
-            color: white;
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.3);
-            color: white;
-        }
-
-        .btn-outline-primary {
-            background: transparent;
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
-        }
-
-        .btn-outline-primary:hover {
-            background: var(--primary-color);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
-        }
-
-        .project-meta {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-top: 0.5rem;
-        }
-
-        .project-meta .badge {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--primary-color);
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
+        .btn-success-modern-compact,
+        .btn-outline-modern-compact {
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 0.5rem;
         }
     }
 

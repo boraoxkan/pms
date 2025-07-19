@@ -42,10 +42,10 @@
             flex: 1 0 auto;
         }
 
-        /* Navbar Animations */
+        /* FIXED: Compact Navbar Styles */
         .navbar {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            padding: 1rem 0;
+            padding: 0.75rem 0; /* Reduced from 1rem */
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
@@ -53,27 +53,27 @@
 
         .navbar-brand {
             font-weight: 700;
-            font-size: 1.5rem;
+            font-size: 1.25rem; /* Reduced from 1.5rem */
             color: white !important;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem; /* Reduced from 1rem */
             transition: all 0.3s ease;
             position: relative;
         }
 
         .navbar-brand:hover {
-            transform: scale(1.05);
-            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            transform: scale(1.02); /* Reduced from 1.05 */
+            text-shadow: 0 0 15px rgba(255,255,255,0.4); /* Reduced effect */
         }
 
         .navbar-brand::after {
             content: '';
             position: absolute;
-            bottom: -5px;
+            bottom: -3px;
             left: 0;
             width: 0;
-            height: 3px;
+            height: 2px;
             background: linear-gradient(90deg, #fff, transparent);
             transition: width 0.3s ease;
         }
@@ -87,13 +87,52 @@
             font-weight: 500;
             transition: all 0.3s ease;
             position: relative;
-            padding: 0.5rem 1rem !important;
-            border-radius: 8px;
+            padding: 0.4rem 0.8rem !important; /* Reduced padding */
+            border-radius: 6px; /* Reduced from 8px */
+            font-size: 0.9rem; /* Slightly smaller text */
+            white-space: nowrap; /* Prevent wrapping */
         }
 
         .nav-link:hover {
             background: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
+            transform: translateY(-1px); /* Reduced from -2px */
+        }
+
+        /* Compact dropdown for mobile */
+        .navbar-nav {
+            align-items: center;
+        }
+
+        .navbar-nav .nav-item {
+            margin: 0 0.25rem; /* Reduced spacing */
+        }
+
+        .dropdown-menu {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-item {
+            padding: 0.6rem 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .navbar-text {
+            font-size: 0.9rem; /* Slightly smaller */
+            margin: 0 0.5rem;
+        }
+
+        /* Badge styling for admin users */
+        .badge {
+            font-size: 0.7rem; /* Smaller badge */
+            padding: 0.25rem 0.5rem;
         }
 
         /* Enhanced Card Animations */
@@ -455,7 +494,7 @@
             50% { transform: scale(1.05); }
         }
 
-        /* Mobile optimizations */
+        /* Mobile optimizations - FIXED */
         @media (max-width: 768px) {
             .projects-grid {
                 grid-template-columns: 1fr;
@@ -469,11 +508,46 @@
             }
             
             .navbar-brand {
-                font-size: 1.2rem;
+                font-size: 1.1rem; /* Further reduced for mobile */
+                gap: 0.5rem;
+            }
+            
+            .nav-link {
+                font-size: 0.85rem; /* Smaller text on mobile */
+                padding: 0.3rem 0.6rem !important;
+            }
+            
+            .navbar {
+                padding: 0.5rem 0; /* More compact on mobile */
+            }
+
+            .navbar-nav .nav-item {
+                margin: 0 0.1rem; /* Tighter spacing on mobile */
             }
             
             .project-card:hover {
                 transform: translateY(-8px);
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 1rem;
+            }
+            
+            .nav-link {
+                font-size: 0.8rem;
+                padding: 0.25rem 0.5rem !important;
+            }
+            
+            /* Stack navigation items vertically if needed */
+            .navbar-collapse .navbar-nav {
+                margin-top: 0.5rem;
+            }
+            
+            .navbar-collapse .nav-item {
+                margin: 0.1rem 0;
             }
         }
 
@@ -530,17 +604,16 @@
     </div>
 
     <div class="content-wrapper">
-                <!-- Extract from base.html - Fixed Navigation Section -->
-        <!-- Extract from base.html - Updated Navigation Section -->
+        <!-- FIXED: Compact Navigation Section -->
         <nav class="navbar navbar-expand-lg">
             <div class="container">
                 <!-- FIXED: Always link to home page using named URL -->
                 <a class="navbar-brand" href="{% url 'home_page' %}">
                     <i class="fas fa-eye me-2"></i>
-                    <span>One Eye Systems PMS</span>
+                    <span>OES PMS</span> <!-- Shortened brand name -->
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border: none; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                    <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
@@ -549,7 +622,7 @@
                                 <!-- Admin navigation -->
                                 <li class="nav-item">
                                     <a class="nav-link" href="/admin/">
-                                        <i class="fas fa-cog me-1"></i>Admin Panel
+                                        <i class="fas fa-cog me-1"></i>Panel
                                     </a>
                                 </li>
                                 <li class="nav-item">
@@ -566,18 +639,18 @@
                                 <!-- Intern navigation -->
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'select_availability' %}">
-                                        <i class="fas fa-calendar-check me-1"></i>Ortak Çalışma Saati
+                                        <i class="fas fa-calendar-check me-1"></i>Müsaitlik
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'view_availability' %}">
-                                        <i class="fas fa-eye me-1"></i>Ortak Çalışma Saati Görüntüle
+                                        <i class="fas fa-eye me-1"></i>Görüntüle
                                     </a>
                                 </li>
-                                <!-- NEW: Team Availability Calendar Link -->
+                                <!-- Team Availability Calendar Link -->
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'team_availability' %}">
-                                        <i class="fas fa-users-clock me-1"></i>Takım Ortak Çalışma Takvimi
+                                        <i class="fas fa-users-clock me-1"></i>Takım
                                     </a>
                                 </li>
                             {% endif %}
@@ -585,12 +658,12 @@
                         <!-- Legacy token-based authenticated user -->
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'submit_preferences' token=intern.access_token %}">
-                                <i class="fas fa-star me-1"></i>Tercihlerim
+                                <i class="fas fa-star me-1"></i>Tercihler
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'legacy_select_availability' token=intern.access_token %}">
-                                <i class="fas fa-calendar-check me-1"></i>Ortak Çalışma Saati
+                                <i class="fas fa-calendar-check me-1"></i>Müsaitlik
                             </a>
                         </li>
                         {% endif %}
@@ -603,11 +676,11 @@
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 {% if user.is_staff or user.is_superuser %}
                                     <i class="fas fa-user-shield me-1"></i>
-                                    <span class="badge bg-warning text-dark me-1">{% if user.is_superuser %}Super{% else %}Admin{% endif %}</span>
+                                    <span class="badge bg-warning text-dark me-1">{% if user.is_superuser %}S{% else %}A{% endif %}</span>
                                 {% else %}
                                     <i class="fas fa-user-circle me-1"></i>
                                 {% endif %}
-                                {{ user.first_name|default:user.username }}
+                                {{ user.first_name|default:user.username|truncatechars:10 }}
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 {% if user.is_staff or user.is_superuser %}
@@ -617,20 +690,20 @@
                                 <li><hr class="dropdown-divider"></li>
                                 {% endif %}
                                 <li><a class="dropdown-item" href="{% url 'account_logout' %}">
-                                    <i class="fas fa-sign-out-alt me-1"></i>Çıkış Yap
+                                    <i class="fas fa-sign-out-alt me-1"></i>Çıkış
                                 </a></li>
                             </ul>
                         </li>
                         {% elif intern %}
                         <!-- Legacy token-based user info -->
                         <span class="navbar-text" style="color: white; font-weight: 500;">
-                            <i class="fas fa-user-graduate me-2"></i>{{ intern.get_full_name }}
+                            <i class="fas fa-user-graduate me-2"></i>{{ intern.get_full_name|truncatechars:15 }}
                         </span>
                         {% else %}
                         <!-- Not authenticated -->
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'home_page' %}">
-                                <i class="fas fa-sign-in-alt me-1"></i>Giriş Yap
+                                <i class="fas fa-sign-in-alt me-1"></i>Giriş
                             </a>
                         </li>
                         {% endif %}
@@ -732,4 +805,4 @@
         setInterval(createParticle, 3000);
     </script>
 </body>
-</html> 
+</html>
