@@ -83,166 +83,71 @@
             </div>
 
             {% if teammates_with_availability > 0 %}
-                <!-- Heatmap Calendar -->
-                <div class="heatmap-section-modern" data-aos="fade-up" data-aos-delay="200">
-                    <div class="heatmap-header-modern">
-                        <div class="heatmap-title-section">
-                            <h3>24 Saat Takım Ortak Çalışma Heatmap</h3>
-                            <p>Renk yoğunluğu o saatte müsait olan takım arkadaşı sayısını gösterir</p>
-                        </div>
-                        <div class="heatmap-stats">
-                            <div class="stat-mini">
-                                <span class="stat-number">{{ total_teammates }}</span>
-                                <span class="stat-label">Toplam Takım</span>
-                            </div>
-                            <div class="stat-mini">
-                                <span class="stat-number">{{ teammates_with_availability }}</span>
-                                <span class="stat-label">Müsaitlik Belirledi</span>
-                            </div>
+                <!-- NEW SIMPLIFIED CALENDAR SECTION -->
+                <div class="timeline-calendar-section" data-aos="fade-up" data-aos-delay="200">
+                    <div class="timeline-header">
+                        <div class="timeline-title-section">
+                            <h3>24 Saat Takım Ortak Çalışma Takvimi</h3>
+                            <p>{{ teammates_with_availability }} takım arkadaşınız müsaitlik belirledi</p>
                         </div>
                     </div>
 
-                    <div class="heatmap-container-modern">
-                        <div class="table-responsive-heatmap">
-                            <table class="table team-heatmap-modern" id="teamHeatmap">
-                                <thead class="sticky-header-heatmap">
-                                    <tr>
-                                        <th class="time-header-heatmap sticky-column-heatmap">
-                                            <div class="header-content">
-                                                <i class="fas fa-clock"></i>
-                                                <span>Saat</span>
-                                            </div>
-                                        </th>
-                                        {% for day_data in heatmap_grid %}
-                                        <th class="day-header-heatmap">
-                                            <div class="day-header-content">
-                                                <div class="day-name">{{ day_data.day_name }}</div>
-                                                <div class="day-summary">
-                                                    {% with day_total=0 max_availability=0 %}
-                                                        {% for slot_data in day_data.time_slots %}
-                                                            {% if slot_data.available_count > 0 %}
-                                                                {% with day_total=day_total|add:slot_data.available_count %}
-                                                                    {% if slot_data.available_count > max_availability %}
-                                                                        {% with max_availability=slot_data.available_count %}
-                                                                        {% endwith %}
-                                                                    {% endif %}
-                                                                {% endwith %}
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                        <span class="day-activity-count">Max: {{ max_availability }} kişi</span>
-                                                    {% endwith %}
-                                                </div>
-                                            </div>
-                                        </th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for time_slot in time_slots %}
-                                    <tr class="time-row-heatmap" data-time="{{ time_slot }}">
-                                        <td class="time-cell-heatmap sticky-column-heatmap">
-                                            <div class="time-display-heatmap">
-                                                <div class="time-main">{{ time_slot|slice:':5' }}</div>
-                                                <div class="time-period">
-                                                    {% if time_slot|slice:':2' < '06' %}
-                                                        <span class="period-badge night">Gece</span>
-                                                    {% elif time_slot|slice:':2' < '12' %}
-                                                        <span class="period-badge morning">Sabah</span>
-                                                    {% elif time_slot|slice:':2' < '18' %}
-                                                        <span class="period-badge afternoon">Öğleden Sonra</span>
-                                                    {% else %}
-                                                        <span class="period-badge evening">Akşam</span>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        {% for day_data in heatmap_grid %}
-                                            {% for slot_data in day_data.time_slots %}
-                                                {% if slot_data.time == time_slot %}
-                                                <td class="heatmap-cell {{ slot_data.css_classes }}"
-                                                    data-day="{{ day_data.day_code }}" 
-                                                    data-time="{{ time_slot }}"
-                                                    data-count="{{ slot_data.available_count }}"
-                                                    data-self-available="{{ slot_data.is_current_user_available }}"
-                                                    title="{% if slot_data.is_current_user_available %}✓ SİZ bu saatte müsaitsiniz{% if slot_data.available_teammates %} | {{ slot_data.available_count }} takım arkadaşınız: {{ slot_data.available_teammates|join:', ' }}{% endif %}{% elif slot_data.available_teammates %}{{ slot_data.available_count }} kişi müsait: {{ slot_data.available_teammates|join:', ' }}{% else %}Kimse müsait değil{% endif %}">
-                                                    <div class="heatmap-cell-content">
-                                                        {% if slot_data.is_current_user_available %}
-                                                            <div class="self-indicator">
-                                                                <i class="fas fa-user-check"></i>
-                                                            </div>
-                                                        {% endif %}
-                                                        {% if slot_data.available_count > 0 %}
-                                                            <div class="availability-count">{{ slot_data.available_count }}</div>
-                                                        {% endif %}
-                                                        <div class="hover-tooltip">
-                                                            {% if slot_data.is_current_user_available %}
-                                                                <div class="tooltip-section self-section">
-                                                                    <strong><i class="fas fa-user-check"></i> Siz müsaitsiniz</strong>
-                                                                </div>
-                                                            {% endif %}
-                                                            {% if slot_data.available_teammates %}
-                                                                <div class="tooltip-section teammates-section">
-                                                                    <strong>{{ slot_data.available_count }} Takım Arkadaşı:</strong>
-                                                                    <ul>
-                                                                        {% for teammate in slot_data.available_teammates %}
-                                                                        <li>{{ teammate }}</li>
-                                                                        {% endfor %}
-                                                                    </ul>
-                                                                </div>
-                                                            {% elif not slot_data.is_current_user_available %}
-                                                                <div class="tooltip-section empty-section">
-                                                                    <span>Kimse müsait değil</span>
-                                                                </div>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endfor %}
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                    <!-- Day Selector -->
+                    <div class="day-selector-container">
+                        {% for day_data in heatmap_grid %}
+                        <button class="day-selector-btn {% if forloop.first %}active{% endif %}" 
+                                data-day="{{ day_data.day_code }}">
+                            {{ day_data.day_name }}
+                        </button>
+                        {% endfor %}
                     </div>
 
-                    <!-- Heatmap Legend -->
-                    <div class="heatmap-legend-modern">
-                        <h4>Heatmap Rehberi</h4>
-                        <div class="legend-grid-heatmap">
-                            <div class="legend-section">
-                                <h5>Takım Arkadaşı Sayısı</h5>
-                                <div class="legend-items">
-                                    <div class="legend-item-heatmap">
-                                        <div class="legend-visual heatmap-none"></div>
-                                        <span>Kimse yok</span>
-                                    </div>
-                                    <div class="legend-item-heatmap">
-                                        <div class="legend-visual heatmap-low"></div>
-                                        <span>1-2 kişi</span>
-                                    </div>
-                                    <div class="legend-item-heatmap">
-                                        <div class="legend-visual heatmap-medium"></div>
-                                        <span>3-4 kişi</span>
-                                    </div>
-                                    <div class="legend-item-heatmap">
-                                        <div class="legend-visual heatmap-high"></div>
-                                        <span>5+ kişi</span>
-                                    </div>
+                    <!-- Timeline View -->
+                    <div class="timeline-view-container">
+                        {% for day_data in heatmap_grid %}
+                        <div class="timeline-day-view {% if forloop.first %}active{% endif %}" 
+                             data-day="{{ day_data.day_code }}">
+                            {% for slot_data in day_data.time_slots %}
+                            <div class="timeline-hour-row {% if slot_data.is_current_user_available %}user-available{% endif %}"
+                                 data-count="{{ slot_data.available_count }}">
+                                <div class="hour-label">
+                                    <span class="hour-time">{{ slot_data.time|slice:':5' }}</span>
+                                    {% if slot_data.is_current_user_available %}
+                                    <span class="user-badge">Siz</span>
+                                    {% endif %}
                                 </div>
-                            </div>
-                            <div class="legend-section">
-                                <h5>Kendi Durumunuz</h5>
-                                <div class="legend-items">
-                                    <div class="legend-item-heatmap">
-                                        <div class="legend-visual self-selected-demo">
-                                            <i class="fas fa-user-check"></i>
+                                <div class="hour-availability">
+                                    {% if slot_data.available_count > 0 %}
+                                        <div class="availability-summary">
+                                            <span class="people-count">{{ slot_data.available_count }} kişi</span>
                                         </div>
-                                        <span>Siz müsaitsiniz</span>
-                                    </div>
+                                        <div class="people-list">
+                                            {% for teammate in slot_data.available_teammates|slice:':5' %}
+                                            <span class="person-chip">{{ teammate }}</span>
+                                            {% endfor %}
+                                            {% if slot_data.available_teammates|length > 5 %}
+                                            <span class="more-chip">+{{ slot_data.available_teammates|length|add:'-5' }}</span>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="no-availability-msg">Kimse müsait değil</div>
+                                    {% endif %}
                                 </div>
                             </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Simple Legend -->
+                    <div class="timeline-legend-simple">
+                        <div class="legend-item-simple">
+                            <div class="legend-color user-color"></div>
+                            <span>Sizin müsait olduğunuz saatler</span>
+                        </div>
+                        <div class="legend-item-simple">
+                            <div class="legend-color team-color"></div>
+                            <span>Takım arkadaşlarının müsait olduğu saatler</span>
                         </div>
                     </div>
                 </div>
@@ -363,6 +268,7 @@
 </div>
 
 <style>
+    /* KEEPING ALL ORIGINAL STYLES */
     :root {
         --primary-color: #3b82f6;
         --secondary-color: #10b981;
@@ -702,473 +608,224 @@
         border: 1px solid rgba(59, 130, 246, 0.2);
     }
 
-    /* Heatmap Section */
-    .heatmap-section-modern {
+    /* NEW SIMPLIFIED CALENDAR STYLES */
+    .timeline-calendar-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: var(--card-shadow);
         margin-bottom: 4rem;
+        border: 1px solid rgba(229, 231, 235, 0.8);
     }
 
-    .heatmap-header-modern {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .timeline-header {
+        text-align: center;
         margin-bottom: 2rem;
-        flex-wrap: wrap;
-        gap: 2rem;
     }
 
-    .heatmap-title-section h3 {
-        font-size: 2rem;
-        font-weight: 700;
+    .timeline-title-section h3 {
+        font-size: 1.75rem;
+        font-weight: 600;
         color: var(--text-color);
         margin-bottom: 0.5rem;
     }
 
-    .heatmap-title-section p {
+    .timeline-title-section p {
         color: var(--text-light);
-        font-size: 1.1rem;
-        margin: 0;
+        font-size: 1rem;
     }
 
-    .heatmap-stats {
+    /* Day Selector */
+    .day-selector-container {
         display: flex;
-        gap: 1rem;
-    }
-
-    .stat-mini {
-        background: white;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        text-align: center;
-        box-shadow: var(--card-shadow);
-        border: 1px solid rgba(59, 130, 246, 0.1);
-    }
-
-    .stat-mini .stat-number {
-        display: block;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary-color);
-        line-height: 1;
-    }
-
-    .stat-mini .stat-label {
-        font-size: 0.8rem;
-        color: var(--text-light);
-        font-weight: 500;
-    }
-
-    .heatmap-container-modern {
-        background: white;
-        border-radius: 20px;
-        box-shadow: var(--card-shadow-hover);
-        overflow: hidden;
-        border: 2px solid rgba(59, 130, 246, 0.1);
-    }
-
-    .table-responsive-heatmap {
-        max-height: 75vh;
-        overflow: auto;
-        border-radius: 20px;
-    }
-
-    .team-heatmap-modern {
-        margin: 0;
-        width: 100%;
-        min-width: 900px;
-        border-collapse: separate;
-        border-spacing: 0;
-        font-size: 0.9rem;
-    }
-
-    .sticky-header-heatmap {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-    }
-
-    .sticky-column-heatmap {
-        position: sticky;
-        left: 0;
-        z-index: 50;
-        background: white;
-    }
-
-    .team-heatmap-modern th {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        color: white;
-        font-weight: 600;
-        text-align: center;
-        padding: 1.5rem 1rem;
-        border: none;
-        white-space: nowrap;
-        position: relative;
-    }
-
-    .time-header-heatmap {
-        width: 160px;
-        background: linear-gradient(135deg, #4b5563, #374151) !important;
-    }
-
-    .day-header-heatmap {
-        min-width: 180px;
-    }
-
-    .day-header-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        justify-content: center;
         gap: 0.5rem;
-    }
-
-    .day-name {
-        font-size: 1.1rem;
-        font-weight: 700;
-    }
-
-    .day-activity-count {
-        font-size: 0.8rem;
-        opacity: 0.9;
-        background: rgba(255, 255, 255, 0.2);
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-    }
-
-    .time-cell-heatmap {
-        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-        font-weight: 600;
-        text-align: center;
-        vertical-align: middle;
-        width: 160px;
-        border-right: 3px solid #e5e7eb;
-        padding: 1rem 0.75rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
         border-bottom: 1px solid #e5e7eb;
     }
 
-    .time-display-heatmap {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .time-main {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--text-color);
-    }
-
-    .period-badge {
-        font-size: 0.7rem;
-        padding: 0.2rem 0.5rem;
-        border-radius: 8px;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-
-    .period-badge.night {
-        background: rgba(30, 27, 75, 0.1);
-        color: var(--night-color);
-    }
-
-    .period-badge.morning {
-        background: rgba(251, 191, 36, 0.1);
-        color: var(--morning-color);
-    }
-
-    .period-badge.afternoon {
-        background: rgba(96, 165, 250, 0.1);
-        color: var(--afternoon-color);
-    }
-
-    .period-badge.evening {
-        background: rgba(249, 115, 22, 0.1);
-        color: var(--evening-color);
-    }
-
-    /* Heatmap Cell Styles */
-    .heatmap-cell {
-        padding: 0.75rem 0.5rem;
-        vertical-align: middle;
-        min-height: 70px;
-        position: relative;
-        transition: all 0.3s ease;
+    .day-selector-btn {
+        background: #f3f4f6;
         border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.5rem 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-color);
         cursor: pointer;
+        transition: all 0.2s ease;
     }
 
-    .heatmap-cell-content {
+    .day-selector-btn:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .day-selector-btn.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    /* Timeline View */
+    .timeline-view-container {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .timeline-view-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .timeline-view-container::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 3px;
+    }
+
+    .timeline-view-container::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
+    }
+
+    .timeline-day-view {
+        display: none;
+    }
+
+    .timeline-day-view.active {
+        display: block;
+    }
+
+    /* Timeline Hour Rows */
+    .timeline-hour-row {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        justify-content: center;
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        transition: background-color 0.2s ease;
+    }
+
+    .timeline-hour-row:hover {
+        background: #f9fafb;
+    }
+
+    .timeline-hour-row.user-available {
+        background: rgba(16, 185, 129, 0.05);
+        border-left: 3px solid var(--secondary-color);
+        padding-left: calc(1rem - 3px);
+    }
+
+    .hour-label {
+        width: 100px;
+        display: flex;
+        align-items: center;
         gap: 0.5rem;
-        position: relative;
-        height: 100%;
-        min-height: 50px;
+        flex-shrink: 0;
     }
 
-    /* Heatmap Color Levels */
-    .heatmap-none {
-        background: #f8fafc;
-        color: var(--text-light);
-    }
-
-    .heatmap-low {
-        background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.25));
-        color: #15803d;
-        border-left: 4px solid #22c55e;
-    }
-
-    .heatmap-medium {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.35));
-        color: #1d4ed8;
-        border-left: 4px solid var(--primary-color);
-    }
-
-    .heatmap-high {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(245, 158, 11, 0.45));
-        color: #b45309;
-        border-left: 4px solid var(--warning-color);
-    }
-
-    /* Self-Selected Override Styles */
-    .heatmap-cell.self-selected {
-        border: 3px solid #10b981 !important;
-        border-radius: 8px;
-        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), inset 0 0 0 1px rgba(16, 185, 129, 0.3);
-        position: relative;
-        z-index: 5;
-    }
-
-    .heatmap-cell.self-selected::before {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
-        border-radius: 8px;
-        z-index: -1;
-    }
-
-    .self-indicator {
-        position: absolute;
-        top: 4px;
-        right: 4px;
-        width: 24px;
-        height: 24px;
-        background: var(--secondary-color);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 0.8rem;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
-        animation: pulse-self 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse-self {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-    }
-
-    .availability-count {
-        font-size: 1.2rem;
-        font-weight: 700;
-        background: rgba(255, 255, 255, 0.9);
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        border: 2px solid currentColor;
-    }
-
-    /* Hover Effects */
-    .heatmap-cell:hover {
-        transform: scale(1.05);
-        z-index: 10;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .heatmap-cell:hover .hover-tooltip {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-
-    .hover-tooltip {
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%) translateY(10px);
-        background: rgba(0, 0, 0, 0.9);
-        color: white;
-        padding: 1rem;
-        border-radius: 8px;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        z-index: 20;
-        min-width: 200px;
-        max-width: 250px;
-        font-size: 0.85rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(10px);
-    }
-
-    .hover-tooltip::before {
-        content: '';
-        position: absolute;
-        top: -5px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 0;
-        height: 0;
-        border-left: 5px solid transparent;
-        border-right: 5px solid transparent;
-        border-bottom: 5px solid rgba(0, 0, 0, 0.9);
-    }
-
-    .tooltip-section {
-        margin-bottom: 0.75rem;
-    }
-
-    .tooltip-section:last-child {
-        margin-bottom: 0;
-    }
-
-    .self-section {
-        color: #10b981;
+    .hour-time {
         font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.9375rem;
     }
 
-    .teammates-section ul {
-        list-style: none;
-        padding-left: 0;
-        margin: 0.5rem 0 0 0;
+    .user-badge {
+        font-size: 0.75rem;
+        padding: 0.125rem 0.5rem;
+        background: var(--secondary-color);
+        color: white;
+        border-radius: 4px;
+        font-weight: 500;
     }
 
-    .teammates-section li {
-        padding: 0.25rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    .hour-availability {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-left: 1.5rem;
     }
 
-    .teammates-section li:last-child {
-        border-bottom: none;
+    .availability-summary {
+        font-size: 0.875rem;
+        color: var(--text-light);
+        flex-shrink: 0;
     }
 
-    .empty-section {
+    .people-count {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .people-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .person-chip {
+        font-size: 0.8125rem;
+        padding: 0.25rem 0.75rem;
+        background: #eff6ff;
+        color: var(--primary-color);
+        border-radius: 15px;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        white-space: nowrap;
+    }
+
+    .more-chip {
+        font-size: 0.8125rem;
+        padding: 0.25rem 0.75rem;
+        background: #f3f4f6;
+        color: var(--text-light);
+        border-radius: 15px;
+        font-weight: 500;
+    }
+
+    .no-availability-msg {
+        font-size: 0.875rem;
         color: #9ca3af;
         font-style: italic;
     }
 
-    /* Heatmap Legend */
-    .heatmap-legend-modern {
-        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-        padding: 2rem;
-        border-top: 1px solid #e5e7eb;
-        border-radius: 0 0 20px 20px;
-    }
-
-    .heatmap-legend-modern h4 {
-        font-size: 1.3rem;
-        font-weight: 600;
-        color: var(--text-color);
-        margin-bottom: 1.5rem;
-        text-align: center;
-    }
-
-    .legend-grid-heatmap {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-    }
-
-    .legend-section h5 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-color);
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-
-    .legend-items {
+    /* Timeline Legend */
+    .timeline-legend-simple {
         display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .legend-item-heatmap {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 0.75rem 1rem;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e5e7eb;
-    }
-
-    .legend-visual {
-        width: 40px;
-        height: 40px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 0.9rem;
-        border: 1px solid #e5e7eb;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e5e7eb;
     }
 
-    .legend-visual.heatmap-none {
-        background: #f8fafc;
+    .legend-item-simple {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
         color: var(--text-light);
     }
 
-    .legend-visual.heatmap-low {
-        background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.25));
-        color: #15803d;
-        border-left: 4px solid #22c55e;
+    .legend-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
     }
 
-    .legend-visual.heatmap-medium {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.35));
-        color: #1d4ed8;
-        border-left: 4px solid var(--primary-color);
+    .legend-color.user-color {
+        background: rgba(16, 185, 129, 0.2);
+        border: 2px solid var(--secondary-color);
     }
 
-    .legend-visual.heatmap-high {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(245, 158, 11, 0.45));
-        color: #b45309;
-        border-left: 4px solid var(--warning-color);
+    .legend-color.team-color {
+        background: #eff6ff;
+        border: 2px solid var(--primary-color);
     }
 
-    .self-selected-demo {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.3));
-        border: 3px solid #10b981 !important;
-        color: var(--secondary-color);
-        position: relative;
-    }
-
-    .self-selected-demo::before {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
-        border-radius: 6px;
-        z-index: -1;
-    }
-
-    /* Teammates Section */
+    /* Teammates Section - KEEPING ORIGINAL STYLES */
     .teammates-section {
         margin-bottom: 3rem;
     }
@@ -1495,12 +1152,6 @@
            flex-direction: column;
            text-align: center;
        }
-
-       .heatmap-header-modern {
-           flex-direction: column;
-           align-items: center;
-           text-align: center;
-       }
    }
 
    @media (max-width: 768px) {
@@ -1533,53 +1184,38 @@
            min-width: 280px;
        }
 
-       .heatmap-header-modern {
+       /* Simplified calendar responsive */
+       .day-selector-container {
+           overflow-x: auto;
+           -webkit-overflow-scrolling: touch;
+           justify-content: flex-start;
+       }
+
+       .timeline-hour-row {
            flex-direction: column;
-           text-align: center;
+           align-items: flex-start;
+           padding: 1rem;
        }
 
-       .heatmap-stats {
-           justify-content: center;
+       .hour-label {
+           width: 100%;
+           margin-bottom: 0.5rem;
        }
 
-       .table-responsive-heatmap {
-           max-height: 60vh;
+       .hour-availability {
+           padding-left: 0;
+           width: 100%;
        }
 
-       .team-heatmap-modern {
-           font-size: 0.8rem;
+       .availability-summary {
+           width: 100%;
+           margin-bottom: 0.5rem;
        }
 
-       .heatmap-cell {
-           min-height: 60px;
-           padding: 0.5rem 0.25rem;
-       }
-
-       .availability-count {
-           width: 25px;
-           height: 25px;
-           font-size: 1rem;
-       }
-
-       .self-indicator {
-           width: 20px;
-           height: 20px;
-           font-size: 0.7rem;
-       }
-
-       .legend-grid-heatmap {
-           grid-template-columns: 1fr;
+       .timeline-legend-simple {
+           flex-direction: column;
            gap: 1rem;
-       }
-
-       .hover-tooltip {
-           position: fixed;
-           top: 10px;
-           left: 10px;
-           right: 10px;
-           transform: none;
-           max-width: none;
-           min-width: auto;
+           align-items: center;
        }
    }
 
@@ -1592,8 +1228,7 @@
            font-size: 1.5rem;
        }
 
-       .projects-showcase-card,
-       .heatmap-container-modern {
+       .projects-showcase-card {
            padding: 1.5rem;
        }
 
@@ -1610,62 +1245,26 @@
            align-self: center;
        }
 
-       .heatmap-title-section h3 {
-           font-size: 1.5rem;
+       .timeline-calendar-section {
+           padding: 1.5rem;
        }
 
-       .time-cell-heatmap {
-           width: 120px;
-           padding: 0.75rem 0.5rem;
+       .day-selector-btn {
+           padding: 0.4rem 1rem;
+           font-size: 0.8125rem;
        }
 
-       .day-header-heatmap {
-           min-width: 140px;
-       }
-
-       .heatmap-cell {
-           min-height: 50px;
-           padding: 0.4rem 0.2rem;
-       }
-
-       .availability-count {
-           width: 20px;
-           height: 20px;
-           font-size: 0.85rem;
-       }
-
-       .self-indicator {
-           width: 16px;
-           height: 16px;
-           font-size: 0.6rem;
-           top: 2px;
-           right: 2px;
+       .person-chip {
+           font-size: 0.75rem;
+           padding: 0.2rem 0.5rem;
        }
    }
 
    /* High Contrast Mode Support */
    @media (prefers-contrast: high) {
-       .heatmap-low {
-           background: #e6f7e6;
-           color: #000000;
-           border-left: 6px solid #22c55e;
-       }
-
-       .heatmap-medium {
-           background: #e6f0ff;
-           color: #000000;
-           border-left: 6px solid var(--primary-color);
-       }
-
-       .heatmap-high {
-           background: #fff7e6;
-           color: #000000;
-           border-left: 6px solid var(--warning-color);
-       }
-
-       .heatmap-cell.self-selected {
-           border: 4px solid #10b981 !important;
-           background: #f0fdf4;
+       .timeline-hour-row.user-available {
+           border-left-width: 5px;
+           background: rgba(16, 185, 129, 0.1);
        }
    }
 
@@ -1680,29 +1279,14 @@
            background: white;
        }
 
-       .heatmap-container-modern,
-       .project-showcase-item,
-       .teammate-card {
-           box-shadow: none;
-           border: 1px solid #ddd;
-       }
-
-       .table-responsive-heatmap {
+       .timeline-view-container {
            max-height: none;
            overflow: visible;
        }
 
-       .heatmap-cell {
-           print-color-adjust: exact;
-           -webkit-print-color-adjust: exact;
-       }
-
-       .heatmap-section-modern {
-           break-inside: avoid;
-       }
-
-       .hover-tooltip {
-           display: none;
+       .timeline-day-view {
+           display: block !important;
+           page-break-inside: avoid;
        }
    }
 
@@ -1726,7 +1310,7 @@
    }
 
    /* Focus Styles for Accessibility */
-   .heatmap-cell:focus,
+   .day-selector-btn:focus,
    .btn:focus {
        outline: 2px solid var(--primary-color);
        outline-offset: 2px;
@@ -1735,35 +1319,30 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Day selector functionality for the new simplified calendar
+        const dayButtons = document.querySelectorAll('.day-selector-btn');
+        const timelineDays = document.querySelectorAll('.timeline-day-view');
 
-        // Enhanced tooltips for availability cells
-        const availabilityCells = document.querySelectorAll('.availability-cell-modern');
-        
-        availabilityCells.forEach(cell => {
-            cell.addEventListener('mouseenter', function() {
-                const count = this.dataset.count;
-                
-                if (count > 0) {
-                    this.style.transform = 'scale(1.05)';
-                    this.style.zIndex = '15';
-                }
-            });
+        dayButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const selectedDay = this.dataset.day;
 
-            cell.addEventListener('mouseleave', function() {
-                this.style.transform = '';
-                this.style.zIndex = '';
+                // Update active states
+                dayButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                timelineDays.forEach(day => {
+                    if (day.dataset.day === selectedDay) {
+                        day.classList.add('active');
+                    } else {
+                        day.classList.remove('active');
+                    }
+                });
+
+                // Scroll to top when changing days
+                document.querySelector('.timeline-view-container').scrollTop = 0;
             });
         });
-
-        // Add fade-in animation keyframes
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-        `;
-        document.head.appendChild(style);
     });
 </script>
 {% endblock %}
