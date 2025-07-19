@@ -132,7 +132,7 @@ def team_availability(request):
             # Get profile picture URL (cropped if available)
             profile_picture_url = None
             if teammate.profile_picture:
-                profile_picture_url = teammate.get_profile_picture_url('profile_medium')
+                profile_picture_url = teammate.profile_picture_cropped.url if teammate.profile_picture else None
                 if not profile_picture_url:
                     profile_picture_url = teammate.profile_picture.url
             

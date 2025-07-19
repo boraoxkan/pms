@@ -36,16 +36,20 @@
                         <div class="col-lg-4">
                             <div class="welcome-visual">
                                 <div class="avatar-container">
-                                    {% load cropping %}
                                     {% if not user.is_staff and not user.is_superuser and intern and intern.profile_picture %}
                                         <!-- Display intern's cropped profile picture -->
                                         <div class="profile-picture-container">
-                                            {% cropped_thumbnail intern "profile_picture" scale=1.0 as cropped_image %}
-                                            <img src="{% if cropped_image %}{{ cropped_image.url }}{% else %}{{ intern.profile_picture.url }}{% endif %}" 
+                                        {% if intern.profile_picture %}
+                                            {# Modelde tanımladığımız kırpılmış resme doğrudan erişiyoruz #}
+                                            <img src="{{ intern.profile_picture_cropped.url }}" 
                                                 alt="{{ intern.get_full_name }}" 
                                                 class="profile-picture-large">
-                                            <div class="profile-picture-glow"></div>
-                                        </div>
+                                        {% else %}
+                                            {# Resim yoksa gösterilecek varsayılan içerik #}
+                                            <div class="avatar-circle">...</div>
+                                        {% endif %}
+                                        <div class="profile-picture-glow"></div>
+                                    </div>
                                     {% else %}
                                         <!-- Existing animated avatar for admins or interns without profile pictures -->
                                         <div class="avatar-circle">

@@ -7,9 +7,7 @@ from django.utils import timezone
 from .models import Project, ProjectPreference, Intern, InternAvailability, AvailabilitySettings
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import GroupAdmin
-from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from image_cropping.admin import ImageCroppingMixin
 
 # Gereksiz modelleri admin panelinden kaldır
 admin.site.unregister(Group)
@@ -58,7 +56,7 @@ class ProjectAdmin(admin.ModelAdmin):
     )
 
 @admin.register(Intern)
-class InternAdmin(ImageCroppingMixin, admin.ModelAdmin):
+class InternAdmin(admin.ModelAdmin):
     list_display = (
         'profile_picture_thumbnail', 'get_full_name', 'email', 'get_auth_method', 
         'access_link', 'has_availability', 'get_assigned_projects_count', 'is_active'
@@ -68,13 +66,13 @@ class InternAdmin(ImageCroppingMixin, admin.ModelAdmin):
     readonly_fields = ('access_token', 'access_link_display', 'get_auth_method', 'profile_picture_preview')
     filter_horizontal = ('assigned_projects',)
     actions = ['reset_availability_lock', 'reset_weekly_submission']
-    
+
     fieldsets = (
         ('Stajyer Bilgileri', {
             'fields': ('first_name', 'last_name', 'email', 'user', 'is_active')
         }),
         ('Profil Fotoğrafı', {
-            'fields': ('profile_picture', 'cropping', 'profile_picture_preview'),
+            'fields': ('profile_picture',),
             'description': 'Stajyer profil fotoğrafını yükleyin ve istediğiniz bölümü kırpın'
         }),
         ('Proje Atamaları', {
@@ -92,24 +90,17 @@ class InternAdmin(ImageCroppingMixin, admin.ModelAdmin):
     )
 
     def profile_picture_thumbnail(self, obj):
-        """Admin list view'da küçük profil fotoğrafı thumbnail'i gösterir"""
+        """
+        Kırpılmış resmi (ImageKit ile oluşturulan) admin listesinde gösterir.
+        """
         if obj.profile_picture:
-            # Use cropped thumbnail if available
-            image_url = obj.get_profile_picture_url('profile_admin')
-            if not image_url:
-                image_url = obj.profile_picture.url
-                
+            # Doğrudan modeldeki kırpılmış resim nesnesinin URL'sini kullanıyoruz
             return format_html(
-                '<img src="{}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd;" />',
-                image_url
+                '<img src="{}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" />',
+                obj.profile_picture_cropped.url
             )
-        else:
-            return format_html(
-                '<div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #10b981); display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; border: 2px solid #ddd;">'
-                '<i class="fas fa-user"></i>'
-                '</div>'
-            )
-    profile_picture_thumbnail.short_description = 'Profil Fotoğrafı'
+        return "Resim Yok"
+    profile_picture_thumbnail.short_description = 'Fotoğraf'
 
     def profile_picture_preview(self, obj):
         """Admin form'da büyük profil fotoğrafı preview'i gösterir"""

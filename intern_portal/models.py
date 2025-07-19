@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 import uuid
 import os
 from django.utils import timezone
-from image_cropping import ImageRatioField, ImageCropField # MODIFIED: Add ImageCropField
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFill
 
 # Create your models here.
 
@@ -53,20 +54,18 @@ class Intern(models.Model):
     email = models.EmailField(unique=True, verbose_name='E-posta')
     
     # MODIFIED: Changed from models.ImageField to ImageCropField
-    profile_picture = ImageCropField(
+    profile_picture = models.ImageField(
         upload_to='profile_pics/',
-        null=True,
         blank=True,
-        verbose_name='Profil Fotoğrafı',
-        help_text='Stajyer profil fotoğrafı (opsiyonel) - Yükleme sonrası kırpma yapabilirsiniz'
+        null=True,
+        verbose_name='Profil Fotoğrafı'
     )
     
-    # This part should be correct
-    cropping = ImageRatioField(
-        'profile_picture',
-        '350x350',
-        verbose_name='Fotoğraf Kırpma',
-        help_text='Profil fotoğrafını kare şeklinde kırpmak için kullanın'
+    profile_picture_cropped = ImageSpecField(
+        source='profile_picture',
+        processors=[ResizeToFill(350, 350)],
+        format='JPEG',
+        options={'quality': 90}
     )
     
     # Legacy access token (keeping for backward compatibility with existing interns)
@@ -121,30 +120,6 @@ class Intern(models.Model):
     def has_profile_picture(self):
         """Profil fotoğrafı var mı kontrol eder"""
         return bool(self.profile_picture)
-    
-    def get_profile_picture_url(self, size='profile_large'):
-        """Profil fotoğrafı URL'sini döndürür (kırpılmış versiyon)"""
-        if self.profile_picture:
-            from easy_thumbnails.files import get_thumbnailer
-            try:
-                thumbnailer = get_thumbnailer(self.profile_picture)
-                if self.cropping:
-                    # Use cropped version
-                    thumbnail = thumbnailer.get_thumbnail({
-                        'size': (350, 350) if size == 'profile_large' else (150, 150) if size == 'profile_medium' else (60, 60),
-                        'box': self.cropping,
-                        'crop': True,
-                        'quality': 95
-                    })
-                    return thumbnail.url
-                else:
-                    # Use default thumbnail settings
-                    thumbnail = thumbnailer.get_thumbnail({'size': (350, 350), 'crop': True, 'quality': 95})
-                    return thumbnail.url
-            except:
-                # Fallback to original image if thumbnailing fails
-                return self.profile_picture.url
-        return None
 
     class Meta:
         verbose_name = 'Stajyer'

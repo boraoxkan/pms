@@ -52,8 +52,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 
     # Image cropping
-    'easy_thumbnails',  # Required by django-image-cropping
-    'image_cropping',   # NEW: Image cropping functionality
+    'imagekit',
     
     # Local apps
     'intern_portal',
@@ -232,23 +231,3 @@ SOCIALACCOUNT_LOGIN_ON_GET = True  # ← This MUST be True for direct redirect!
 
 # Domain restriction for Google SSO
 SOCIALACCOUNT_ADAPTER = 'intern_portal.adapters.CustomSocialAccountAdapter'
-
-# Image cropping settings
-from django.conf import settings as django_settings
-
-THUMBNAIL_PROCESSORS = [
-    'image_cropping.thumbnail_processors.crop_corners',
-] + getattr(django_settings, 'THUMBNAIL_PROCESSORS', [])
-
-# Easy thumbnails settings for image cropping
-EASY_THUMBNAILS_ALIAS_PREFIX = 'cropped_'
-
-# Thumbnail configurations
-THUMBNAIL_ALIASES = {
-    '': {
-        'profile_large': {'size': (350, 350), 'crop': True, 'quality': 95},
-        'profile_medium': {'size': (150, 150), 'crop': True, 'quality': 95},
-        'profile_small': {'size': (60, 60), 'crop': True, 'quality': 95},
-        'profile_admin': {'size': (40, 40), 'crop': True, 'quality': 95},
-    },
-}
