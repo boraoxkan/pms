@@ -116,8 +116,10 @@ def team_availability(request):
         teammate_ids.update(project_interns)
     
     # Get teammate objects with their assigned projects and profile pictures
+    # Get teammate objects with their assigned projects and profile pictures
+    # Get teammate objects with their assigned projects and profile pictures
     teammates = Intern.objects.filter(id__in=teammate_ids, is_active=True).prefetch_related('assigned_projects').select_related('user')
-    
+
     # Create a detailed teammates list with ONLY common projects
     teammates_with_projects = []
     for teammate in teammates:
@@ -127,12 +129,20 @@ def team_availability(request):
         
         # Only include teammates who have common projects
         if common_projects.exists():
+            # Get profile picture URL (cropped if available)
+            profile_picture_url = None
+            if teammate.profile_picture:
+                profile_picture_url = teammate.get_profile_picture_url('profile_medium')
+                if not profile_picture_url:
+                    profile_picture_url = teammate.profile_picture.url
+            
             teammates_with_projects.append({
                 'intern': teammate,
                 'common_projects': common_projects,
                 'common_projects_count': common_projects.count(),
                 'has_availability': False,
-                'availability_data': None
+                'availability_data': None,
+                'profile_picture_url': profile_picture_url,  # Add this line
             })
     
     # Define time slots for full 24-hour day (00:00 to 23:00)
@@ -144,7 +154,7 @@ def team_availability(request):
         '16:00-17:00', '17:00-18:00', '18:00-19:00', '19:00-20:00',
         '20:00-21:00', '21:00-22:00', '22:00-23:00', '23:00-00:00'
     ]
-    
+
     # Define days of the week
     WEEKDAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
     DAY_NAMES = {
@@ -154,15 +164,8 @@ def team_availability(request):
         'thursday': 'Perşembe',
         'friday': 'Cuma'
     }
-    
-    # Initialize the calendar structure
-    team_calendar = {}
-    for day in WEEKDAYS:
-        team_calendar[day] = {}
-        for time_slot in TIME_SLOTS:
-            team_calendar[day][time_slot] = []
-    
-    # NEW: Get current user's availability for highlighting
+
+    # Get current user's availability for highlighting
     current_user_availability = {}
     try:
         current_availability = InternAvailability.objects.get(intern=current_intern)
@@ -176,30 +179,25 @@ def team_availability(request):
         # If current user has no availability, initialize empty
         for day_code in WEEKDAYS:
             current_user_availability[day_code] = []
-    
+
+    # Initialize the heatmap calendar structure
+    heatmap_calendar = {}
+    for day in WEEKDAYS:
+        heatmap_calendar[day] = {}
+        for time_slot in TIME_SLOTS:
+            heatmap_calendar[day][time_slot] = {
+                'available_teammates': [],
+                'available_count': 0,
+                'is_current_user_available': False,
+                'heatmap_level': 'none'  # none, low, medium, high
+            }
+
     # Fetch availability data for all teammates
     teammate_availabilities = InternAvailability.objects.filter(
         intern__in=teammates
     ).select_related('intern')
-    
-    # Create a mapping of intern ID to availability for easy lookup
-    availability_map = {}
-    for availability in teammate_availabilities:
-        availability_map[availability.intern.id] = availability
-    
-    # Update teammates_with_projects with availability data
-    for teammate_data in teammates_with_projects:
-        intern_id = teammate_data['intern'].id
-        if intern_id in availability_map:
-            availability = availability_map[intern_id]
-            has_any_availability = bool((availability.group_meeting_data and 
-                                       any(slots for slots in availability.group_meeting_data.values())) or
-                                      (availability.individual_work_data and 
-                                       any(slots for slots in availability.individual_work_data.values())))
-            teammate_data['has_availability'] = has_any_availability
-            teammate_data['availability_data'] = availability
-    
-    # Process each teammate's availability for the calendar
+
+    # Process each teammate's availability for the heatmap
     for availability in teammate_availabilities:
         intern_name = availability.intern.get_full_name()
         
@@ -212,10 +210,30 @@ def team_availability(request):
             
             for time_slot in all_slots:
                 if time_slot in TIME_SLOTS:
-                    team_calendar[day_code][time_slot].append(intern_name)
-    
-    # NEW: Create a more template-friendly structure with self-availability flags
-    calendar_grid = []
+                    heatmap_calendar[day_code][time_slot]['available_teammates'].append(intern_name)
+                    heatmap_calendar[day_code][time_slot]['available_count'] += 1
+
+    # Set current user availability flags and heatmap levels
+    for day_code in WEEKDAYS:
+        for time_slot in TIME_SLOTS:
+            # Check if current user is available
+            is_current_available = time_slot in current_user_availability.get(day_code, [])
+            heatmap_calendar[day_code][time_slot]['is_current_user_available'] = is_current_available
+            
+            # Determine heatmap level based on teammate count
+            count = heatmap_calendar[day_code][time_slot]['available_count']
+            if count == 0:
+                level = 'none'
+            elif count <= 2:
+                level = 'low'
+            elif count <= 4:
+                level = 'medium'
+            else:
+                level = 'high'
+            heatmap_calendar[day_code][time_slot]['heatmap_level'] = level
+
+    # Create template-friendly heatmap grid
+    heatmap_grid = []
     for day in WEEKDAYS:
         day_data = {
             'day_code': day,
@@ -223,34 +241,33 @@ def team_availability(request):
             'time_slots': []
         }
         for time_slot in TIME_SLOTS:
-            available_teammates = team_calendar[day][time_slot]
-            # NEW: Check if current user is available at this time slot
-            is_self_available = time_slot in current_user_availability.get(day, [])
-            
+            slot_data = heatmap_calendar[day][time_slot]
             day_data['time_slots'].append({
                 'time': time_slot,
                 'time_display': time_slot.replace('-', ' - '),
-                'available_count': len(available_teammates),
-                'available_teammates': available_teammates,
-                'is_self_available': is_self_available  # NEW: Flag for current user's availability
+                'available_count': slot_data['available_count'],
+                'available_teammates': slot_data['available_teammates'],
+                'is_current_user_available': slot_data['is_current_user_available'],
+                'heatmap_level': slot_data['heatmap_level'],
+                'css_classes': f"heatmap-{slot_data['heatmap_level']}" + (" self-selected" if slot_data['is_current_user_available'] else "")
             })
-        calendar_grid.append(day_data)
-    
-    # Calculate some statistics
+        heatmap_grid.append(day_data)
+
+    # Calculate statistics
     total_teammates = teammates.count()
     teammates_with_availability = teammate_availabilities.count()
-    
+
     # Get current intern's projects for context
     current_intern_projects = list(assigned_projects.values('name', 'id'))
-    
+
     context = {
         'current_intern': current_intern,
         'teammates': teammates,
         'teammates_with_projects': teammates_with_projects,
         'assigned_projects': assigned_projects,
         'current_intern_projects': current_intern_projects,
-        'team_calendar': team_calendar,
-        'calendar_grid': calendar_grid,
+        'heatmap_calendar': heatmap_calendar,
+        'heatmap_grid': heatmap_grid,  # Use this instead of calendar_grid
         'time_slots': TIME_SLOTS,
         'weekdays': WEEKDAYS,
         'day_names': DAY_NAMES,

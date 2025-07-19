@@ -36,12 +36,14 @@
                         <div class="col-lg-4">
                             <div class="welcome-visual">
                                 <div class="avatar-container">
+                                    {% load cropping %}
                                     {% if not user.is_staff and not user.is_superuser and intern and intern.profile_picture %}
-                                        <!-- NEW: Display intern's profile picture -->
+                                        <!-- Display intern's cropped profile picture -->
                                         <div class="profile-picture-container">
-                                            <img src="{{ intern.profile_picture.url }}" 
-                                                 alt="{{ intern.get_full_name }}" 
-                                                 class="profile-picture-large">
+                                            {% cropped_thumbnail intern "profile_picture" crop=intern.cropping scale=1.0 as cropped_image %}
+                                            <img src="{% if cropped_image %}{{ cropped_image.url }}{% else %}{{ intern.profile_picture.url }}{% endif %}" 
+                                                alt="{{ intern.get_full_name }}" 
+                                                class="profile-picture-large">
                                             <div class="profile-picture-glow"></div>
                                         </div>
                                     {% else %}

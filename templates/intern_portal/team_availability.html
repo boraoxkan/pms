@@ -83,51 +83,53 @@
             </div>
 
             {% if teammates_with_availability > 0 %}
-                <!-- Team Calendar -->
-                <div class="calendar-section-modern" data-aos="fade-up" data-aos-delay="200">
-                    <div class="calendar-header-modern">
-                        <div class="calendar-title-section">
-                            <h3>24 Saat Haftalık Takım Ortak Çalışma Takvimi</h3>
-                            <p>Her hücre o saatte müsait olan takım arkadaşlarınızı gösterir</p>
+                <!-- Heatmap Calendar -->
+                <div class="heatmap-section-modern" data-aos="fade-up" data-aos-delay="200">
+                    <div class="heatmap-header-modern">
+                        <div class="heatmap-title-section">
+                            <h3>24 Saat Takım Ortak Çalışma Heatmap</h3>
+                            <p>Renk yoğunluğu o saatte müsait olan takım arkadaşı sayısını gösterir</p>
                         </div>
-                        <div class="calendar-controls">
-                            <div class="view-toggle">
-                                <button class="toggle-btn active" data-view="compact">
-                                    <i class="fas fa-th"></i>
-                                    <span>Kompakt</span>
-                                </button>
-                                <button class="toggle-btn" data-view="detailed">
-                                    <i class="fas fa-list"></i>
-                                    <span>Detaylı</span>
-                                </button>
+                        <div class="heatmap-stats">
+                            <div class="stat-mini">
+                                <span class="stat-number">{{ total_teammates }}</span>
+                                <span class="stat-label">Toplam Takım</span>
+                            </div>
+                            <div class="stat-mini">
+                                <span class="stat-number">{{ teammates_with_availability }}</span>
+                                <span class="stat-label">Müsaitlik Belirledi</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="calendar-container-modern">
-                        <div class="table-responsive-modern">
-                            <table class="table table-bordered team-calendar-modern compact-view" id="teamCalendar">
-                                <thead class="sticky-header-modern">
+                    <div class="heatmap-container-modern">
+                        <div class="table-responsive-heatmap">
+                            <table class="table team-heatmap-modern" id="teamHeatmap">
+                                <thead class="sticky-header-heatmap">
                                     <tr>
-                                        <th class="time-header-modern sticky-column-modern">
+                                        <th class="time-header-heatmap sticky-column-heatmap">
                                             <div class="header-content">
                                                 <i class="fas fa-clock"></i>
                                                 <span>Saat</span>
                                             </div>
                                         </th>
-                                        {% for day_data in calendar_grid %}
-                                        <th class="day-header-modern">
+                                        {% for day_data in heatmap_grid %}
+                                        <th class="day-header-heatmap">
                                             <div class="day-header-content">
                                                 <div class="day-name">{{ day_data.day_name }}</div>
                                                 <div class="day-summary">
-                                                    {% with day_total=0 %}
+                                                    {% with day_total=0 max_availability=0 %}
                                                         {% for slot_data in day_data.time_slots %}
                                                             {% if slot_data.available_count > 0 %}
                                                                 {% with day_total=day_total|add:slot_data.available_count %}
+                                                                    {% if slot_data.available_count > max_availability %}
+                                                                        {% with max_availability=slot_data.available_count %}
+                                                                        {% endwith %}
+                                                                    {% endif %}
                                                                 {% endwith %}
                                                             {% endif %}
                                                         {% endfor %}
-                                                        <span class="day-activity-count">{{ day_total }} aktivite</span>
+                                                        <span class="day-activity-count">Max: {{ max_availability }} kişi</span>
                                                     {% endwith %}
                                                 </div>
                                             </div>
@@ -137,47 +139,63 @@
                                 </thead>
                                 <tbody>
                                     {% for time_slot in time_slots %}
-                                    <tr class="time-row-modern" data-time="{{ time_slot }}" 
-                                        data-period="{% if time_slot|slice:':2' < '06' %}night{% elif time_slot|slice:':2' < '12' %}morning{% elif time_slot|slice:':2' < '18' %}afternoon{% else %}evening{% endif %}">
-                                        <td class="time-cell-modern sticky-column-modern">
-                                            <div class="time-display-modern">
+                                    <tr class="time-row-heatmap" data-time="{{ time_slot }}">
+                                        <td class="time-cell-heatmap sticky-column-heatmap">
+                                            <div class="time-display-heatmap">
                                                 <div class="time-main">{{ time_slot|slice:':5' }}</div>
-                                                <div class="time-period-indicator {% if time_slot|slice:':2' < '06' %}night{% elif time_slot|slice:':2' < '12' %}morning{% elif time_slot|slice:':2' < '18' %}afternoon{% else %}evening{% endif %}"></div>
+                                                <div class="time-period">
+                                                    {% if time_slot|slice:':2' < '06' %}
+                                                        <span class="period-badge night">Gece</span>
+                                                    {% elif time_slot|slice:':2' < '12' %}
+                                                        <span class="period-badge morning">Sabah</span>
+                                                    {% elif time_slot|slice:':2' < '18' %}
+                                                        <span class="period-badge afternoon">Öğleden Sonra</span>
+                                                    {% else %}
+                                                        <span class="period-badge evening">Akşam</span>
+                                                    {% endif %}
+                                                </div>
                                             </div>
                                         </td>
-                                        {% for day_data in calendar_grid %}
+                                        {% for day_data in heatmap_grid %}
                                             {% for slot_data in day_data.time_slots %}
                                                 {% if slot_data.time == time_slot %}
-                                                <td class="availability-cell-modern {% if slot_data.available_count > 0 %}has-availability{% endif %} {% if slot_data.available_count == 1 %}single-user{% elif slot_data.available_count <= 3 %}few-users{% else %}many-users{% endif %}{% if slot_data.is_self_available %} is-self{% endif %}"
+                                                <td class="heatmap-cell {{ slot_data.css_classes }}"
                                                     data-day="{{ day_data.day_code }}" 
                                                     data-time="{{ time_slot }}"
                                                     data-count="{{ slot_data.available_count }}"
-                                                    data-self-available="{{ slot_data.is_self_available }}"
-                                                    title="{% if slot_data.is_self_available %}SİZ bu saatte müsaitsiniz{% if slot_data.available_teammates %} - Ayrıca {{ slot_data.available_count }} takım arkadaşınız: {{ slot_data.available_teammates|join:', ' }}{% endif %}{% elif slot_data.available_teammates %}{{ slot_data.available_count }} kişi müsait: {{ slot_data.available_teammates|join:', ' }}{% else %}Kimse müsait değil{% endif %}">
-                                                    {% if slot_data.available_teammates %}
-                                                        <div class="cell-content">
-                                                            <div class="availability-indicator">
-                                                                <div class="user-count">{{ slot_data.available_count }}</div>
-                                                                <div class="availability-dots">
-                                                                    {% for teammate in slot_data.available_teammates|slice:":3" %}
-                                                                    <div class="user-dot" title="{{ teammate }}"></div>
-                                                                    {% endfor %}
-                                                                    {% if slot_data.available_count > 3 %}
-                                                                    <div class="user-dot overflow" title="+{{ slot_data.available_count|add:'-3' }} kişi daha">+</div>
-                                                                    {% endif %}
+                                                    data-self-available="{{ slot_data.is_current_user_available }}"
+                                                    title="{% if slot_data.is_current_user_available %}✓ SİZ bu saatte müsaitsiniz{% if slot_data.available_teammates %} | {{ slot_data.available_count }} takım arkadaşınız: {{ slot_data.available_teammates|join:', ' }}{% endif %}{% elif slot_data.available_teammates %}{{ slot_data.available_count }} kişi müsait: {{ slot_data.available_teammates|join:', ' }}{% else %}Kimse müsait değil{% endif %}">
+                                                    <div class="heatmap-cell-content">
+                                                        {% if slot_data.is_current_user_available %}
+                                                            <div class="self-indicator">
+                                                                <i class="fas fa-user-check"></i>
+                                                            </div>
+                                                        {% endif %}
+                                                        {% if slot_data.available_count > 0 %}
+                                                            <div class="availability-count">{{ slot_data.available_count }}</div>
+                                                        {% endif %}
+                                                        <div class="hover-tooltip">
+                                                            {% if slot_data.is_current_user_available %}
+                                                                <div class="tooltip-section self-section">
+                                                                    <strong><i class="fas fa-user-check"></i> Siz müsaitsiniz</strong>
                                                                 </div>
-                                                            </div>
-                                                            <div class="teammate-list-hover">
-                                                                {% for teammate in slot_data.available_teammates %}
-                                                                <div class="teammate-item">{{ teammate }}</div>
-                                                                {% endfor %}
-                                                            </div>
+                                                            {% endif %}
+                                                            {% if slot_data.available_teammates %}
+                                                                <div class="tooltip-section teammates-section">
+                                                                    <strong>{{ slot_data.available_count }} Takım Arkadaşı:</strong>
+                                                                    <ul>
+                                                                        {% for teammate in slot_data.available_teammates %}
+                                                                        <li>{{ teammate }}</li>
+                                                                        {% endfor %}
+                                                                    </ul>
+                                                                </div>
+                                                            {% elif not slot_data.is_current_user_available %}
+                                                                <div class="tooltip-section empty-section">
+                                                                    <span>Kimse müsait değil</span>
+                                                                </div>
+                                                            {% endif %}
                                                         </div>
-                                                    {% else %}
-                                                        <div class="cell-content empty">
-                                                            <div class="empty-indicator">-</div>
-                                                        </div>
-                                                    {% endif %}
+                                                    </div>
                                                 </td>
                                                 {% endif %}
                                             {% endfor %}
@@ -189,25 +207,41 @@
                         </div>
                     </div>
 
-                    <!-- Enhanced Calendar Legend -->
-                    <div class="calendar-legend-modern">
-                        <h4>Takvim Rehberi</h4>
-                        <div class="legend-grid">
-                            <div class="legend-item-modern">
-                                <div class="legend-visual empty"></div>
-                                <span>Müsait kimse yok</span>
+                    <!-- Heatmap Legend -->
+                    <div class="heatmap-legend-modern">
+                        <h4>Heatmap Rehberi</h4>
+                        <div class="legend-grid-heatmap">
+                            <div class="legend-section">
+                                <h5>Takım Arkadaşı Sayısı</h5>
+                                <div class="legend-items">
+                                    <div class="legend-item-heatmap">
+                                        <div class="legend-visual heatmap-none"></div>
+                                        <span>Kimse yok</span>
+                                    </div>
+                                    <div class="legend-item-heatmap">
+                                        <div class="legend-visual heatmap-low"></div>
+                                        <span>1-2 kişi</span>
+                                    </div>
+                                    <div class="legend-item-heatmap">
+                                        <div class="legend-visual heatmap-medium"></div>
+                                        <span>3-4 kişi</span>
+                                    </div>
+                                    <div class="legend-item-heatmap">
+                                        <div class="legend-visual heatmap-high"></div>
+                                        <span>5+ kişi</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="legend-item-modern">
-                                <div class="legend-visual single-user"></div>
-                                <span>1 kişi müsait</span>
-                            </div>
-                            <div class="legend-item-modern">
-                                <div class="legend-visual few-users"></div>
-                                <span>2-3 kişi müsait</span>
-                            </div>
-                            <div class="legend-item-modern">
-                                <div class="legend-visual many-users"></div>
-                                <span>4+ kişi müsait</span>
+                            <div class="legend-section">
+                                <h5>Kendi Durumunuz</h5>
+                                <div class="legend-items">
+                                    <div class="legend-item-heatmap">
+                                        <div class="legend-visual self-selected-demo">
+                                            <i class="fas fa-user-check"></i>
+                                        </div>
+                                        <span>Siz müsaitsiniz</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -223,7 +257,13 @@
                         {% for teammate_data in teammates_with_projects %}
                         <div class="teammate-card">
                             <div class="teammate-avatar">
-                                <i class="fas fa-user-graduate"></i>
+                                {% if teammate_data.profile_picture_url %}
+                                    <img src="{{ teammate_data.profile_picture_url }}" 
+                                        alt="{{ teammate_data.intern.get_full_name }}" 
+                                        class="teammate-profile-picture">
+                                {% else %}
+                                    <i class="fas fa-user-graduate"></i>
+                                {% endif %}
                             </div>
                             <div class="teammate-info">
                                 <h4>{{ teammate_data.intern.get_full_name }}</h4>
@@ -662,67 +702,62 @@
         border: 1px solid rgba(59, 130, 246, 0.2);
     }
 
-    /* Calendar Section */
-    .calendar-section-modern {
+    /* Heatmap Section */
+    .heatmap-section-modern {
         margin-bottom: 4rem;
     }
 
-    .calendar-header-modern {
+    .heatmap-header-modern {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 2rem;
         flex-wrap: wrap;
-        gap: 1rem;
+        gap: 2rem;
     }
 
-    .calendar-title-section h3 {
+    .heatmap-title-section h3 {
         font-size: 2rem;
         font-weight: 700;
         color: var(--text-color);
         margin-bottom: 0.5rem;
     }
 
-    .calendar-title-section p {
+    .heatmap-title-section p {
         color: var(--text-light);
         font-size: 1.1rem;
         margin: 0;
     }
 
-    .calendar-controls {
+    .heatmap-stats {
         display: flex;
         gap: 1rem;
     }
 
-    .view-toggle {
-        display: flex;
-        background: #f1f5f9;
-        border-radius: 12px;
-        padding: 0.25rem;
-    }
-
-    .toggle-btn {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1rem;
-        border: none;
-        background: transparent;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: var(--text-light);
-    }
-
-    .toggle-btn.active {
+    .stat-mini {
         background: white;
-        color: var(--primary-color);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(59, 130, 246, 0.1);
     }
 
-    .calendar-container-modern {
+    .stat-mini .stat-number {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        line-height: 1;
+    }
+
+    .stat-mini .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .heatmap-container-modern {
         background: white;
         border-radius: 20px;
         box-shadow: var(--card-shadow-hover);
@@ -730,80 +765,35 @@
         border: 2px solid rgba(59, 130, 246, 0.1);
     }
 
-    .table-responsive-modern {
-        max-height: 70vh;
+    .table-responsive-heatmap {
+        max-height: 75vh;
         overflow: auto;
         border-radius: 20px;
     }
 
-    .team-calendar-modern {
+    .team-heatmap-modern {
         margin: 0;
-        font-size: 0.85rem;
         width: 100%;
         min-width: 900px;
         border-collapse: separate;
         border-spacing: 0;
+        font-size: 0.9rem;
     }
 
-    /* Compact View Styles */
-    .team-calendar-modern.compact-view .availability-cell-modern {
-        padding: 0.5rem 0.25rem;
-        min-height: 60px;
-    }
-
-    .team-calendar-modern.compact-view .user-count {
-        font-size: 1rem;
-        width: 25px;
-        height: 25px;
-    }
-
-    .team-calendar-modern.compact-view .availability-dots {
-        display: none;
-    }
-
-    .team-calendar-modern.compact-view .cell-content {
-        gap: 0.25rem;
-    }
-
-    /* Detailed View Styles */
-    .team-calendar-modern.detailed-view .availability-cell-modern {
-        padding: 1rem 0.75rem;
-        min-height: 100px;
-    }
-
-    .team-calendar-modern.detailed-view .user-count {
-        font-size: 1.5rem;
-        width: 35px;
-        height: 35px;
-    }
-
-    .team-calendar-modern.detailed-view .availability-dots {
-        gap: 0.5rem;
-    }
-
-    .team-calendar-modern.detailed-view .user-dot {
-        width: 10px;
-        height: 10px;
-    }
-
-    .team-calendar-modern.detailed-view .cell-content {
-        gap: 0.75rem;
-    }
-
-    .sticky-header-modern {
+    .sticky-header-heatmap {
         position: sticky;
         top: 0;
         z-index: 100;
     }
 
-    .sticky-column-modern {
+    .sticky-column-heatmap {
         position: sticky;
         left: 0;
         z-index: 50;
         background: white;
     }
 
-    .team-calendar-modern th {
+    .team-heatmap-modern th {
         background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         color: white;
         font-weight: 600;
@@ -814,19 +804,12 @@
         position: relative;
     }
 
-    .time-header-modern {
-        width: 140px;
+    .time-header-heatmap {
+        width: 160px;
         background: linear-gradient(135deg, #4b5563, #374151) !important;
     }
 
-    .header-content {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-
-    .day-header-modern {
+    .day-header-heatmap {
         min-width: 180px;
     }
 
@@ -850,18 +833,18 @@
         border-radius: 12px;
     }
 
-    .time-cell-modern {
+    .time-cell-heatmap {
         background: linear-gradient(135deg, #f8fafc, #f1f5f9);
         font-weight: 600;
         text-align: center;
         vertical-align: middle;
-        width: 140px;
+        width: 160px;
         border-right: 3px solid #e5e7eb;
-        padding: 1rem 0.5rem;
+        padding: 1rem 0.75rem;
         border-bottom: 1px solid #e5e7eb;
     }
 
-    .time-display-modern {
+    .time-display-heatmap {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -874,190 +857,225 @@
         color: var(--text-color);
     }
 
-    .time-period-indicator {
-        width: 30px;
-        height: 4px;
-        border-radius: 2px;
+    .period-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-transform: uppercase;
     }
 
-    .time-period-indicator.night {
-        background: var(--night-color);
+    .period-badge.night {
+        background: rgba(30, 27, 75, 0.1);
+        color: var(--night-color);
     }
 
-    .time-period-indicator.morning {
-        background: var(--morning-color);
+    .period-badge.morning {
+        background: rgba(251, 191, 36, 0.1);
+        color: var(--morning-color);
     }
 
-    .time-period-indicator.afternoon {
-        background: var(--afternoon-color);
+    .period-badge.afternoon {
+        background: rgba(96, 165, 250, 0.1);
+        color: var(--afternoon-color);
     }
 
-    .time-period-indicator.evening {
-        background: var(--evening-color);
+    .period-badge.evening {
+        background: rgba(249, 115, 22, 0.1);
+        color: var(--evening-color);
     }
 
-    .availability-cell-modern {
+    /* Heatmap Cell Styles */
+    .heatmap-cell {
         padding: 0.75rem 0.5rem;
         vertical-align: middle;
-        min-height: 80px;
+        min-height: 70px;
         position: relative;
-        background: #fafafa;
         transition: all 0.3s ease;
         border: 1px solid #e5e7eb;
-        border-bottom: 1px solid #e5e7eb;
+        cursor: pointer;
     }
 
-    .availability-cell-modern:hover {
-        background: rgba(59, 130, 246, 0.1);
-        transform: scale(1.02);
-        z-index: 10;
-        border-color: var(--primary-color);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-    }
-
-    .cell-content {
+    .heatmap-cell-content {
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
         gap: 0.5rem;
         position: relative;
+        height: 100%;
+        min-height: 50px;
     }
 
-    .availability-indicator {
+    /* Heatmap Color Levels */
+    .heatmap-none {
+        background: #f8fafc;
+        color: var(--text-light);
+    }
+
+    .heatmap-low {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.25));
+        color: #15803d;
+        border-left: 4px solid #22c55e;
+    }
+
+    .heatmap-medium {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.35));
+        color: #1d4ed8;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .heatmap-high {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(245, 158, 11, 0.45));
+        color: #b45309;
+        border-left: 4px solid var(--warning-color);
+    }
+
+    /* Self-Selected Override Styles */
+    .heatmap-cell.self-selected {
+        border: 3px solid #10b981 !important;
+        border-radius: 8px;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), inset 0 0 0 1px rgba(16, 185, 129, 0.3);
+        position: relative;
+        z-index: 5;
+    }
+
+    .heatmap-cell.self-selected::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
+        border-radius: 8px;
+        z-index: -1;
+    }
+
+    .self-indicator {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 24px;
+        height: 24px;
+        background: var(--secondary-color);
+        border-radius: 50%;
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: 0.5rem;
+        justify-content: center;
+        color: white;
+        font-size: 0.8rem;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+        animation: pulse-self 2s ease-in-out infinite;
     }
 
-    .user-count {
+    @keyframes pulse-self {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .availability-count {
         font-size: 1.2rem;
         font-weight: 700;
-        color: var(--primary-color);
-        background: rgba(59, 130, 246, 0.1);
+        background: rgba(255, 255, 255, 0.9);
         width: 30px;
         height: 30px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 2px solid var(--primary-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 2px solid currentColor;
     }
 
-    .availability-dots {
-        display: flex;
-        gap: 0.25rem;
-        flex-wrap: wrap;
-        justify-content: center;
+    /* Hover Effects */
+    .heatmap-cell:hover {
+        transform: scale(1.05);
+        z-index: 10;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
-    .user-dot {
-        width: 8px;
-        height: 8px;
-        background: var(--primary-color);
-        border-radius: 50%;
-        transition: all 0.2s ease;
+    .heatmap-cell:hover .hover-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
     }
 
-    .user-dot.overflow {
-        background: var(--warning-color);
-        width: 16px;
-        height: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.6rem;
-        font-weight: 700;
-        color: white;
-    }
-
-    .teammate-list-hover {
+    .hover-tooltip {
         position: absolute;
         top: 100%;
         left: 50%;
-        transform: translateX(-50%);
-        background: white;
-        border: 2px solid var(--primary-color);
+        transform: translateX(-50%) translateY(10px);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 1rem;
         border-radius: 8px;
-        padding: 0.5rem;
         opacity: 0;
         visibility: hidden;
         transition: all 0.3s ease;
         z-index: 20;
-        min-width: 150px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        min-width: 200px;
+        max-width: 250px;
+        font-size: 0.85rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
     }
 
-    .availability-cell-modern:hover .teammate-list-hover {
-        opacity: 1;
-        visibility: visible;
+    .hover-tooltip::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 5px solid rgba(0, 0, 0, 0.9);
     }
 
-    .teammate-item {
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: var(--text-color);
-        padding: 0.25rem;
-        text-align: center;
-        border-bottom: 1px solid #e5e7eb;
+    .tooltip-section {
+        margin-bottom: 0.75rem;
     }
 
-    .teammate-item:last-child {
+    .tooltip-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .self-section {
+        color: #10b981;
+        font-weight: 600;
+    }
+
+    .teammates-section ul {
+        list-style: none;
+        padding-left: 0;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .teammates-section li {
+        padding: 0.25rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .teammates-section li:last-child {
         border-bottom: none;
     }
 
-    .empty-indicator {
-        color: var(--text-light);
+    .empty-section {
+        color: #9ca3af;
         font-style: italic;
-        font-size: 1.2rem;
-        opacity: 0.5;
     }
 
-    /* Color coding for different availability levels */
-    .availability-cell-modern.single-user {
-        background: rgba(34, 197, 94, 0.05);
-        border-left: 4px solid #22c55e;
-    }
-
-    .availability-cell-modern.single-user .user-count {
-        color: #22c55e;
-        background: rgba(34, 197, 94, 0.1);
-        border-color: #22c55e;
-    }
-
-    .availability-cell-modern.single-user .user-dot {
-        background: #22c55e;
-    }
-
-    .availability-cell-modern.few-users {
-        background: rgba(59, 130, 246, 0.05);
-        border-left: 4px solid var(--primary-color);
-    }
-
-    .availability-cell-modern.many-users {
-        background: rgba(245, 158, 11, 0.05);
-        border-left: 4px solid var(--warning-color);
-    }
-
-    .availability-cell-modern.many-users .user-count {
-        color: var(--warning-color);
-        background: rgba(245, 158, 11, 0.1);
-        border-color: var(--warning-color);
-    }
-
-    .availability-cell-modern.many-users .user-dot {
-        background: var(--warning-color);
-    }
-
-    /* Enhanced Calendar Legend */
-    .calendar-legend-modern {
+    /* Heatmap Legend */
+    .heatmap-legend-modern {
         background: linear-gradient(135deg, #f8fafc, #f1f5f9);
         padding: 2rem;
         border-top: 1px solid #e5e7eb;
         border-radius: 0 0 20px 20px;
     }
 
-    .calendar-legend-modern h4 {
+    .heatmap-legend-modern h4 {
         font-size: 1.3rem;
         font-weight: 600;
         color: var(--text-color);
@@ -1065,19 +1083,33 @@
         text-align: center;
     }
 
-    .legend-grid {
+    .legend-grid-heatmap {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
     }
 
-    .legend-item-modern {
+    .legend-section h5 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .legend-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .legend-item-heatmap {
         display: flex;
         align-items: center;
         gap: 1rem;
-        padding: 1rem;
+        padding: 0.75rem 1rem;
         background: white;
-        border-radius: 12px;
+        border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         border: 1px solid #e5e7eb;
     }
@@ -1085,52 +1117,55 @@
     .legend-visual {
         width: 40px;
         height: 40px;
-        border-radius: 8px;
-        border: 2px solid #e5e7eb;
+        border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
         font-size: 0.9rem;
+        border: 1px solid #e5e7eb;
     }
 
-    .legend-visual.empty {
-        background: #fafafa;
+    .legend-visual.heatmap-none {
+        background: #f8fafc;
         color: var(--text-light);
     }
 
-    .legend-visual.empty::after {
-        content: "-";
+    .legend-visual.heatmap-low {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.25));
+        color: #15803d;
+        border-left: 4px solid #22c55e;
     }
 
-    .legend-visual.single-user {
-        background: rgba(34, 197, 94, 0.1);
-        border-color: #22c55e;
-        color: #22c55e;
+    .legend-visual.heatmap-medium {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.35));
+        color: #1d4ed8;
+        border-left: 4px solid var(--primary-color);
     }
 
-    .legend-visual.single-user::after {
-        content: "1";
+    .legend-visual.heatmap-high {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(245, 158, 11, 0.45));
+        color: #b45309;
+        border-left: 4px solid var(--warning-color);
     }
 
-    .legend-visual.few-users {
-        background: rgba(59, 130, 246, 0.1);
-        border-color: var(--primary-color);
-        color: var(--primary-color);
+    .self-selected-demo {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.3));
+        border: 3px solid #10b981 !important;
+        color: var(--secondary-color);
+        position: relative;
     }
 
-    .legend-visual.few-users::after {
-        content: "2-3";
-    }
-
-    .legend-visual.many-users {
-        background: rgba(245, 158, 11, 0.1);
-        border-color: var(--warning-color);
-        color: var(--warning-color);
-    }
-
-    .legend-visual.many-users::after {
-        content: "4+";
+    .self-selected-demo::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
+        border-radius: 6px;
+        z-index: -1;
     }
 
     /* Teammates Section */
@@ -1190,6 +1225,15 @@
         color: white;
         font-size: 1.5rem;
         flex-shrink: 0;
+    }
+
+    .teammate-profile-picture {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .teammate-info {
@@ -1265,379 +1309,432 @@
     }
 
     .projects-badges .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.4rem 0.8rem;
-        font-size: 0.75rem;
-        font-weight: 500;
-        border-radius: 15px;
-        transition: all 0.3s ease;
-        border: 1px solid transparent;
-    }
+       display: inline-flex;
+       align-items: center;
+       gap: 0.25rem;
+       padding: 0.4rem 0.8rem;
+       font-size: 0.75rem;
+       font-weight: 500;
+       border-radius: 15px;
+       transition: all 0.3s ease;
+       border: 1px solid transparent;
+   }
 
-    .common-project {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
-        color: white !important;
-        border: 1px solid rgba(59, 130, 246, 0.3) !important;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-        font-weight: 600;
-    }
+   .common-project {
+       background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+       color: white !important;
+       border: 1px solid rgba(59, 130, 246, 0.3) !important;
+       box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+       font-weight: 600;
+   }
 
-    .common-project:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-    }
+   .common-project:hover {
+       transform: translateY(-2px);
+       box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+   }
 
-    .no-projects {
-        background: rgba(107, 114, 128, 0.1) !important;
-        color: var(--text-light) !important;
-        border: 1px solid rgba(107, 114, 128, 0.2) !important;
-    }
+   .no-projects {
+       background: rgba(107, 114, 128, 0.1) !important;
+       color: var(--text-light) !important;
+       border: 1px solid rgba(107, 114, 128, 0.2) !important;
+   }
 
-    .project-stats {
-        display: flex;
-        gap: 1rem;
-        margin-top: 0.5rem;
-    }
+   .project-stats {
+       display: flex;
+       gap: 1rem;
+       margin-top: 0.5rem;
+   }
 
-    .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        font-size: 0.8rem;
-        color: var(--text-light);
-        font-weight: 500;
-    }
+   .stat-item {
+       display: flex;
+       align-items: center;
+       gap: 0.25rem;
+       font-size: 0.8rem;
+       color: var(--text-light);
+       font-weight: 500;
+   }
 
-    .common-stat {
-        color: var(--primary-color);
-        font-weight: 600;
-    }
+   .common-stat {
+       color: var(--primary-color);
+       font-weight: 600;
+   }
 
-    .common-stat i {
-        color: var(--primary-color);
-    }
+   .common-stat i {
+       color: var(--primary-color);
+   }
 
-    /* No Data Section */
-    .no-data-section {
-        margin: 4rem 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+   /* No Data Section */
+   .no-data-section {
+       margin: 4rem 0;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+   }
 
-    .no-data-card {
-        background: white;
-        border-radius: 20px;
-        padding: 4rem 3rem;
-        text-align: center;
-        box-shadow: var(--card-shadow);
-        border: 2px solid rgba(107, 114, 128, 0.1);
-        max-width: 600px;
-        width: 100%;
-    }
+   .no-data-card {
+       background: white;
+       border-radius: 20px;
+       padding: 4rem 3rem;
+       text-align: center;
+       box-shadow: var(--card-shadow);
+       border: 2px solid rgba(107, 114, 128, 0.1);
+       max-width: 600px;
+       width: 100%;
+   }
 
-    .no-data-icon {
-        margin-bottom: 2rem;
-    }
+   .no-data-icon {
+       margin-bottom: 2rem;
+   }
 
-    .no-data-icon i {
-        font-size: 4rem;
-        color: var(--text-light);
-        opacity: 0.6;
-    }
+   .no-data-icon i {
+       font-size: 4rem;
+       color: var(--text-light);
+       opacity: 0.6;
+   }
 
-    .no-data-content h3 {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin-bottom: 1rem;
-    }
+   .no-data-content h3 {
+       font-size: 1.8rem;
+       font-weight: 700;
+       color: var(--text-color);
+       margin-bottom: 1rem;
+   }
 
-    .no-data-content p {
-        color: var(--text-light);
-        font-size: 1.1rem;
-        line-height: 1.6;
-        margin: 0;
-    }
+   .no-data-content p {
+       color: var(--text-light);
+       font-size: 1.1rem;
+       line-height: 1.6;
+       margin: 0;
+   }
 
-    /* Action Section */
-    .action-section {
-        margin-top: 4rem;
-        padding: 3rem 0;
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
-        border-radius: 20px;
-        text-align: center;
-    }
+   /* Action Section */
+   .action-section {
+       margin-top: 4rem;
+       padding: 3rem 0;
+       background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+       border-radius: 20px;
+       text-align: center;
+   }
 
-    .action-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-    }
+   .action-buttons {
+       display: flex;
+       justify-content: center;
+       gap: 1.5rem;
+       flex-wrap: wrap;
+   }
 
-    .action-buttons .btn {
-        display: inline-flex;
-        align-items: center;
-        text-decoration: none;
-        padding: 1rem 2rem;
-        border-radius: 16px;
-        font-weight: 600;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-        min-width: 220px;
-        justify-content: center;
-    }
+   .action-buttons .btn {
+       display: inline-flex;
+       align-items: center;
+       text-decoration: none;
+       padding: 1rem 2rem;
+       border-radius: 16px;
+       font-weight: 600;
+       font-size: 1rem;
+       transition: all 0.3s ease;
+       border: 2px solid transparent;
+       min-width: 220px;
+       justify-content: center;
+   }
 
-    .btn-content {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
+   .btn-content {
+       display: flex;
+       align-items: center;
+       gap: 0.75rem;
+   }
 
-    .btn-content i {
-        font-size: 1.1rem;
-    }
+   .btn-content i {
+       font-size: 1.1rem;
+   }
 
-    .btn-primary {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        color: white;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
+   .btn-primary {
+       background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+       color: white;
+       box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+   }
 
-    .btn-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-        color: white;
-        text-decoration: none;
-    }
+   .btn-primary:hover {
+       transform: translateY(-3px);
+       box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+       color: white;
+       text-decoration: none;
+   }
 
-    .btn-secondary {
-        background: white;
-        color: var(--primary-color);
-        border-color: var(--primary-color);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
-    }
+   .btn-secondary {
+       background: white;
+       color: var(--primary-color);
+       border-color: var(--primary-color);
+       box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+   }
 
-    .btn-secondary:hover {
-        background: var(--primary-color);
-        color: white;
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
-        text-decoration: none;
-    }
+   .btn-secondary:hover {
+       background: var(--primary-color);
+       color: white;
+       transform: translateY(-3px);
+       box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+       text-decoration: none;
+   }
 
-    .btn-outline {
-        background: transparent;
-        color: var(--text-color);
-        border-color: #e5e7eb;
-    }
+   .btn-outline {
+       background: transparent;
+       color: var(--text-color);
+       border-color: #e5e7eb;
+   }
 
-    .btn-outline:hover {
-        background: var(--text-color);
-        color: white;
-        border-color: var(--text-color);
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(31, 41, 55, 0.2);
-        text-decoration: none;
-    }
+   .btn-outline:hover {
+       background: var(--text-color);
+       color: white;
+       border-color: var(--text-color);
+       transform: translateY(-3px);
+       box-shadow: 0 8px 20px rgba(31, 41, 55, 0.2);
+       text-decoration: none;
+   }
 
-    /* Responsive Design */
-    @media (max-width: 1200px) {
-        .showcase-header {
-            flex-direction: column;
-            text-align: center;
-        }
+   /* Responsive Design */
+   @media (max-width: 1200px) {
+       .showcase-header {
+           flex-direction: column;
+           text-align: center;
+       }
 
-        .calendar-header-modern {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-    }
+       .heatmap-header-modern {
+           flex-direction: column;
+           align-items: center;
+           text-align: center;
+       }
+   }
 
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2rem;
-        }
+   @media (max-width: 768px) {
+       .hero-title {
+           font-size: 2rem;
+       }
 
-        .hero-subtitle {
-            font-size: 1rem;
-        }
+       .hero-subtitle {
+           font-size: 1rem;
+       }
 
-        .team-availability-container {
-            padding: 2rem 1rem;
-        }
+       .team-availability-container {
+           padding: 2rem 1rem;
+       }
 
-        .projects-showcase-grid {
-            grid-template-columns: 1fr;
-        }
+       .projects-showcase-grid {
+           grid-template-columns: 1fr;
+       }
 
-        .teammates-grid {
-            grid-template-columns: 1fr;
-        }
+       .teammates-grid {
+           grid-template-columns: 1fr;
+       }
 
-        .action-buttons {
-            flex-direction: column;
-            align-items: center;
-        }
+       .action-buttons {
+           flex-direction: column;
+           align-items: center;
+       }
 
-        .action-buttons .btn {
-            min-width: 280px;
-        }
+       .action-buttons .btn {
+           min-width: 280px;
+       }
 
-        .table-responsive-modern {
-            max-height: 50vh;
-        }
+       .heatmap-header-modern {
+           flex-direction: column;
+           text-align: center;
+       }
 
-        .team-calendar-modern {
-            font-size: 0.75rem;
-        }
+       .heatmap-stats {
+           justify-content: center;
+       }
 
-        .user-count {
-            width: 25px;
-            height: 25px;
-            font-size: 1rem;
-        }
+       .table-responsive-heatmap {
+           max-height: 60vh;
+       }
 
-        .availability-dots {
-            gap: 0.15rem;
-        }
+       .team-heatmap-modern {
+           font-size: 0.8rem;
+       }
 
-        .user-dot {
-            width: 6px;
-            height: 6px;
-        }
+       .heatmap-cell {
+           min-height: 60px;
+           padding: 0.5rem 0.25rem;
+       }
 
-        .user-dot.overflow {
-            width: 12px;
-            height: 12px;
-            font-size: 0.5rem;
-        }
-    }
+       .availability-count {
+           width: 25px;
+           height: 25px;
+           font-size: 1rem;
+       }
 
-    @media (max-width: 480px) {
-        .hero-section {
-            padding: 2rem 0 1rem;
-        }
+       .self-indicator {
+           width: 20px;
+           height: 20px;
+           font-size: 0.7rem;
+       }
 
-        .hero-title {
-            font-size: 1.5rem;
-        }
+       .legend-grid-heatmap {
+           grid-template-columns: 1fr;
+           gap: 1rem;
+       }
 
-        .projects-showcase-card,
-        .calendar-container-modern {
-            padding: 1.5rem;
-        }
+       .hover-tooltip {
+           position: fixed;
+           top: 10px;
+           left: 10px;
+           right: 10px;
+           transform: none;
+           max-width: none;
+           min-width: auto;
+       }
+   }
 
-        .project-showcase-item {
-            padding: 1.5rem;
-        }
+   @media (max-width: 480px) {
+       .hero-section {
+           padding: 2rem 0 1rem;
+       }
 
-        .teammate-card {
-            flex-direction: column;
-            text-align: center;
-        }
+       .hero-title {
+           font-size: 1.5rem;
+       }
 
-        .teammate-avatar {
-            align-self: center;
-        }
-    }
+       .projects-showcase-card,
+       .heatmap-container-modern {
+           padding: 1.5rem;
+       }
 
-    /* Accessibility Improvements */
-    @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-        }
+       .project-showcase-item {
+           padding: 1.5rem;
+       }
 
-        .hero-particle {
-            animation: none;
-        }
+       .teammate-card {
+           flex-direction: column;
+           text-align: center;
+       }
 
-        .ring {
-            animation: none;
-        }
-    }
+       .teammate-avatar {
+           align-self: center;
+       }
 
-    /* Print Styles */
-    @media print {
-        .hero-section,
-        .action-section {
-            display: none;
-        }
+       .heatmap-title-section h3 {
+           font-size: 1.5rem;
+       }
 
-        .team-availability-page {
-            background: white;
-        }
+       .time-cell-heatmap {
+           width: 120px;
+           padding: 0.75rem 0.5rem;
+       }
 
-        .calendar-container-modern,
-        .project-showcase-item,
-        .teammate-card {
-            box-shadow: none;
-            border: 1px solid #ddd;
-        }
+       .day-header-heatmap {
+           min-width: 140px;
+       }
 
-        .table-responsive-modern {
-            max-height: none;
-            overflow: visible;
-        }
-    }
+       .heatmap-cell {
+           min-height: 50px;
+           padding: 0.4rem 0.2rem;
+       }
 
-    /* Focus Styles for Accessibility */
-    .toggle-btn:focus,
-    .btn:focus {
-        outline: 2px solid var(--primary-color);
-        outline-offset: 2px;
-    }
+       .availability-count {
+           width: 20px;
+           height: 20px;
+           font-size: 0.85rem;
+       }
 
-    /* High Contrast Mode Support */
-    @media (prefers-contrast: high) {
-        :root {
-            --primary-color: #0056b3;
-            --secondary-color: #007a3e;
-            --text-color: #000000;
-            --text-light: #333333;
-        }
+       .self-indicator {
+           width: 16px;
+           height: 16px;
+           font-size: 0.6rem;
+           top: 2px;
+           right: 2px;
+       }
+   }
 
-        .project-showcase-item,
-        .teammate-card {
-            border: 2px solid #000000;
-        }
-    }
+   /* High Contrast Mode Support */
+   @media (prefers-contrast: high) {
+       .heatmap-low {
+           background: #e6f7e6;
+           color: #000000;
+           border-left: 6px solid #22c55e;
+       }
+
+       .heatmap-medium {
+           background: #e6f0ff;
+           color: #000000;
+           border-left: 6px solid var(--primary-color);
+       }
+
+       .heatmap-high {
+           background: #fff7e6;
+           color: #000000;
+           border-left: 6px solid var(--warning-color);
+       }
+
+       .heatmap-cell.self-selected {
+           border: 4px solid #10b981 !important;
+           background: #f0fdf4;
+       }
+   }
+
+   /* Print Styles */
+   @media print {
+       .hero-section,
+       .action-section {
+           display: none;
+       }
+
+       .team-availability-page {
+           background: white;
+       }
+
+       .heatmap-container-modern,
+       .project-showcase-item,
+       .teammate-card {
+           box-shadow: none;
+           border: 1px solid #ddd;
+       }
+
+       .table-responsive-heatmap {
+           max-height: none;
+           overflow: visible;
+       }
+
+       .heatmap-cell {
+           print-color-adjust: exact;
+           -webkit-print-color-adjust: exact;
+       }
+
+       .heatmap-section-modern {
+           break-inside: avoid;
+       }
+
+       .hover-tooltip {
+           display: none;
+       }
+   }
+
+   /* Accessibility Improvements */
+   @media (prefers-reduced-motion: reduce) {
+       *,
+       *::before,
+       *::after {
+           animation-duration: 0.01ms !important;
+           animation-iteration-count: 1 !important;
+           transition-duration: 0.01ms !important;
+       }
+
+       .hero-particle {
+           animation: none;
+       }
+
+       .ring {
+           animation: none;
+       }
+   }
+
+   /* Focus Styles for Accessibility */
+   .heatmap-cell:focus,
+   .btn:focus {
+       outline: 2px solid var(--primary-color);
+       outline-offset: 2px;
+   }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // View toggle functionality - FIXED
-        const toggleButtons = document.querySelectorAll('.toggle-btn');
-        const calendar = document.getElementById('teamCalendar');
-
-        toggleButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const view = this.dataset.view;
-                
-                // Remove active class from all toggle buttons
-                toggleButtons.forEach(btn => btn.classList.remove('active'));
-                // Add active class to clicked button
-                this.classList.add('active');
-
-                // Apply view styles by toggling classes
-                if (view === 'compact') {
-                    calendar.classList.remove('detailed-view');
-                    calendar.classList.add('compact-view');
-                } else {
-                    calendar.classList.remove('compact-view');
-                    calendar.classList.add('detailed-view');
-                }
-            });
-        });
 
         // Enhanced tooltips for availability cells
         const availabilityCells = document.querySelectorAll('.availability-cell-modern');
