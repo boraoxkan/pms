@@ -13,12 +13,12 @@ admin.site.unregister(Group)
 
 @admin.register(AvailabilitySettings)
 class AvailabilitySettingsAdmin(admin.ModelAdmin):
-    list_display = ('minimum_hours_required', 'weekly_submission_enabled', 'updated_at')
+    list_display = ('group_meeting_hours_min', 'individual_work_hours_min', 'weekly_submission_enabled', 'updated_at')
     readonly_fields = ('created_at', 'updated_at')
     
     fieldsets = (
         ('Hour Requirements', {
-            'fields': ('minimum_hours_required',),
+            'fields': ('group_meeting_hours_min', 'individual_work_hours_min'),
             'description': 'Configure minimum hour requirements for intern availability submissions.'
         }),
         ('Submission Rules', {
@@ -169,9 +169,15 @@ class InternAdmin(admin.ModelAdmin):
     def has_availability(self, obj):
         try:
             availability = obj.availability
-            total_hours = availability.get_total_hours()
+            group_hours = availability.get_group_meeting_hours()
+            individual_hours = availability.get_individual_work_hours()
+            total_hours = group_hours + individual_hours
+            
             if total_hours > 0:
-                return format_html('<span style="color: green;">✅ {} saat</span>', total_hours)
+                return format_html(
+                    '<span style="color: green;">✅ {}h (Grup: {}h, Bireysel: {}h)</span>', 
+                    total_hours, group_hours, individual_hours
+                )
             else:
                 return format_html('<span style="color: orange;">⏳ Henüz yok</span>')
         except InternAvailability.DoesNotExist:
@@ -197,7 +203,7 @@ class ProjectPreferenceAdmin(admin.ModelAdmin):
 
 @admin.register(InternAvailability)
 class InternAvailabilityAdmin(admin.ModelAdmin):
-    list_display = ('intern', 'get_total_hours', 'week_year', 'submission_date', 'is_locked', 'get_available_days_count', 'updated_at')
+    list_display = ('intern', 'get_group_meeting_hours', 'get_individual_work_hours', 'get_total_hours', 'week_year', 'submission_date', 'is_locked', 'updated_at')
     list_filter = ('is_locked', 'week_year', 'submission_date', 'updated_at')
     search_fields = ('intern__first_name', 'intern__last_name', 'intern__email')
     readonly_fields = ('created_at', 'updated_at', 'get_availability_summary', 'week_year', 'submission_date')
@@ -211,9 +217,17 @@ class InternAvailabilityAdmin(admin.ModelAdmin):
             'fields': ('week_year', 'submission_date', 'is_locked'),
             'description': 'Week submission tracking and lock controls.'
         }),
-        ('Ortak Çalışma Saati Verileri', {
-            'fields': ('availability_data', 'get_availability_summary'),
-            'description': 'JSON formatında haftalık ortak çalışma saati verileri.'
+        ('Grup Toplantı Saatleri (09:00-17:00)', {
+            'fields': ('group_meeting_data',),
+            'description': 'JSON formatında grup toplantı saatleri (sadece 09:00-17:00 arası).'
+        }),
+        ('Bireysel Çalışma Saatleri (24 Saat)', {
+            'fields': ('individual_work_data',),
+            'description': 'JSON formatında bireysel çalışma saatleri (24 saat herhangi bir zaman).'
+        }),
+        ('Özet Görünüm', {
+            'fields': ('get_availability_summary',),
+            'description': 'Tüm müsaitlik verilerinin görsel özeti.'
         }),
         ('Zaman Bilgileri', {
             'fields': ('created_at', 'updated_at'),
@@ -241,28 +255,26 @@ class InternAvailabilityAdmin(admin.ModelAdmin):
         )
     lock_availability.short_description = 'Lock selected availability records'
 
+    def get_group_meeting_hours(self, obj):
+        total = obj.get_group_meeting_hours()
+        if total > 0:
+            return format_html('<span style="color: #3b82f6; font-weight: bold;">{} saat</span>', total)
+        return format_html('<span style="color: red;">0 saat</span>')
+    get_group_meeting_hours.short_description = 'Grup Toplantı Saatleri'
+
+    def get_individual_work_hours(self, obj):
+        total = obj.get_individual_work_hours()
+        if total > 0:
+            return format_html('<span style="color: #10b981; font-weight: bold;">{} saat</span>', total)
+        return format_html('<span style="color: red;">0 saat</span>')
+    get_individual_work_hours.short_description = 'Bireysel Çalışma Saatleri'
+
     def get_total_hours(self, obj):
         total = obj.get_total_hours()
         if total > 0:
             return format_html('<span style="color: green; font-weight: bold;">{} saat</span>', total)
         return format_html('<span style="color: red;">0 saat</span>')
     get_total_hours.short_description = 'Toplam Saat'
-
-    def get_available_days_count(self, obj):
-        days = obj.get_available_days()
-        day_names = {
-            'monday': 'Pzt',
-            'tuesday': 'Sal',
-            'wednesday': 'Çar',
-            'thursday': 'Per',
-            'friday': 'Cum',
-            'saturday': 'Cmt'
-        }
-        if days:
-            day_display = ', '.join([day_names.get(day, day) for day in days])
-            return format_html('<span style="color: blue;">{} ({} gün)</span>', day_display, len(days))
-        return format_html('<span style="color: red;">Ortak çalışma saati yok</span>')
-    get_available_days_count.short_description = 'Ortak Çalışma Saati Günleri'
 
     def get_availability_summary(self, obj):
         return format_html(obj.get_availability_summary())

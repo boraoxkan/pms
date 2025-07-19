@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import Http404
 from django.urls import reverse
-from django.utils import timezone  # ADDED: Missing import
-from .models import Project, ProjectPreference, Intern, InternAvailability, AvailabilitySettings  # ADDED: Missing models
+from django.utils import timezone
+from .models import Project, ProjectPreference, Intern, InternAvailability, AvailabilitySettings
 from .forms import ProjectPreferenceForm
 import json
 
@@ -34,7 +34,7 @@ def home_page(request):
     # If user is authenticated, add additional context
     if request.user.is_authenticated and not (request.user.is_staff or request.user.is_superuser):
         try:
-            # FIXED: Get intern object and related data
+            # Get intern object and related data
             intern = Intern.objects.get(user=request.user)
             
             # Get assigned projects for this intern
@@ -45,8 +45,10 @@ def home_page(request):
             availability_data = None
             try:
                 availability = InternAvailability.objects.get(intern=intern)
-                has_availability = bool(availability.availability_data and 
-                                      any(slots for slots in availability.availability_data.values()))
+                has_availability = bool((availability.group_meeting_data and 
+                                       any(slots for slots in availability.group_meeting_data.values())) or
+                                      (availability.individual_work_data and 
+                                       any(slots for slots in availability.individual_work_data.values())))
                 availability_data = availability
             except InternAvailability.DoesNotExist:
                 pass
@@ -72,7 +74,6 @@ def home_page(request):
             
         except Intern.DoesNotExist:
             # User is authenticated but no intern record exists
-            # This could happen if admin hasn't created intern record yet
             pass
     
     return render(request, 'intern_portal/home_page.html', context)
@@ -123,11 +124,11 @@ def team_availability(request):
         # Find common projects between current intern and this teammate
         common_projects = assigned_projects.intersection(teammate_projects)
         
-        # Only include teammates who have common projects (they should by definition, but safety check)
+        # Only include teammates who have common projects
         if common_projects.exists():
             teammates_with_projects.append({
                 'intern': teammate,
-                'common_projects': common_projects,  # Only show common projects
+                'common_projects': common_projects,
                 'common_projects_count': common_projects.count(),
                 'has_availability': False,
                 'availability_data': None
@@ -153,14 +154,6 @@ def team_availability(request):
         'friday': 'Cuma'
     }
     
-    # Group time slots by periods for better organization
-    TIME_PERIODS = {
-        'Gece (00:00 - 06:00)': TIME_SLOTS[0:6],
-        'Sabah (06:00 - 12:00)': TIME_SLOTS[6:12],
-        'Öğleden Sonra (12:00 - 18:00)': TIME_SLOTS[12:18],
-        'Akşam (18:00 - 24:00)': TIME_SLOTS[18:24]
-    }
-    
     # Initialize the calendar structure
     team_calendar = {}
     for day in WEEKDAYS:
@@ -183,20 +176,27 @@ def team_availability(request):
         intern_id = teammate_data['intern'].id
         if intern_id in availability_map:
             availability = availability_map[intern_id]
-            teammate_data['has_availability'] = bool(availability.availability_data and 
-                                                  any(slots for slots in availability.availability_data.values()))
+            has_any_availability = bool((availability.group_meeting_data and 
+                                       any(slots for slots in availability.group_meeting_data.values())) or
+                                      (availability.individual_work_data and 
+                                       any(slots for slots in availability.individual_work_data.values())))
+            teammate_data['has_availability'] = has_any_availability
             teammate_data['availability_data'] = availability
     
     # Process each teammate's availability for the calendar
     for availability in teammate_availabilities:
         intern_name = availability.intern.get_full_name()
         
-        if availability.availability_data:
-            for day_code, time_slots in availability.availability_data.items():
-                if day_code in WEEKDAYS and time_slots:
-                    for time_slot in time_slots:
-                        if time_slot in TIME_SLOTS:
-                            team_calendar[day_code][time_slot].append(intern_name)
+        # Process both group meeting and individual work hours
+        for day_code in WEEKDAYS:
+            # Get combined availability (group + individual)
+            group_slots = availability.group_meeting_data.get(day_code, [])
+            individual_slots = availability.individual_work_data.get(day_code, [])
+            all_slots = group_slots + individual_slots
+            
+            for time_slot in all_slots:
+                if time_slot in TIME_SLOTS:
+                    team_calendar[day_code][time_slot].append(intern_name)
     
     # Create a more template-friendly structure
     calendar_grid = []
@@ -210,7 +210,7 @@ def team_availability(request):
             available_teammates = team_calendar[day][time_slot]
             day_data['time_slots'].append({
                 'time': time_slot,
-                'time_display': time_slot.replace('-', ' - '),  # Format for display
+                'time_display': time_slot.replace('-', ' - '),
                 'available_count': len(available_teammates),
                 'available_teammates': available_teammates
             })
@@ -223,49 +223,19 @@ def team_availability(request):
     # Get current intern's projects for context
     current_intern_projects = list(assigned_projects.values('name', 'id'))
     
-    # Find peak availability times (times when most people are available)
-    peak_times = []
-    max_availability = 0
-    
-    for day in WEEKDAYS:
-        for time_slot in TIME_SLOTS:
-            count = len(team_calendar[day][time_slot])
-            if count > max_availability:
-                max_availability = count
-                peak_times = [(DAY_NAMES[day], time_slot)]
-            elif count == max_availability and count > 0:
-                peak_times.append((DAY_NAMES[day], time_slot))
-    
-    # Calculate availability statistics by time period
-    period_stats = {}
-    for period_name, period_slots in TIME_PERIODS.items():
-        total_availability = 0
-        for day in WEEKDAYS:
-            for time_slot in period_slots:
-                total_availability += len(team_calendar[day][time_slot])
-        period_stats[period_name] = total_availability
-    
-    # Find most active period
-    most_active_period = max(period_stats.items(), key=lambda x: x[1]) if period_stats else None
-    
     context = {
         'current_intern': current_intern,
-        'teammates': teammates,  # Keep original for backward compatibility
-        'teammates_with_projects': teammates_with_projects,  # New enhanced data with only common projects
+        'teammates': teammates,
+        'teammates_with_projects': teammates_with_projects,
         'assigned_projects': assigned_projects,
         'current_intern_projects': current_intern_projects,
         'team_calendar': team_calendar,
         'calendar_grid': calendar_grid,
         'time_slots': TIME_SLOTS,
-        'time_periods': TIME_PERIODS,
         'weekdays': WEEKDAYS,
         'day_names': DAY_NAMES,
         'total_teammates': total_teammates,
         'teammates_with_availability': teammates_with_availability,
-        'peak_times': peak_times,
-        'max_availability': max_availability,
-        'period_stats': period_stats,
-        'most_active_period': most_active_period,
     }
     
     return render(request, 'intern_portal/team_availability.html', context)
@@ -273,7 +243,9 @@ def team_availability(request):
 @login_required
 def select_availability(request):
     """
-    Availability selection view for Google SSO authenticated users
+    UPDATED: Availability selection view with two separate types:
+    1. Group Meeting Hours (09:00-17:00, min 20 hours)
+    2. Individual Work Hours (24h, min 10 hours)
     """
     # Check if user is admin (staff/superuser)
     if request.user.is_staff or request.user.is_superuser:
@@ -290,7 +262,7 @@ def select_availability(request):
         )
         return redirect('home_page')
     
-    # Define available days and time slots
+    # Define available days
     DAYS = [
         ('monday', 'Pazartesi'),
         ('tuesday', 'Salı'),
@@ -300,7 +272,20 @@ def select_availability(request):
         ('saturday', 'Cumartesi'),
     ]
     
-    TIME_SLOTS = [
+    # Define time slots for group meetings (09:00-17:00)
+    GROUP_TIME_SLOTS = [
+        ('09:00-10:00', '09:00-10:00'),
+        ('10:00-11:00', '10:00-11:00'),
+        ('11:00-12:00', '11:00-12:00'),
+        ('12:00-13:00', '12:00-13:00'),
+        ('13:00-14:00', '13:00-14:00'),
+        ('14:00-15:00', '14:00-15:00'),
+        ('15:00-16:00', '15:00-16:00'),
+        ('16:00-17:00', '16:00-17:00'),
+    ]
+    
+    # Define time slots for individual work (24 hours)
+    INDIVIDUAL_TIME_SLOTS = [
         ('00:00-01:00', '00:00-01:00'),
         ('01:00-02:00', '01:00-02:00'),
         ('02:00-03:00', '02:00-03:00'),
@@ -333,10 +318,11 @@ def select_availability(request):
     except InternAvailability.DoesNotExist:
         availability = InternAvailability.objects.create(
             intern=intern,
-            availability_data={}
+            group_meeting_data={},
+            individual_work_data={}
         )
     
-    # Check if user can modify availability
+    # Check if user can modify availability (FIXED LOGIC)
     if not availability.can_modify():
         settings = AvailabilitySettings.get_settings()
         if availability.is_locked:
@@ -345,32 +331,42 @@ def select_availability(request):
                 'Müsaitlik durumunuz yönetici tarafından kilitlenmiş. '
                 'Değişiklik yapmak için lütfen sistem yöneticisi ile iletişime geçin.'
             )
-        elif settings.weekly_submission_enabled and availability.week_year:
+        elif settings.weekly_submission_enabled and availability.submission_date:
             messages.warning(
                 request,
-                f'Bu hafta için müsaitlik durumunuzu zaten belirttiniz. '
-                f'Değişiklik yapmak için lütfen sistem yöneticisi ile iletişime geçin.'
+                f'Bu hafta için müsaitlik durumunuzu zaten belirttiniz '
+                f'({availability.submission_date.strftime("%d.%m.%Y %H:%M")}). '
+                f'Yeni hafta başlangıcına kadar veya yönetici sıfırlamasına kadar değişiklik yapamazsınız.'
             )
         return redirect('view_availability')
     
     if request.method == 'POST':
         # Process the submitted availability data
-        new_availability_data = {}
+        new_group_data = {}
+        new_individual_data = {}
         
+        # Process group meeting hours
         for day_code, _ in DAYS:
-            # Get selected time slots for this day
-            selected_slots = request.POST.getlist(f'availability_{day_code}')
+            selected_group_slots = request.POST.getlist(f'group_meeting_{day_code}')
+            valid_group_slot_values = [slot[0] for slot in GROUP_TIME_SLOTS]
+            valid_group_slots = [slot for slot in selected_group_slots if slot in valid_group_slot_values]
             
-            # Validate that selected slots are in our valid time slots
-            valid_slot_values = [slot[0] for slot in TIME_SLOTS]
-            valid_slots = [slot for slot in selected_slots if slot in valid_slot_values]
+            if valid_group_slots:
+                new_group_data[day_code] = valid_group_slots
+        
+        # Process individual work hours
+        for day_code, _ in DAYS:
+            selected_individual_slots = request.POST.getlist(f'individual_work_{day_code}')
+            valid_individual_slot_values = [slot[0] for slot in INDIVIDUAL_TIME_SLOTS]
+            valid_individual_slots = [slot for slot in selected_individual_slots if slot in valid_individual_slot_values]
             
-            if valid_slots:
-                new_availability_data[day_code] = valid_slots
+            if valid_individual_slots:
+                new_individual_data[day_code] = valid_individual_slots
         
         try:
             # Update the availability record
-            availability.availability_data = new_availability_data
+            availability.group_meeting_data = new_group_data
+            availability.individual_work_data = new_individual_data
             availability.week_year = availability.get_current_week_year()
             availability.submission_date = timezone.now()
             
@@ -378,11 +374,15 @@ def select_availability(request):
             availability.save()
             
             # Show success message
-            total_hours = sum(len(slots) for slots in new_availability_data.values())
+            group_hours = sum(len(slots) for slots in new_group_data.values())
+            individual_hours = sum(len(slots) for slots in new_individual_data.values())
+            total_hours = group_hours + individual_hours
+            
             messages.success(
                 request, 
                 f'Ortak çalışma saati durumunuz başarıyla kaydedildi! '
-                f'Toplam {total_hours} saat ortak çalışma saati belirttiniz.'
+                f'Grup toplantı: {group_hours} saat, Bireysel çalışma: {individual_hours} saat '
+                f'(Toplam: {total_hours} saat)'
             )
             return redirect('view_availability')
            
@@ -392,10 +392,16 @@ def select_availability(request):
             # Don't redirect, show form again with error
    
     # For GET requests, prepare context for template
-    saved_availability = {}
-    if availability.availability_data:
-        for day_code, slots in availability.availability_data.items():
-            saved_availability[day_code] = slots
+    saved_group_availability = {}
+    saved_individual_availability = {}
+    
+    if availability.group_meeting_data:
+        for day_code, slots in availability.group_meeting_data.items():
+            saved_group_availability[day_code] = slots
+            
+    if availability.individual_work_data:
+        for day_code, slots in availability.individual_work_data.items():
+            saved_individual_availability[day_code] = slots
    
     # Add settings info to context
     settings = AvailabilitySettings.get_settings()
@@ -403,8 +409,10 @@ def select_availability(request):
         'intern': intern,
         'availability': availability,
         'days': DAYS,
-        'time_slots': TIME_SLOTS,
-        'saved_availability': saved_availability,
+        'group_time_slots': GROUP_TIME_SLOTS,
+        'individual_time_slots': INDIVIDUAL_TIME_SLOTS,
+        'saved_group_availability': saved_group_availability,
+        'saved_individual_availability': saved_individual_availability,
         'settings': settings,
         'can_modify': availability.can_modify(),
         'is_locked': availability.is_locked,
@@ -416,7 +424,7 @@ def select_availability(request):
 @login_required
 def view_availability(request):
     """
-    Read-only view to display saved availability for Google SSO authenticated users
+    UPDATED: Read-only view to display saved availability for both types
     """
     # Check if user is admin (staff/superuser)
     if request.user.is_staff or request.user.is_superuser:
@@ -452,31 +460,46 @@ def view_availability(request):
     }
     
     # Process availability data for display
-    formatted_availability = {}
-    total_hours = 0
+    formatted_group_availability = {}
+    formatted_individual_availability = {}
     
-    if availability.availability_data:
-        for day_code, time_slots in availability.availability_data.items():
-            if time_slots:  # Only include days with selected times
-                formatted_availability[DAY_NAMES.get(day_code, day_code)] = time_slots
-                total_hours += len(time_slots)
+    group_hours = 0
+    individual_hours = 0
     
-    # Check if user has any availability set
+    # Process group meeting hours
+    if availability.group_meeting_data:
+        for day_code, time_slots in availability.group_meeting_data.items():
+            if time_slots:
+                formatted_group_availability[DAY_NAMES.get(day_code, day_code)] = time_slots
+                group_hours += len(time_slots)
+    
+    # Process individual work hours
+    if availability.individual_work_data:
+        for day_code, time_slots in availability.individual_work_data.items():
+            if time_slots:
+                formatted_individual_availability[DAY_NAMES.get(day_code, day_code)] = time_slots
+                individual_hours += len(time_slots)
+    
+    total_hours = group_hours + individual_hours
     has_availability = total_hours > 0
     
     context = {
         'intern': intern,
         'availability': availability,
-        'formatted_availability': formatted_availability,
+        'formatted_group_availability': formatted_group_availability,
+        'formatted_individual_availability': formatted_individual_availability,
+        'group_hours': group_hours,
+        'individual_hours': individual_hours,
         'total_hours': total_hours,
         'has_availability': has_availability,
-        'available_days_count': len(formatted_availability),
+        'group_days_count': len(formatted_group_availability),
+        'individual_days_count': len(formatted_individual_availability),
     }
     
     return render(request, 'intern_portal/view_availability.html', context)
 
 # ================================
-# LEGACY VIEWS (Token-based)
+# LEGACY VIEWS (Token-based) - Updated for compatibility
 # ================================
 
 @verify_token
@@ -539,8 +562,8 @@ def submit_preferences(request, token):
 
 @verify_token
 def legacy_select_availability(request, token):
-    """Legacy token-based availability selection"""
-    # Define available days and time slots
+    """UPDATED: Legacy token-based availability selection - backwards compatible"""
+    # Define available days and time slots (keep legacy format for compatibility)
     DAYS = [
         ('monday', 'Pazartesi'),
         ('tuesday', 'Salı'),
@@ -550,6 +573,7 @@ def legacy_select_availability(request, token):
         ('saturday', 'Cumartesi'),
     ]
     
+    # For legacy, combine all time slots
     TIME_SLOTS = [
         ('00:00-01:00', '00:00-01:00'),
         ('01:00-02:00', '01:00-02:00'),
@@ -583,12 +607,13 @@ def legacy_select_availability(request, token):
     except InternAvailability.DoesNotExist:
         availability = InternAvailability.objects.create(
             intern=request.intern,
-            availability_data={}
+            group_meeting_data={},
+            individual_work_data={}
         )
     
     if request.method == 'POST':
-        # Process the submitted availability data
-        new_availability_data = {}
+        # Process the submitted availability data (legacy format - combine into individual work)
+        new_individual_data = {}
         
         for day_code, _ in DAYS:
             # Get selected time slots for this day
@@ -599,14 +624,15 @@ def legacy_select_availability(request, token):
             valid_slots = [slot for slot in selected_slots if slot in valid_slot_values]
             
             if valid_slots:
-                new_availability_data[day_code] = valid_slots
+                new_individual_data[day_code] = valid_slots
         
-        # Update the availability record
-        availability.availability_data = new_availability_data
+        # Update the availability record (legacy saves to individual work data)
+        availability.individual_work_data = new_individual_data
+        availability.group_meeting_data = {}  # Clear group data for legacy
         availability.save()
         
         # Show success message
-        total_hours = sum(len(slots) for slots in new_availability_data.values())
+        total_hours = sum(len(slots) for slots in new_individual_data.values())
         if total_hours > 0:
             messages.success(request, f'Ortak çalışma saati durumunuz başarıyla kaydedildi! Toplam {total_hours} saat ortak çalışma saati belirttiniz.')
         else:
@@ -614,13 +640,25 @@ def legacy_select_availability(request, token):
         
         return redirect('legacy_select_availability', token=token)
     
-    # Prepare context for template
+    # Prepare context for template (legacy format - combine both data types)
+    legacy_availability_data = {}
+    
+    # Combine group meeting and individual work data for legacy display
+    for day_code in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']:
+        combined_slots = []
+        if availability.group_meeting_data:
+            combined_slots.extend(availability.group_meeting_data.get(day_code, []))
+        if availability.individual_work_data:
+            combined_slots.extend(availability.individual_work_data.get(day_code, []))
+        if combined_slots:
+            legacy_availability_data[day_code] = combined_slots
+    
     context = {
         'intern': request.intern,
         'availability': availability,
         'days': DAYS,
         'time_slots': TIME_SLOTS,
-        'availability_data': json.dumps(availability.availability_data),
+        'availability_data': json.dumps(legacy_availability_data),
     }
     
     return render(request, 'intern_portal/select_availability.html', context)

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="availability-view-page">
+<div class="view-availability-page">
     <!-- Hero Section -->
     <div class="hero-section">
         <div class="hero-background">
@@ -12,14 +12,14 @@
         <div class="container">
             <div class="hero-content text-center" data-aos="fade-up">
                 <div class="hero-icon">
-                    <i class="fas fa-calendar-check"></i>
+                    <i class="fas fa-eye"></i>
                     <div class="icon-rings">
                         <div class="ring ring-1"></div>
                         <div class="ring ring-2"></div>
                     </div>
                 </div>
                 <h1 class="hero-title">Ortak Çalışma Saati Durumunuz</h1>
-                <p class="hero-subtitle">Kaydedilmiş müsaitlik programınız</p>
+                <p class="hero-subtitle">Belirlediğiniz grup toplantı ve bireysel çalışma saatlerinizi görüntüleyin</p>
                 
                 <!-- Breadcrumb -->
                 <nav class="hero-breadcrumb" aria-label="breadcrumb">
@@ -29,10 +29,7 @@
                                 <i class="fas fa-home me-1"></i>Ana Sayfa
                             </a>
                         </li>
-                        <li class="breadcrumb-item">
-                            <a href="{% url 'select_availability' %}">Ortak Çalışma Saati</a>
-                        </li>
-                        <li class="breadcrumb-item active">Görüntüle</li>
+                        <li class="breadcrumb-item active">Ortak Çalışma Saati Görüntüle</li>
                     </ol>
                 </nav>
             </div>
@@ -41,135 +38,253 @@
 
     <!-- Main Content -->
     <div class="container">
-        <div class="availability-view-container">
+        <div class="view-availability-container">
             {% if has_availability %}
-                <!-- Success Status -->
-                <div class="status-card success-status" data-aos="fade-up" data-aos-delay="100">
-                    <div class="status-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="status-content">
-                        <h3>✅ Ortak Çalışma Saati Kaydedildi</h3>
-                        <p>Müsaitlik durumunuz başarıyla sisteme kaydedildi ve ekip liderlerimiz tarafından görülebilir.</p>
-                    </div>
-                </div>
-
-                <!-- Summary Stats -->
-                <div class="summary-stats" data-aos="fade-up" data-aos-delay="200">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-clock"></i>
+                <!-- Summary Cards -->
+                <div class="summary-cards-container" data-aos="fade-up" data-aos-delay="100">
+                    <!-- Group Meeting Hours Summary -->
+                    <div class="summary-card group-summary">
+                        <div class="summary-header">
+                            <div class="summary-icon">
+                                <i class="fas fa-users"></i>
                             </div>
-                            <div class="stat-content">
-                                <div class="stat-number">{{ total_hours }}</div>
+                            <div class="summary-info">
+                                <h3>Grup Toplantı Saatleri</h3>
+                                <p>09:00 - 17:00 arası ortak toplantılar</p>
+                            </div>
+                        </div>
+                        <div class="summary-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">{{ group_hours }}</div>
                                 <div class="stat-label">Toplam Saat</div>
                             </div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-calendar-day"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-number">{{ available_days_count }}</div>
-                                <div class="stat-label">Ortak Çalışma Günü</div>
+                            <div class="stat-item">
+                                <div class="stat-number">{{ group_days_count }}</div>
+                                <div class="stat-label">Aktif Gün</div>
                             </div>
                         </div>
+                        <div class="summary-status">
+                            {% if group_hours > 0 %}
+                                <span class="status-badge success">
+                                    <i class="fas fa-check-circle"></i>
+                                    Belirlendi
+                                </span>
+                            {% else %}
+                                <span class="status-badge empty">
+                                    <i class="fas fa-clock"></i>
+                                    Henüz Belirtilmedi
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
 
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-percentage"></i>
+                    <!-- Individual Work Hours Summary -->
+                    <div class="summary-card individual-summary">
+                        <div class="summary-header">
+                            <div class="summary-icon">
+                                <i class="fas fa-user"></i>
                             </div>
-                            <div class="stat-content">
-                                <div class="stat-number">{% widthratio total_hours 144 100 %}%</div>
-                                <div class="stat-label">Haftalık Oran</div>
+                            <div class="summary-info">
+                                <h3>Bireysel Çalışma Saatleri</h3>
+                                <p>24 saat boyunca kişisel çalışma</p>
+                            </div>
+                        </div>
+                        <div class="summary-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">{{ individual_hours }}</div>
+                                <div class="stat-label">Toplam Saat</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">{{ individual_days_count }}</div>
+                                <div class="stat-label">Aktif Gün</div>
+                            </div>
+                        </div>
+                        <div class="summary-status">
+                            {% if individual_hours > 0 %}
+                                <span class="status-badge success">
+                                    <i class="fas fa-check-circle"></i>
+                                    Belirlendi
+                                </span>
+                            {% else %}
+                                <span class="status-badge empty">
+                                    <i class="fas fa-clock"></i>
+                                    Henüz Belirtilmedi
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Total Summary -->
+                    <div class="summary-card total-summary">
+                        <div class="summary-header">
+                            <div class="summary-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="summary-info">
+                                <h3>Toplam Ortak Çalışma Saati</h3>
+                                <p>Haftalık toplam müsaitlik durumu</p>
+                            </div>
+                        </div>
+                        <div class="summary-stats centered">
+                            <div class="stat-item large">
+                                <div class="stat-number">{{ total_hours }}</div>
+                                <div class="stat-label">Toplam Saat/Hafta</div>
+                            </div>
+                        </div>
+                        <div class="summary-breakdown">
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">Grup:</span>
+                                <span class="breakdown-value group-value">{{ group_hours }}h</span>
+                            </div>
+                            <div class="breakdown-separator">+</div>
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">Bireysel:</span>
+                                <span class="breakdown-value individual-value">{{ individual_hours }}h</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Detailed Schedule -->
-                <div class="schedule-section" data-aos="fade-up" data-aos-delay="300">
-                    <div class="section-header">
-                        <h3>Haftalık Ortak Çalışma Saati Programınız</h3>
-                        <p>Aşağıda seçtiğiniz ortak çalışma saatleri görüntülenmektedir</p>
-                    </div>
-
-                    <div class="schedule-grid">
-                        {% for day_name, time_slots in formatted_availability.items %}
-                        <div class="day-schedule-card" data-aos="fade-up" data-aos-delay="{% cycle '400' '450' '500' '550' '600' '650' %}">
-                            <div class="day-header">
-                                <div class="day-icon">
-                                    {% if day_name == 'Cumartesi' %}
-                                        <i class="fas fa-sun"></i>
-                                    {% else %}
-                                        <i class="fas fa-calendar"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="day-info">
+                <!-- Detailed Availability Display -->
+                <div class="detailed-availability-section" data-aos="fade-up" data-aos-delay="200">
+                    <!-- Group Meeting Hours Detail -->
+                    {% if formatted_group_availability %}
+                    <div class="availability-detail-card group-detail">
+                        <div class="detail-header">
+                            <div class="detail-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="detail-title">
+                                <h3>Grup Toplantı Saatleri Detayı</h3>
+                                <p>09:00-17:00 arası belirlediğiniz ortak toplantı saatleri</p>
+                            </div>
+                        </div>
+                        <div class="availability-grid">
+                            {% for day_name, time_slots in formatted_group_availability.items %}
+                            <div class="day-availability-card group-day">
+                                <div class="day-header">
                                     <h4>{{ day_name }}</h4>
-                                    <span class="time-count">{{ time_slots|length }} saat</span>
+                                    <span class="day-count">{{ time_slots|length }} saat</span>
+                                </div>
+                                <div class="time-slots-display">
+                                    {% for time_slot in time_slots %}
+                                    <span class="time-slot-badge group-badge">{{ time_slot }}</span>
+                                    {% endfor %}
                                 </div>
                             </div>
-                            
-                            <div class="time-slots-list">
-                                {% for time_slot in time_slots %}
-                                <div class="time-slot-item">
-                                    <div class="time-display">{{ time_slot }}</div>
-                                    <div class="slot-check">
-                                        <i class="fas fa-check"></i>
-                                    </div>
-                                </div>
-                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Individual Work Hours Detail -->
+                    {% if formatted_individual_availability %}
+                    <div class="availability-detail-card individual-detail">
+                        <div class="detail-header">
+                            <div class="detail-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="detail-title">
+                                <h3>Bireysel Çalışma Saatleri Detayı</h3>
+                                <p>24 saat boyunca belirlediğiniz kişisel çalışma saatleri</p>
                             </div>
                         </div>
-                        {% endfor %}
+                        <div class="availability-grid">
+                            {% for day_name, time_slots in formatted_individual_availability.items %}
+                            <div class="day-availability-card individual-day">
+                                <div class="day-header">
+                                    <h4>{{ day_name }}</h4>
+                                    <span class="day-count">{{ time_slots|length }} saat</span>
+                                </div>
+                                <div class="time-slots-display">
+                                    {% for time_slot in time_slots %}
+                                    <span class="time-slot-badge individual-badge 
+                                        {% if time_slot|slice:':2' < '06' %}night
+                                        {% elif time_slot|slice:':2' < '12' %}morning  
+                                        {% elif time_slot|slice:':2' < '18' %}afternoon
+                                        {% else %}evening{% endif %}">{{ time_slot }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
+                    {% endif %}
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="action-section" data-aos="fade-up" data-aos-delay="700">
-                    <div class="action-buttons">
-                        <a href="{% url 'select_availability' %}" class="btn btn-primary">
-                            <div class="btn-content">
-                                <i class="fas fa-edit"></i>
-                                <span>Ortak Çalışma Saatini Düzenle</span>
+                <!-- Submission Info -->
+                {% if availability.submission_date %}
+                <div class="submission-info-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="submission-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="submission-content">
+                        <h4>Gönderim Bilgileri</h4>
+                        <div class="submission-details">
+                            <div class="submission-item">
+                                <span class="submission-label">Son Güncellenme:</span>
+                                <span class="submission-value">{{ availability.submission_date|date:"d.m.Y H:i" }}</span>
                             </div>
-                        </a>
-                        
-                        <a href="{% url 'home_page' %}" class="btn btn-secondary">
-                            <div class="btn-content">
-                                <i class="fas fa-home"></i>
-                                <span>Ana Sayfaya Dön</span>
+                            {% if availability.week_year %}
+                            <div class="submission-item">
+                                <span class="submission-label">Hafta:</span>
+                                <span class="submission-value">{{ availability.week_year }}</span>
                             </div>
-                        </a>
+                            {% endif %}
+                            {% if availability.is_locked %}
+                            <div class="submission-item">
+                                <span class="submission-label">Durum:</span>
+                                <span class="submission-value locked">
+                                    <i class="fas fa-lock"></i>
+                                    Yönetici Tarafından Kilitlendi
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
+                {% endif %}
 
             {% else %}
-                <!-- No Availability Set -->
-                <div class="status-card warning-status" data-aos="fade-up" data-aos-delay="100">
-                    <div class="status-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div class="status-content">
-                        <h3>⚠️ Ortak Çalışma Saati Belirtilmemiş</h3>
-                        <p>Henüz ortak çalışma saati durumunuzu belirtmemişsiniz. Lütfen müsaitlik programınızı oluşturun.</p>
-                    </div>
-                </div>
-
-                <div class="action-section" data-aos="fade-up" data-aos-delay="200">
-                    <div class="action-buttons">
-                        <a href="{% url 'select_availability' %}" class="btn btn-primary">
-                            <div class="btn-content">
-                                <i class="fas fa-calendar-plus"></i>
-                                <span>Ortak Çalışma Saati Belirle</span>
-                            </div>
-                        </a>
+                <!-- No Availability Data -->
+                <div class="no-availability-section" data-aos="fade-up" data-aos-delay="100">
+                    <div class="no-availability-card">
+                        <div class="no-availability-icon">
+                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                        <div class="no-availability-content">
+                            <h3>Henüz Ortak Çalışma Saati Belirtmemişsiniz</h3>
+                            <p>Grup toplantıları ve bireysel çalışma saatlerinizi belirlemek için aşağıdaki butonu kullanabilirsiniz.</p>
+                        </div>
                     </div>
                 </div>
             {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="action-section" data-aos="fade-up" data-aos-delay="400">
+                <div class="action-buttons">
+                    <a href="{% url 'select_availability' %}" class="btn btn-primary">
+                        <div class="btn-content">
+                            <i class="fas fa-edit"></i>
+                            <span>{% if has_availability %}Müsaitliği Düzenle{% else %}Müsaitlik Belirle{% endif %}</span>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'team_availability' %}" class="btn btn-secondary">
+                        <div class="btn-content">
+                            <i class="fas fa-users-clock"></i>
+                            <span>Takım Müsaitliği</span>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'home_page' %}" class="btn btn-outline">
+                        <div class="btn-content">
+                            <i class="fas fa-home"></i>
+                            <span>Ana Sayfaya Dön</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -184,11 +299,14 @@
         --text-color: #1f2937;
         --text-light: #6b7280;
         --bg-light: #f8fafc;
-        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --group-color: #3b82f6;
+        --individual-color: #10b981;
+        --group-rgb: 59, 130, 246;
+        --individual-rgb: 16, 185, 129;
     }
 
-    .availability-view-page {
+    /* Page Layout */
+    .view-availability-page {
         min-height: 100vh;
         background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
     }
@@ -197,7 +315,7 @@
     .hero-section {
         position: relative;
         padding: 4rem 0 2rem;
-        background: linear-gradient(135deg, var(--success-color) 0%, var(--secondary-color) 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         color: white;
         overflow: hidden;
     }
@@ -330,282 +448,562 @@
     }
 
     /* Main Container */
-    .availability-view-container {
+    .view-availability-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 3rem 1rem;
     }
 
-    /* Status Cards */
-    .status-card {
+    /* Summary Cards */
+    .summary-cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .summary-card {
         background: white;
         border-radius: 20px;
         padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: var(--card-shadow);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .group-summary {
+        border-color: rgba(var(--group-rgb), 0.2);
+        background: linear-gradient(135deg, rgba(var(--group-rgb), 0.05), white);
+    }
+
+    .individual-summary {
+        border-color: rgba(var(--individual-rgb), 0.2);
+        background: linear-gradient(135deg, rgba(var(--individual-rgb), 0.05), white);
+    }
+
+    .total-summary {
+        border-color: rgba(245, 158, 11, 0.2);
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), white);
+    }
+
+    .summary-header {
         display: flex;
-        align-items: flex-start;
-        gap: 1.5rem;
-        border-left: 5px solid;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
     }
 
-    .success-status {
-        border-left-color: var(--success-color);
-        background: linear-gradient(135deg, rgba(5, 150, 105, 0.05), rgba(16, 185, 129, 0.05));
-    }
-
-    .warning-status {
-        border-left-color: var(--warning-color);
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(251, 191, 36, 0.05));
-    }
-
-    .status-icon {
+    .summary-icon {
         width: 60px;
         height: 60px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0;
+        color: white;
         font-size: 1.5rem;
     }
 
-    .success-status .status-icon {
-        background: rgba(5, 150, 105, 0.1);
-        color: var(--success-color);
+    .group-summary .summary-icon {
+        background: linear-gradient(135deg, var(--group-color), #1e40af);
     }
 
-    .warning-status .status-icon {
-        background: rgba(245, 158, 11, 0.1);
-        color: var(--warning-color);
+    .individual-summary .summary-icon {
+        background: linear-gradient(135deg, var(--individual-color), #047857);
     }
 
-    .status-content h3 {
-        font-size: 1.5rem;
+    .total-summary .summary-icon {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .summary-info h3 {
+        font-size: 1.3rem;
         font-weight: 700;
         color: var(--text-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .summary-info p {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .summary-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 1.5rem;
+    }
+
+    .summary-stats.centered {
+        justify-content: center;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-item.large {
+        transform: scale(1.2);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-color);
+        line-height: 1;
         margin-bottom: 0.5rem;
     }
 
-    .status-content p {
+    .stat-label {
+        font-size: 0.85rem;
         color: var(--text-light);
-        margin: 0;
-        line-height: 1.6;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    /* Summary Stats */
-    .summary-stats {
-        margin-bottom: 3rem;
+    .summary-status {
+        text-align: center;
     }
 
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
     }
 
-    .stat-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: var(--card-shadow);
+    .status-badge.success {
+        background: rgba(5, 150, 105, 0.1);
+        color: var(--success-color);
+        border: 1px solid rgba(5, 150, 105, 0.2);
+    }
+
+    .status-badge.empty {
+        background: rgba(107, 114, 128, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(107, 114, 128, 0.2);
+    }
+
+    .summary-breakdown {
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 1rem;
-        transition: all 0.3s ease;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
     }
 
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--card-shadow-hover);
+    .breakdown-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
     }
 
-    .stat-icon {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    .breakdown-label {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .breakdown-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .breakdown-value.group-value {
+        color: var(--group-color);
+    }
+
+    .breakdown-value.individual-value {
+        color: var(--individual-color);
+    }
+
+    .breakdown-separator {
+        font-size: 1.2rem;
+        color: var(--text-light);
+        font-weight: 300;
+    }
+
+    /* Detailed Availability Section */
+    .detailed-availability-section {
+        margin-bottom: 4rem;
+    }
+
+    .availability-detail-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 2px solid transparent;
+        margin-bottom: 2rem;
+    }
+
+    .group-detail {
+        border-color: rgba(var(--group-rgb), 0.2);
+        background: linear-gradient(135deg, rgba(var(--group-rgb), 0.02), white);
+    }
+
+    .individual-detail {
+        border-color: rgba(var(--individual-rgb), 0.2);
+        background: linear-gradient(135deg, rgba(var(--individual-rgb), 0.02), white);
+    }
+
+    .detail-header {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .detail-icon {
+        width: 70px;
+        height: 70px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 1.25rem;
+        font-size: 1.8rem;
     }
 
-    .stat-content {
-        flex: 1;
+    .group-detail .detail-icon {
+        background: linear-gradient(135deg, var(--group-color), #1e40af);
     }
 
-    .stat-number {
-        font-size: 2rem;
-        font-weight: 800;
-        color: var(--text-color);
-        line-height: 1;
+    .individual-detail .detail-icon {
+        background: linear-gradient(135deg, var(--individual-color), #047857);
     }
 
-    .stat-label {
-        font-size: 0.9rem;
-        color: var(--text-light);
-        font-weight: 500;
-    }
-
-    /* Schedule Section */
-    .schedule-section {
-        margin-bottom: 3rem;
-    }
-
-    .section-header {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-
-    .section-header h3 {
-        font-size: 2rem;
+    .detail-title h3 {
+        font-size: 1.8rem;
         font-weight: 700;
         color: var(--text-color);
         margin-bottom: 0.5rem;
     }
 
-    .section-header p {
+    .detail-title p {
         color: var(--text-light);
-        font-size: 1.1rem;
+        font-size: 1rem;
+        margin: 0;
     }
 
-    .schedule-grid {
+    .availability-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 1.5rem;
     }
 
-    .day-schedule-card {
+    .day-availability-card {
         background: white;
         border-radius: 16px;
         padding: 1.5rem;
-        box-shadow: var(--card-shadow);
+        border: 2px solid transparent;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         transition: all 0.3s ease;
     }
 
-    .day-schedule-card:hover {
+    .group-day {
+        border-color: rgba(var(--group-rgb), 0.15);
+    }
+
+    .group-day:hover {
+        border-color: rgba(var(--group-rgb), 0.3);
         transform: translateY(-3px);
-        box-shadow: var(--card-shadow-hover);
+    }
+
+    .individual-day {
+        border-color: rgba(var(--individual-rgb), 0.15);
+    }
+
+    .individual-day:hover {
+        border-color: rgba(var(--individual-rgb), 0.3);
+        transform: translateY(-3px);
     }
 
     .day-header {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 1rem;
         margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #f1f5f9;
     }
 
-    .day-icon {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.25rem;
-    }
-
-    .day-info h4 {
-        font-size: 1.3rem;
+    .day-header h4 {
+        font-size: 1.2rem;
         font-weight: 700;
         color: var(--text-color);
         margin: 0;
     }
 
-    .time-count {
+    .day-count {
         font-size: 0.9rem;
         color: var(--text-light);
-        font-weight: 500;
+        font-weight: 600;
+        background: #f8fafc;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
     }
 
-    .time-slots-list {
+    .time-slots-display {
         display: flex;
-        flex-direction: column;
+        flex-wrap: wrap;
         gap: 0.5rem;
     }
 
-    .time-slot-item {
+    .time-slot-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .group-badge {
+        background: linear-gradient(135deg, rgba(var(--group-rgb), 0.1), rgba(var(--group-rgb), 0.05));
+        color: var(--group-color);
+        border-color: rgba(var(--group-rgb), 0.2);
+    }
+
+    .individual-badge {
+        background: linear-gradient(135deg, rgba(var(--individual-rgb), 0.1), rgba(var(--individual-rgb), 0.05));
+        color: var(--individual-color);
+        border-color: rgba(var(--individual-rgb), 0.2);
+    }
+
+    /* Time period specific colors for individual badges */
+    .individual-badge.night {
+        background: linear-gradient(135deg, #1e293b, #334155);
+        color: white;
+        border-color: #475569;
+    }
+
+    .individual-badge.morning {
+        background: linear-gradient(135deg, #fef3c7, #fbbf24);
+        color: #92400e;
+        border-color: #f59e0b;
+    }
+
+    .individual-badge.afternoon {
+        background: linear-gradient(135deg, #dbeafe, #60a5fa);
+        color: #1e40af;
+        border-color: #3b82f6;
+    }
+
+    .individual-badge.evening {
+        background: linear-gradient(135deg, #f3e8ff, #a855f7);
+        color: #7c3aed;
+        border-color: #a855f7;
+    }
+
+    .time-slot-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Submission Info */
+    .submission-info-card {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), white);
+        border: 2px solid rgba(59, 130, 246, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .submission-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-color), #1e40af);
+        border-radius: 50%;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 0.75rem 1rem;
-        background: rgba(59, 130, 246, 0.05);
-        border-radius: 8px;
-        border: 1px solid rgba(59, 130, 246, 0.1);
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
     }
 
-    .time-display {
-        font-weight: 600;
+    .submission-content h4 {
+        font-size: 1.3rem;
+        font-weight: 700;
         color: var(--text-color);
-        font-size: 0.9rem;
+        margin-bottom: 1rem;
     }
 
-    .slot-check {
-        color: var(--success-color);
-        font-size: 0.9rem;
+    .submission-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
     }
 
-    /* Action Buttons */
+    .submission-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .submission-label {
+        font-size: 0.85rem;
+        color: var(--text-light);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .submission-value {
+        font-size: 1rem;
+        color: var(--text-color);
+        font-weight: 600;
+    }
+
+    .submission-value.locked {
+        color: var(--error-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* No Availability Section */
+    .no-availability-section {
+        margin: 4rem 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .no-availability-card {
+        background: white;
+        border-radius: 20px;
+        padding: 4rem 3rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 2px solid rgba(107, 114, 128, 0.1);
+        max-width: 600px;
+        width: 100%;
+    }
+
+    .no-availability-icon {
+        margin-bottom: 2rem;
+    }
+
+    .no-availability-icon i {
+        font-size: 4rem;
+        color: var(--text-light);
+        opacity: 0.6;
+    }
+
+    .no-availability-content h3 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .no-availability-content p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Action Section */
     .action-section {
+        padding: 3rem 0;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+        border-radius: 20px;
         text-align: center;
     }
 
     .action-buttons {
         display: flex;
-        gap: 1rem;
         justify-content: center;
+        gap: 1.5rem;
         flex-wrap: wrap;
     }
 
-    .btn {
+    .action-buttons .btn {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        padding: 1rem 2rem;
-        border: none;
-        border-radius: 12px;
-        font-size: 1rem;
-        font-weight: 600;
         text-decoration: none;
-        cursor: pointer;
+        padding: 1rem 2rem;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 1rem;
         transition: all 0.3s ease;
-        min-width: 200px;
+        border: 2px solid transparent;
+        min-width: 220px;
+        justify-content: center;
     }
 
     .btn-content {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
+    }
+
+    .btn-content i {
+        font-size: 1.1rem;
     }
 
     .btn-primary {
         background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         color: white;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     }
 
     .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
         color: white;
+        text-decoration: none;
     }
 
     .btn-secondary {
-        background: #f8fafc;
-        color: var(--text-color);
-        border: 2px solid #e5e7eb;
+        background: white;
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
     }
 
     .btn-secondary:hover {
-        background: #e5e7eb;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        text-decoration: none;
+    }
+
+    .btn-outline {
+        background: transparent;
         color: var(--text-color);
+        border-color: #e5e7eb;
+    }
+
+    .btn-outline:hover {
+        background: var(--text-color);
+        color: white;
+        border-color: var(--text-color);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(31, 41, 55, 0.2);
+        text-decoration: none;
     }
 
     /* Responsive Design */
@@ -618,21 +1016,24 @@
             font-size: 1rem;
         }
 
-        .availability-view-container {
+        .view-availability-container {
             padding: 2rem 1rem;
         }
 
-        .status-card {
-            flex-direction: column;
-            text-align: center;
-            gap: 1rem;
-        }
-
-        .stats-grid {
+        .summary-cards-container {
             grid-template-columns: 1fr;
         }
 
-        .schedule-grid {
+        .availability-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .submission-info-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .submission-details {
             grid-template-columns: 1fr;
         }
 
@@ -641,32 +1042,50 @@
             align-items: center;
         }
 
-        .btn {
-            width: 100%;
-            max-width: 300px;
+        .action-buttons .btn {
+            min-width: 280px;
+        }
+
+        .summary-breakdown {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .breakdown-separator {
+            transform: rotate(90deg);
         }
     }
 
-    /* Reduced Motion Support */
+    /* Accessibility Improvements */
     @media (prefers-reduced-motion: reduce) {
-        * {
+        *,
+        *::before,
+        *::after {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
+        }
+
+        .hero-particle {
+            animation: none;
+        }
+
+        .ring {
+            animation: none;
         }
     }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize AOS
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 800,
-            easing: 'ease-out-cubic',
-            once: true
-        });
-    }
-});
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize AOS
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-out-cubic',
+                once: true
+            });
+        }
+    });
 </script>
 {% endblock %}

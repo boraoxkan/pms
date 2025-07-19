@@ -126,12 +126,18 @@ class ProjectPreference(models.Model):
 
 class AvailabilitySettings(models.Model):
     """
-    Global settings for availability system
+    UPDATED: Global settings for availability system with separate hour requirements
     """
-    minimum_hours_required = models.PositiveIntegerField(
-        default=30,
-        verbose_name='Minimum Required Hours',
-        help_text='Minimum total hours an intern must select per week'
+    # UPDATED: Split into two separate fields
+    group_meeting_hours_min = models.PositiveIntegerField(
+        default=20,
+        verbose_name='Minimum Group Meeting Hours',
+        help_text='Minimum required group meeting hours (09:00-17:00) per week'
+    )
+    individual_work_hours_min = models.PositiveIntegerField(
+        default=10,
+        verbose_name='Minimum Individual Work Hours',
+        help_text='Minimum required individual work hours (any time) per week'
     )
     weekly_submission_enabled = models.BooleanField(
         default=True,
@@ -146,7 +152,7 @@ class AvailabilitySettings(models.Model):
         verbose_name_plural = 'Availability System Settings'
 
     def __str__(self):
-        return f"Min Hours: {self.minimum_hours_required}, Weekly Limit: {self.weekly_submission_enabled}"
+        return f"Group Meeting: {self.group_meeting_hours_min}h, Individual: {self.individual_work_hours_min}h, Weekly Limit: {self.weekly_submission_enabled}"
 
     @classmethod
     def get_settings(cls):
@@ -154,7 +160,8 @@ class AvailabilitySettings(models.Model):
         settings, created = cls.objects.get_or_create(
             pk=1,
             defaults={
-                'minimum_hours_required': 30,
+                'group_meeting_hours_min': 20,
+                'individual_work_hours_min': 10,
                 'weekly_submission_enabled': True
             }
         )
@@ -162,14 +169,21 @@ class AvailabilitySettings(models.Model):
 
 class InternAvailability(models.Model):
     intern = models.OneToOneField(Intern, on_delete=models.CASCADE, related_name='availability')
-    availability_data = models.JSONField(
+    
+    # UPDATED: Split availability data into two types
+    group_meeting_data = models.JSONField(
         default=dict,
-        help_text='JSON formatında haftalık ortak çalışma saati verileri. Format: {"monday": ["09:00-10:00", "10:00-11:00", ...], "tuesday": [...], ...}'
+        help_text='JSON formatında grup toplantı saatleri (09:00-17:00). Format: {"monday": ["09:00-10:00", "10:00-11:00", ...], "tuesday": [...], ...}'
     )
+    individual_work_data = models.JSONField(
+        default=dict,
+        help_text='JSON formatında bireysel çalışma saatleri (24 saat). Format: {"monday": ["00:00-01:00", "01:00-02:00", ...], "tuesday": [...], ...}'
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # NEW FIELDS for weekly submission control
+    # Weekly submission control fields
     week_year = models.PositiveIntegerField(
         null=True, blank=True,
         help_text='Week number and year (YYYYWW format) when this was submitted'
@@ -190,24 +204,66 @@ class InternAvailability(models.Model):
     def __str__(self):
         return f"{self.intern.get_full_name()} - Ortak Çalışma Saati"
 
-    def get_availability_for_day(self, day):
-        """Belirli bir gün için ortak çalışma saatlerini döndürür"""
-        return self.availability_data.get(day, [])
+    # UPDATED: Methods for group meeting hours
+    def get_group_meeting_for_day(self, day):
+        """Belirli bir gün için grup toplantı saatlerini döndürür"""
+        return self.group_meeting_data.get(day, [])
 
-    def has_availability_for_day(self, day):
-        """Belirli bir gün için ortak çalışma saati var mı kontrol eder"""
-        return bool(self.availability_data.get(day, []))
+    def has_group_meeting_for_day(self, day):
+        """Belirli bir gün için grup toplantı saati var mı kontrol eder"""
+        return bool(self.group_meeting_data.get(day, []))
 
-    def get_total_hours(self):
-        """Toplam ortak çalışma saati sayısını döndürür"""
+    def get_group_meeting_hours(self):
+        """Toplam grup toplantı saati sayısını döndürür"""
         total = 0
-        for day_slots in self.availability_data.values():
+        for day_slots in self.group_meeting_data.values():
             total += len(day_slots)
         return total
 
+    def get_group_meeting_days(self):
+        """Grup toplantı saati olan günleri döndürür"""
+        return [day for day, slots in self.group_meeting_data.items() if slots]
+
+    # UPDATED: Methods for individual work hours
+    def get_individual_work_for_day(self, day):
+        """Belirli bir gün için bireysel çalışma saatlerini döndürür"""
+        return self.individual_work_data.get(day, [])
+
+    def has_individual_work_for_day(self, day):
+        """Belirli bir gün için bireysel çalışma saati var mı kontrol eder"""
+        return bool(self.individual_work_data.get(day, []))
+
+    def get_individual_work_hours(self):
+        """Toplam bireysel çalışma saati sayısını döndürür"""
+        total = 0
+        for day_slots in self.individual_work_data.values():
+            total += len(day_slots)
+        return total
+
+    def get_individual_work_days(self):
+        """Bireysel çalışma saati olan günleri döndürür"""
+        return [day for day, slots in self.individual_work_data.items() if slots]
+
+    # LEGACY: Keep these methods for backward compatibility
+    def get_availability_for_day(self, day):
+        """LEGACY: Combined availability for a day"""
+        group_slots = self.group_meeting_data.get(day, [])
+        individual_slots = self.individual_work_data.get(day, [])
+        return group_slots + individual_slots
+
+    def has_availability_for_day(self, day):
+        """LEGACY: Check if any availability exists for a day"""
+        return self.has_group_meeting_for_day(day) or self.has_individual_work_for_day(day)
+
+    def get_total_hours(self):
+        """LEGACY: Total combined hours"""
+        return self.get_group_meeting_hours() + self.get_individual_work_hours()
+
     def get_available_days(self):
-        """Ortak çalışma saati olan günleri döndürür"""
-        return [day for day, slots in self.availability_data.items() if slots]
+        """LEGACY: Days with any availability"""
+        group_days = set(self.get_group_meeting_days())
+        individual_days = set(self.get_individual_work_days())
+        return list(group_days.union(individual_days))
 
     def get_current_week_year(self):
         """Get current week in YYYYWW format"""
@@ -222,7 +278,7 @@ class InternAvailability(models.Model):
         return self.week_year == current_week
 
     def can_modify(self):
-        """Check if the intern can modify their availability"""
+        """FIXED: Check if the intern can modify their availability"""
         if self.is_locked:
             return False
         
@@ -230,24 +286,41 @@ class InternAvailability(models.Model):
         if not settings.weekly_submission_enabled:
             return True
             
-        # If weekly limit is enabled, check if it's still the same week
-        return self.is_current_week_submission() or not self.week_year
+        # If weekly limit is enabled and there's a submission date, check if it's same week
+        if self.submission_date and self.week_year:
+            current_week = self.get_current_week_year()
+            return current_week != self.week_year
+            
+        # If no submission yet, can modify
+        return True
 
     def validate_minimum_hours(self):
-        """Validate that minimum hours requirement is met"""
+        """UPDATED: Validate that both minimum hour requirements are met"""
         settings = AvailabilitySettings.get_settings()
-        total_hours = self.get_total_hours()
+        group_hours = self.get_group_meeting_hours()
+        individual_hours = self.get_individual_work_hours()
         
-        if total_hours < settings.minimum_hours_required:
-            from django.core.exceptions import ValidationError
-            raise ValidationError(
-                f'En az {settings.minimum_hours_required} saat seçmelisiniz. '
-                f'Şu anda {total_hours} saat seçtiniz.'
+        errors = []
+        
+        if group_hours < settings.group_meeting_hours_min:
+            errors.append(
+                f'Grup toplantı saatleri için en az {settings.group_meeting_hours_min} saat seçmelisiniz. '
+                f'Şu anda {group_hours} saat seçtiniz.'
             )
+            
+        if individual_hours < settings.individual_work_hours_min:
+            errors.append(
+                f'Bireysel çalışma saatleri için en az {settings.individual_work_hours_min} saat seçmelisiniz. '
+                f'Şu anda {individual_hours} saat seçtiniz.'
+            )
+        
+        if errors:
+            from django.core.exceptions import ValidationError
+            raise ValidationError(' | '.join(errors))
 
     def get_availability_summary(self):
-        """Get a formatted summary of availability for admin display"""
-        if not self.availability_data:
+        """UPDATED: Get a formatted summary including both types"""
+        if not self.group_meeting_data and not self.individual_work_data:
             return '<span style="color: red;">Henüz ortak çalışma saati belirtilmemiş</span>'
         
         day_names = {
@@ -260,24 +333,38 @@ class InternAvailability(models.Model):
         }
         
         summary_html = '<div style="max-width: 600px;">'
+        
+        # Group meeting hours section
+        summary_html += '<h4 style="color: #3b82f6;">Grup Toplantı Saatleri</h4>'
         for day_code, day_name in day_names.items():
-            slots = self.availability_data.get(day_code, [])
+            slots = self.group_meeting_data.get(day_code, [])
             if slots:
                 slots_str = ', '.join(slots)
                 summary_html += f'<p><strong>{day_name}:</strong> {slots_str}</p>'
             else:
-                summary_html += f'<p><strong>{day_name}:</strong> <span style="color: gray;">Ortak çalışma saati yok</span></p>'
-        summary_html += '</div>'
+                summary_html += f'<p><strong>{day_name}:</strong> <span style="color: gray;">Yok</span></p>'
         
+        # Individual work hours section
+        summary_html += '<h4 style="color: #10b981;">Bireysel Çalışma Saatleri</h4>'
+        for day_code, day_name in day_names.items():
+            slots = self.individual_work_data.get(day_code, [])
+            if slots:
+                slots_str = ', '.join(slots)
+                summary_html += f'<p><strong>{day_name}:</strong> {slots_str}</p>'
+            else:
+                summary_html += f'<p><strong>{day_name}:</strong> <span style="color: gray;">Yok</span></p>'
+        
+        summary_html += '</div>'
         return summary_html
 
     def save(self, *args, **kwargs):
-        # Set week_year on save
-        if not self.week_year:
+        # Set week_year and submission_date on save if data exists
+        if (self.group_meeting_data or self.individual_work_data) and not self.week_year:
             self.week_year = self.get_current_week_year()
+            self.submission_date = timezone.now()
         
         # Validate minimum hours before saving
-        if self.availability_data:
+        if self.group_meeting_data or self.individual_work_data:
             self.validate_minimum_hours()
             
         super().save(*args, **kwargs)

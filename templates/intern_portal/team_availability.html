@@ -39,7 +39,7 @@
     <!-- Main Content -->
     <div class="container">
         <div class="team-availability-container">
-            <!-- REDESIGNED: Common Projects Section -->
+            <!-- Common Projects Section -->
             <div class="common-projects-section" data-aos="fade-up" data-aos-delay="100">
                 <div class="projects-showcase-card">
                     <div class="showcase-header">
@@ -83,129 +83,8 @@
             </div>
 
             {% if teammates_with_availability > 0 %}
-                <!-- ENHANCED: Time Period Analysis -->
-                <div class="period-analysis-section" data-aos="fade-up" data-aos-delay="200">
-                    <div class="analysis-header-modern">
-                        <div class="analysis-title-container">
-                            <div class="title-icon">
-                                <i class="fas fa-chart-pie"></i>
-                            </div>
-                            <div class="title-content">
-                                <h3>Zaman Periyodu Analizi</h3>
-                                <p>Takım aktivitesinin zaman dilimleri bazında dağılımı</p>
-                            </div>
-                        </div>
-                        <div class="analysis-summary">
-                            <div class="summary-stat">
-                                <span class="summary-number">{{ teammates_with_availability }}/{{ total_teammates }}</span>
-                                <span class="summary-label">Aktif Üye</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="period-analysis-grid">
-                        {% for period_name, availability_count in period_stats.items %}
-                        <div class="period-analysis-card {% if most_active_period.0 == period_name %}peak-period{% endif %}" 
-                             data-aos="flip-left" data-aos-delay="{% cycle '250' '300' '350' '400' %}">
-                            <div class="period-card-header">
-                                <div class="period-time-icon">
-                                    {% if 'Gece' in period_name %}
-                                        <i class="fas fa-moon"></i>
-                                    {% elif 'Sabah' in period_name %}
-                                        <i class="fas fa-sunrise"></i>
-                                    {% elif 'Öğleden Sonra' in period_name %}
-                                        <i class="fas fa-sun"></i>
-                                    {% else %}
-                                        <i class="fas fa-sunset"></i>
-                                    {% endif %}
-                                </div>
-                                {% if most_active_period.0 == period_name and availability_count > 0 %}
-                                    <div class="peak-badge">
-                                        <i class="fas fa-crown"></i>
-                                        <span>En Aktif</span>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="period-card-body">
-                                <h4>{{ period_name|slice:":-13" }}</h4>
-                                <div class="period-time-range">{{ period_name|slice:"-12:" }}</div>
-                                
-                                <div class="activity-visualization">
-                                    <div class="activity-bar-container">
-                                        <div class="activity-bar" style="width: {% if period_stats.values %}{% widthratio availability_count most_active_period.1 100 %}%{% else %}0%{% endif %}"></div>
-                                    </div>
-                                    <div class="activity-stats">
-                                        <span class="activity-count">{{ availability_count }}</span>
-                                        <span class="activity-label">toplam müsaitlik</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="period-activity-level">
-                                    {% if availability_count == 0 %}
-                                        <span class="activity-status inactive">Aktivite Yok</span>
-                                    {% elif availability_count <= 5 %}
-                                        <span class="activity-status low">Düşük Aktivite</span>
-                                    {% elif availability_count <= 15 %}
-                                        <span class="activity-status medium">Orta Aktivite</span>
-                                    {% else %}
-                                        <span class="activity-status high">Yüksek Aktivite</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- FIXED: Calendar Navigation - Single Row Layout -->
-                <div class="calendar-navigation-modern" data-aos="fade-up" data-aos-delay="300">
-                    <div class="nav-header-modern">
-                        <h3>Zaman Dilimlerine Geçiş</h3>
-                        <p>Hızlı navigasyon için istediğiniz zaman dilimine tıklayın</p>
-                    </div>
-                    <div class="time-period-nav-single-row">
-                        <button class="period-nav-btn-modern" data-period="night">
-                            <div class="nav-btn-icon">
-                                <i class="fas fa-moon"></i>
-                            </div>
-                            <div class="nav-btn-content">
-                                <span class="nav-btn-title">Gece</span>
-                                <small class="nav-btn-time">00:00-06:00</small>
-                            </div>
-                        </button>
-                        <button class="period-nav-btn-modern" data-period="morning">
-                            <div class="nav-btn-icon">
-                                <i class="fas fa-sunrise"></i>
-                            </div>
-                            <div class="nav-btn-content">
-                                <span class="nav-btn-title">Sabah</span>
-                                <small class="nav-btn-time">06:00-12:00</small>
-                            </div>
-                        </button>
-                        <button class="period-nav-btn-modern" data-period="afternoon">
-                            <div class="nav-btn-icon">
-                                <i class="fas fa-sun"></i>
-                            </div>
-                            <div class="nav-btn-content">
-                                <span class="nav-btn-title">Öğleden Sonra</span>
-                                <small class="nav-btn-time">12:00-18:00</small>
-                            </div>
-                        </button>
-                        <button class="period-nav-btn-modern" data-period="evening">
-                            <div class="nav-btn-icon">
-                                <i class="fas fa-sunset"></i>
-                            </div>
-                            <div class="nav-btn-content">
-                                <span class="nav-btn-title">Akşam</span>
-                                <small class="nav-btn-time">18:00-24:00</small>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- IMPROVED: Team Calendar -->
-                <div class="calendar-section-modern" data-aos="fade-up" data-aos-delay="350">
+                <!-- Team Calendar -->
+                <div class="calendar-section-modern" data-aos="fade-up" data-aos-delay="200">
                     <div class="calendar-header-modern">
                         <div class="calendar-title-section">
                             <h3>24 Saat Haftalık Takım Ortak Çalışma Takvimi</h3>
@@ -227,7 +106,7 @@
 
                     <div class="calendar-container-modern">
                         <div class="table-responsive-modern">
-                            <table class="table table-bordered team-calendar-modern" id="teamCalendar">
+                            <table class="table table-bordered team-calendar-modern compact-view" id="teamCalendar">
                                 <thead class="sticky-header-modern">
                                     <tr>
                                         <th class="time-header-modern sticky-column-modern">
@@ -334,7 +213,7 @@
                 </div>
 
                 <!-- Teammates List -->
-                <div class="teammates-section" data-aos="fade-up" data-aos-delay="400">
+                <div class="teammates-section" data-aos="fade-up" data-aos-delay="300">
                     <div class="teammates-header">
                         <h3>Takım Arkadaşlarınız</h3>
                         <p>Aynı projelerde çalıştığınız stajyer arkadaşlarınız ve ortak projeleriniz</p>
@@ -414,7 +293,7 @@
             {% endif %}
 
             <!-- Action Buttons -->
-            <div class="action-section" data-aos="fade-up" data-aos-delay="500">
+            <div class="action-section" data-aos="fade-up" data-aos-delay="400">
                 <div class="action-buttons">
                     <a href="{% url 'select_availability' %}" class="btn btn-primary">
                         <div class="btn-content">
@@ -608,7 +487,7 @@
         padding: 3rem 1rem;
     }
 
-    /* REDESIGNED: Common Projects Section */
+    /* Common Projects Section */
     .common-projects-section {
         margin-bottom: 4rem;
     }
@@ -782,322 +661,7 @@
         border: 1px solid rgba(59, 130, 246, 0.2);
     }
 
-    /* ENHANCED: Period Analysis Section */
-    .period-analysis-section {
-        margin-bottom: 4rem;
-    }
-
-    .analysis-header-modern {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 2rem;
-        padding: 2rem;
-        background: white;
-        border-radius: 20px;
-        box-shadow: var(--card-shadow);
-        border: 2px solid rgba(59, 130, 246, 0.1);
-    }
-
-    .analysis-title-container {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-    }
-
-    .title-icon {
-        width: 70px;
-        height: 70px;
-        background: linear-gradient(135deg, var(--warning-color), #f59e0b);
-        border-radius: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.8rem;
-        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
-    }
-
-    .title-content h3 {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin-bottom: 0.5rem;
-    }
-
-    .title-content p {
-        color: var(--text-light);
-        font-size: 1.1rem;
-        margin: 0;
-    }
-
-    .analysis-summary {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1));
-        padding: 1.5rem;
-        border-radius: 16px;
-        text-align: center;
-        border: 2px solid rgba(245, 158, 11, 0.2);
-    }
-
-    .summary-number {
-        display: block;
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: var(--warning-color);
-        line-height: 1;
-    }
-
-    .summary-label {
-        font-size: 1rem;
-        color: var(--text-color);
-        font-weight: 600;
-    }
-
-    .period-analysis-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 2rem;
-    }
-
-    .period-analysis-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: var(--card-shadow);
-        border: 2px solid transparent;
-        transition: all 0.4s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .period-analysis-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--card-shadow-hover);
-    }
-
-    .period-analysis-card.peak-period {
-        border-color: var(--warning-color);
-        background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(245, 158, 11, 0.05));
-    }
-
-    .period-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 1.5rem;
-    }
-
-    .period-time-icon {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.5rem;
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
-    }
-
-    .peak-period .period-time-icon {
-        background: linear-gradient(135deg, var(--warning-color), #f59e0b);
-        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
-    }
-
-    .peak-badge {
-        background: var(--warning-color);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-    }
-
-    .period-card-body h4 {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin-bottom: 0.5rem;
-    }
-
-    .period-time-range {
-        color: var(--text-light);
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin-bottom: 2rem;
-    }
-
-    .activity-visualization {
-        margin-bottom: 1.5rem;
-    }
-
-    .activity-bar-container {
-        width: 100%;
-        height: 8px;
-        background: #e5e7eb;
-        border-radius: 4px;
-        overflow: hidden;
-        margin-bottom: 1rem;
-    }
-
-    .activity-bar {
-        height: 100%;
-        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-        border-radius: 4px;
-        transition: width 0.8s ease;
-        min-width: 2px;
-    }
-
-    .peak-period .activity-bar {
-        background: linear-gradient(90deg, var(--warning-color), #f59e0b);
-    }
-
-    .activity-stats {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .activity-count {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--primary-color);
-    }
-
-    .peak-period .activity-count {
-        color: var(--warning-color);
-    }
-
-    .activity-label {
-        font-size: 0.9rem;
-        color: var(--text-light);
-    }
-
-    .period-activity-level {
-        text-align: center;
-    }
-
-    .activity-status {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        display: inline-block;
-    }
-
-    .activity-status.inactive {
-        background: rgba(107, 114, 128, 0.1);
-        color: #6b7280;
-    }
-
-    .activity-status.low {
-        background: rgba(239, 68, 68, 0.1);
-        color: #dc2626;
-    }
-
-    .activity-status.medium {
-        background: rgba(245, 158, 11, 0.1);
-        color: var(--warning-color);
-    }
-
-    .activity-status.high {
-        background: rgba(5, 150, 105, 0.1);
-        color: var(--success-color);
-    }
-
-    /* FIXED: Calendar Navigation - Single Row */
-    .calendar-navigation-modern {
-        margin-bottom: 4rem;
-    }
-
-    .nav-header-modern {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-
-    .nav-header-modern h3 {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin-bottom: 0.5rem;
-    }
-
-    .nav-header-modern p {
-        color: var(--text-light);
-        font-size: 1.1rem;
-    }
-
-    .time-period-nav-single-row {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-
-    .period-nav-btn-modern {
-        flex: 1;
-        min-width: 200px;
-        background: white;
-        border: 2px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 1.5rem 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        text-align: left;
-    }
-
-    .period-nav-btn-modern:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--card-shadow-hover);
-        border-color: var(--primary-color);
-    }
-
-    .period-nav-btn-modern.active {
-        border-color: var(--primary-color);
-        background: rgba(59, 130, 246, 0.05);
-    }
-
-    .nav-btn-icon {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.2rem;
-        flex-shrink: 0;
-    }
-
-    .nav-btn-content {
-        flex: 1;
-    }
-
-    .nav-btn-title {
-        display: block;
-        font-weight: 600;
-        color: var(--text-color);
-        font-size: 1.1rem;
-        margin-bottom: 0.25rem;
-    }
-
-    .nav-btn-time {
-        color: var(--text-light);
-        font-size: 0.9rem;
-    }
-
-    /* IMPROVED: Calendar Section */
+    /* Calendar Section */
     .calendar-section-modern {
         margin-bottom: 4rem;
     }
@@ -1178,6 +742,51 @@
         min-width: 900px;
         border-collapse: separate;
         border-spacing: 0;
+    }
+
+    /* Compact View Styles */
+    .team-calendar-modern.compact-view .availability-cell-modern {
+        padding: 0.5rem 0.25rem;
+        min-height: 60px;
+    }
+
+    .team-calendar-modern.compact-view .user-count {
+        font-size: 1rem;
+        width: 25px;
+        height: 25px;
+    }
+
+    .team-calendar-modern.compact-view .availability-dots {
+        display: none;
+    }
+
+    .team-calendar-modern.compact-view .cell-content {
+        gap: 0.25rem;
+    }
+
+    /* Detailed View Styles */
+    .team-calendar-modern.detailed-view .availability-cell-modern {
+        padding: 1rem 0.75rem;
+        min-height: 100px;
+    }
+
+    .team-calendar-modern.detailed-view .user-count {
+        font-size: 1.5rem;
+        width: 35px;
+        height: 35px;
+    }
+
+    .team-calendar-modern.detailed-view .availability-dots {
+        gap: 0.5rem;
+    }
+
+    .team-calendar-modern.detailed-view .user-dot {
+        width: 10px;
+        height: 10px;
+    }
+
+    .team-calendar-modern.detailed-view .cell-content {
+        gap: 0.75rem;
     }
 
     .sticky-header-modern {
@@ -1842,12 +1451,6 @@
             text-align: center;
         }
 
-        .analysis-header-modern {
-            flex-direction: column;
-            text-align: center;
-            gap: 2rem;
-        }
-
         .calendar-header-modern {
             flex-direction: column;
             align-items: center;
@@ -1870,28 +1473,6 @@
 
         .projects-showcase-grid {
             grid-template-columns: 1fr;
-        }
-
-        .period-analysis-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .time-period-nav-single-row {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        .period-nav-btn-modern {
-            min-width: auto;
-            flex-direction: column;
-            text-align: center;
-            gap: 0.5rem;
-        }
-
-        .nav-btn-icon {
-            width: 40px;
-            height: 40px;
-            font-size: 1rem;
         }
 
         .teammates-grid {
@@ -1947,22 +1528,12 @@
         }
 
         .projects-showcase-card,
-        .analysis-header-modern,
         .calendar-container-modern {
             padding: 1.5rem;
         }
 
-        .project-showcase-item,
-        .period-analysis-card {
+        .project-showcase-item {
             padding: 1.5rem;
-        }
-
-        .time-period-nav-single-row {
-            grid-template-columns: 1fr;
-        }
-
-        .period-nav-btn-modern {
-            padding: 1rem;
         }
 
         .teammate-card {
@@ -2007,7 +1578,6 @@
 
         .calendar-container-modern,
         .project-showcase-item,
-        .period-analysis-card,
         .teammate-card {
             box-shadow: none;
             border: 1px solid #ddd;
@@ -2020,7 +1590,6 @@
     }
 
     /* Focus Styles for Accessibility */
-    .period-nav-btn-modern:focus,
     .toggle-btn:focus,
     .btn:focus {
         outline: 2px solid var(--primary-color);
@@ -2037,7 +1606,6 @@
         }
 
         .project-showcase-item,
-        .period-analysis-card,
         .teammate-card {
             border: 2px solid #000000;
         }
@@ -2046,39 +1614,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Period navigation functionality
-        const periodButtons = document.querySelectorAll('.period-nav-btn-modern');
-        const timeRows = document.querySelectorAll('.time-row-modern');
-
-        periodButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const targetPeriod = this.dataset.period;
-                
-                // Remove active class from all buttons
-                periodButtons.forEach(btn => btn.classList.remove('active'));
-                // Add active class to clicked button
-                this.classList.add('active');
-
-                // Show/hide time rows based on period
-                timeRows.forEach(row => {
-                    const rowPeriod = row.dataset.period;
-                    if (targetPeriod === 'all' || rowPeriod === targetPeriod) {
-                        row.style.display = '';
-                        row.style.animation = 'fadeIn 0.3s ease-in-out';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-
-                // Scroll to calendar
-                document.getElementById('teamCalendar').scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            });
-        });
-
-        // View toggle functionality
+        // View toggle functionality - FIXED
         const toggleButtons = document.querySelectorAll('.toggle-btn');
         const calendar = document.getElementById('teamCalendar');
 
@@ -2091,7 +1627,7 @@
                 // Add active class to clicked button
                 this.classList.add('active');
 
-                // Apply view styles
+                // Apply view styles by toggling classes
                 if (view === 'compact') {
                     calendar.classList.remove('detailed-view');
                     calendar.classList.add('compact-view');
@@ -2108,8 +1644,6 @@
         availabilityCells.forEach(cell => {
             cell.addEventListener('mouseenter', function() {
                 const count = this.dataset.count;
-                const day = this.dataset.day;
-                const time = this.dataset.time;
                 
                 if (count > 0) {
                     this.style.transform = 'scale(1.05)';
@@ -2120,24 +1654,6 @@
             cell.addEventListener('mouseleave', function() {
                 this.style.transform = '';
                 this.style.zIndex = '';
-            });
-        });
-
-        // Keyboard navigation for period buttons
-        periodButtons.forEach((button, index) => {
-            button.addEventListener('keydown', function(e) {
-                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    const nextIndex = (index + 1) % periodButtons.length;
-                    periodButtons[nextIndex].focus();
-                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    const prevIndex = (index - 1 + periodButtons.length) % periodButtons.length;
-                    periodButtons[prevIndex].focus();
-                } else if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    this.click();
-                }
             });
         });
 
