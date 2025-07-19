@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 import uuid
 import os
 from django.utils import timezone
-from image_cropping import ImageRatioField
+from image_cropping import ImageRatioField, ImageCropField # MODIFIED: Add ImageCropField
 
 # Create your models here.
 
@@ -52,8 +52,8 @@ class Intern(models.Model):
     last_name = models.CharField(max_length=100, verbose_name='Soyad')
     email = models.EmailField(unique=True, verbose_name='E-posta')
     
-    # UPDATED: Profile picture field with cropping support
-    profile_picture = models.ImageField(
+    # MODIFIED: Changed from models.ImageField to ImageCropField
+    profile_picture = ImageCropField(
         upload_to='profile_pics/',
         null=True,
         blank=True,
@@ -61,7 +61,7 @@ class Intern(models.Model):
         help_text='Stajyer profil fotoğrafı (opsiyonel) - Yükleme sonrası kırpma yapabilirsiniz'
     )
     
-    # NEW: Cropping field for profile picture
+    # This part should be correct
     cropping = ImageRatioField(
         'profile_picture',
         '350x350',

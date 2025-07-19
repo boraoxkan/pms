@@ -9,7 +9,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import GroupAdmin
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from image_cropping import ImageCroppingMixin
+from image_cropping.admin import ImageCroppingMixin
 
 # Gereksiz modelleri admin panelinden kaldır
 admin.site.unregister(Group)
